@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Settings, Plus, Menu, RefreshCw } from 'lucide-react';
+import { Bell, Settings, Plus, Menu, RefreshCw, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuthSimple';
 
 interface MobileHeaderProps {
@@ -46,9 +46,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           
           <button 
             onClick={signOut}
-            className="p-2 text-gray-600 hover:text-gray-800"
+            className="p-2 text-red-600 hover:text-red-800"
           >
-            <Settings className="h-5 w-5" />
+            <LogOut className="h-5 w-5" />
           </button>
         </div>
       </div>

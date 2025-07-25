@@ -17,7 +17,7 @@ import { ExportModal } from './components/ExportModal';
 import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
 import { Holding, Transaction } from './types/portfolio';
-import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut } from 'lucide-react';
 
 // Detect if we're on mobile
 const isMobile = () => {
@@ -32,7 +32,7 @@ const AppContent: React.FC = () => {
     return <QuickViewPage />;
   }
 
-  const { user, loading, isDemoMode } = useAuth();
+  const { user, loading, isDemoMode, signOut } = useAuth();
   const { 
     holdings, 
     transactions, 
@@ -160,6 +160,13 @@ const AppContent: React.FC = () => {
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Transaction</span>
+              </button>
+              <button
+                onClick={signOut}
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-all"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Log Out</span>
               </button>
             </div>
           </div>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Portfolio App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .error { color: red; background: #ffebee; padding: 10px; margin: 10px 0; }
+        .success { color: green; background: #e8f5e9; padding: 10px; margin: 10px 0; }
+        .info { color: blue; background: #e3f2fd; padding: 10px; margin: 10px 0; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Portfolio Tracker Debug Page</h1>
+    <div id="status">Loading...</div>
+    <div id="console-output"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const consoleDiv = document.getElementById('console-output');
+        
+        // Capture console errors
+        const originalError = console.error;
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        
+        const logs = [];
+        
+        function addLog(type, ...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            logs.push({ type, message, timestamp: new Date().toLocaleTimeString() });
+            updateConsoleOutput();
+        }
+        
+        console.error = (...args) => {
+            originalError(...args);
+            addLog('error', ...args);
+        };
+        
+        console.log = (...args) => {
+            originalLog(...args);
+            addLog('log', ...args);
+        };
+        
+        console.warn = (...args) => {
+            originalWarn(...args);
+            addLog('warn', ...args);
+        };
+        
+        function updateConsoleOutput() {
+            consoleDiv.innerHTML = logs.map(log => 
+                `<div class="${log.type}"><strong>[${log.timestamp}] ${log.type.toUpperCase()}:</strong><br><pre>${log.message}</pre></div>`
+            ).join('');
+        }
+        
+        // Test environment variables
+        statusDiv.innerHTML = `
+            <div class="info">
+                <h3>Environment Check:</h3>
+                <p>VITE_SUPABASE_URL: ${window.location.search.includes('VITE_SUPABASE_URL') ? 'Set' : 'Not accessible from client'}</p>
+                <p>User Agent: ${navigator.userAgent}</p>
+                <p>Location: ${window.location.href}</p>
+            </div>
+        `;
+        
+        // Try loading the main React app
+        import('/src/main.tsx').then(() => {
+            console.log('Main.tsx loaded successfully');
+        }).catch(error => {
+            console.error('Failed to load main.tsx:', error);
+        });
+        
+        // Test Supabase connection
+        import('/src/lib/supabase.js').then(supabaseModule => {
+            console.log('Supabase module loaded:', Object.keys(supabaseModule));
+        }).catch(error => {
+            console.error('Failed to load Supabase module:', error);
+        });
+    </script>
+</body>
+</html>

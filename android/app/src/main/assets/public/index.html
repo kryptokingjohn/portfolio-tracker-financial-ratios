@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Portfolio Pro" />
+    <meta name="description" content="Professional portfolio tracking with comprehensive financial ratios and performance analytics" />
+    
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
+    
+    <title>Portfolio Tracker with Financial Ratios</title>
+    <script type="module" crossorigin src="/assets/index-DummsBNf.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-Cf3QorUS.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-DK7aVBtm.js">
+    <link rel="modulepreload" crossorigin href="/assets/supabase-B0W5aLBj.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-es8-Utmr.css">
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

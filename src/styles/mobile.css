@@ -1,0 +1,119 @@
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  /* Safe area handling for iOS */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Touch-friendly buttons */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Enhanced touch interactions */
+  .active\:scale-95:active {
+    transform: scale(0.95);
+  }
+  
+  .active\:scale-98:active {
+    transform: scale(0.98);
+  }
+  
+  .active\:scale-90:active {
+    transform: scale(0.90);
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Hide scrollbars but keep functionality */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Card hover effects for mobile */
+  .mobile-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .mobile-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Loading states */
+  .loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+  
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  /* Pull to refresh indicator */
+  .pull-to-refresh {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  /* Haptic feedback simulation */
+  .haptic-light:active {
+    animation: haptic-pulse 0.1s ease;
+  }
+  
+  @keyframes haptic-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Smooth scrolling improvements */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* iOS-style bounce effect */
+  .ios-bounce {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}

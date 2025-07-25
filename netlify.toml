@@ -12,9 +12,8 @@
   status = 200
 
 # Environment variables for build
+# Note: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Netlify dashboard
 [context.production.environment]
-  VITE_SUPABASE_URL = "https://demo.supabase.co"
-  VITE_SUPABASE_ANON_KEY = "demo_key"
   VITE_APP_NAME = "Portfolio Tracker Pro"
   VITE_APP_VERSION = "1.0.0"
 

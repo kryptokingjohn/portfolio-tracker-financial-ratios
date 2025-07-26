@@ -334,17 +334,49 @@ export const usePortfolio = () => {
             costBasis: newCostBasis
           });
         } else {
-          // Create new holding
+          // Create new holding with all required fields
           holdingsMap.set(ticker, {
             id: `holding-${ticker}`,
             ticker: ticker,
-            company: ticker, // Will be updated with real company name later
+            company: ticker,
             shares: transaction.shares || 0,
             costBasis: transaction.price || 0,
             currentPrice: transaction.price || 0,
             type: 'stocks' as any,
             sector: 'Unknown',
-            accountType: 'taxable'
+            accountType: 'taxable',
+            // Price Data
+            yearHigh: transaction.price || 0,
+            yearLow: transaction.price || 0,
+            // Cash Flow Data
+            fcf1yr: 0,
+            fcf2yr: 0,
+            fcf3yr: 0,
+            fcf10yr: 0,
+            // Valuation Metrics
+            evFcf: 0,
+            sectorMedianEvFcf: 0,
+            intrinsicValue: transaction.price || 0,
+            pe: 0,
+            pb: 0,
+            peg: 0,
+            // Financial Health
+            debtToEquity: 0,
+            currentRatio: 0,
+            quickRatio: 0,
+            // Profitability
+            roe: 0,
+            roa: 0,
+            grossMargin: 0,
+            netMargin: 0,
+            operatingMargin: 0,
+            // Efficiency
+            assetTurnover: 0,
+            revenueGrowth: 0,
+            // Additional Info
+            narrative: `Calculated from transactions`,
+            dividend: 0,
+            dividendYield: 0
           });
         }
       } else if (transaction.type === 'sell' && existing) {

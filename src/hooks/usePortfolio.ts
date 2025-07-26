@@ -178,8 +178,8 @@ export const usePortfolio = () => {
       const newTransaction = await DatabaseService.createTransaction(transaction);
       setTransactions(prev => [newTransaction, ...prev]);
       
-      // Reload holdings to reflect the transaction
-      await loadPortfolioData();
+      // Update holdings from the new transaction
+      await updateHoldingsFromTransaction(newTransaction);
       
       return newTransaction;
     } catch (err) {

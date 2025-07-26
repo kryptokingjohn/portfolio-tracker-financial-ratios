@@ -60,16 +60,17 @@ export const usePortfolio = () => {
       }
 
       console.log('Loading real portfolio data from database...');
-      // Load holdings and transactions in parallel
-      const [holdingsData, transactionsData] = await Promise.all([
-        DatabaseService.getHoldings(),
-        DatabaseService.getTransactions()
-      ]);
+      // Load transactions and calculate holdings from them
+      const transactionsData = await DatabaseService.getTransactions();
 
-      console.log(`Loaded ${holdingsData.length} holdings and ${transactionsData.length} transactions`);
+      console.log(`Loaded ${transactionsData.length} transactions`);
+      
+      // Calculate holdings from all transactions
+      const calculatedHoldings = calculateHoldingsFromTransactions(transactionsData);
+      console.log(`Calculated ${calculatedHoldings.length} holdings from transactions`);
       
       // Update current prices for holdings
-      const updatedHoldings = await updateHoldingPrices(holdingsData);
+      const updatedHoldings = await updateHoldingPrices(calculatedHoldings);
 
       setHoldings(updatedHoldings);
       setTransactions(transactionsData);
@@ -310,6 +311,58 @@ export const usePortfolio = () => {
       console.error('Error saving portfolio snapshot:', err);
       setError(err instanceof Error ? err.message : 'Failed to save portfolio snapshot');
     }
+  };
+
+  // Calculate holdings from all transactions
+  const calculateHoldingsFromTransactions = (transactions: Transaction[]): Holding[] => {
+    const holdingsMap = new Map<string, Holding>();
+
+    transactions.forEach(transaction => {
+      const ticker = transaction.ticker;
+      const existing = holdingsMap.get(ticker);
+
+      if (transaction.type === 'buy') {
+        if (existing) {
+          // Update existing holding
+          const newShares = existing.shares + (transaction.shares || 0);
+          const newTotalCost = (existing.shares * existing.costBasis) + (transaction.amount || 0);
+          const newCostBasis = newShares > 0 ? newTotalCost / newShares : existing.costBasis;
+
+          holdingsMap.set(ticker, {
+            ...existing,
+            shares: newShares,
+            costBasis: newCostBasis
+          });
+        } else {
+          // Create new holding
+          holdingsMap.set(ticker, {
+            id: `holding-${ticker}`,
+            ticker: ticker,
+            company: ticker, // Will be updated with real company name later
+            shares: transaction.shares || 0,
+            costBasis: transaction.price || 0,
+            currentPrice: transaction.price || 0,
+            type: 'stocks' as any,
+            sector: 'Unknown',
+            accountType: 'taxable'
+          });
+        }
+      } else if (transaction.type === 'sell' && existing) {
+        // Reduce shares for sell transactions
+        const newShares = Math.max(0, existing.shares - (transaction.shares || 0));
+        if (newShares > 0) {
+          holdingsMap.set(ticker, {
+            ...existing,
+            shares: newShares
+          });
+        } else {
+          holdingsMap.delete(ticker);
+        }
+      }
+    });
+
+    // Return all holdings with shares > 0
+    return Array.from(holdingsMap.values()).filter(holding => holding.shares > 0);
   };
 
   return {

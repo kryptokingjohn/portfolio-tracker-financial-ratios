@@ -400,7 +400,10 @@ export class DatabaseService {
         new_company_id: transaction.newTicker ? (await this.getOrCreateCompany(transaction.newTicker)).id : null,
         notes: transaction.notes
       })
-      .select()
+      .select(`
+        *,
+        companies!transactions_company_id_fkey (ticker, company_name)
+      `)
       .single();
 
     if (error) throw error;

@@ -21,60 +21,74 @@ export const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ holdings, po
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-6">
+      <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/60 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <DollarSign className="h-8 w-8 text-blue-700" />
+            <div className="bg-blue-600 p-3 rounded-full">
+              <DollarSign className="h-6 w-6 text-white" />
+            </div>
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-blue-700">Total Portfolio Value</div>
-            <div className="text-2xl font-bold text-blue-900">{formatCurrency(summary.totalValue)}</div>
+            <div className="text-sm font-medium text-blue-200">Total Portfolio Value</div>
+            <div className="text-2xl font-bold text-white">{formatCurrency(summary.totalValue)}</div>
           </div>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 p-6">
+      <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/60 backdrop-blur-sm rounded-xl border border-gray-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <DollarSign className="h-8 w-8 text-gray-700" />
+            <div className="bg-gray-600 p-3 rounded-full">
+              <DollarSign className="h-6 w-6 text-white" />
+            </div>
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-gray-700">Total Cost Basis</div>
-            <div className="text-2xl font-bold text-gray-900">{formatCurrency(summary.totalCost)}</div>
+            <div className="text-sm font-medium text-gray-300">Total Cost Basis</div>
+            <div className="text-2xl font-bold text-white">{formatCurrency(summary.totalCost)}</div>
           </div>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-6">
+      <div className={`bg-gradient-to-br backdrop-blur-sm rounded-xl border p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 ${
+        summary.totalGainLoss >= 0 
+          ? 'from-green-900/60 to-green-800/60 border-green-500/30' 
+          : 'from-red-900/60 to-red-800/60 border-red-500/30'
+      }`}>
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            {summary.totalGainLoss >= 0 ? (
-              <TrendingUp className="h-8 w-8 text-green-700" />
-            ) : (
-              <TrendingDown className="h-8 w-8 text-red-700" />
-            )}
+            <div className={`p-3 rounded-full ${summary.totalGainLoss >= 0 ? 'bg-green-600' : 'bg-red-600'}`}>
+              {summary.totalGainLoss >= 0 ? (
+                <TrendingUp className="h-6 w-6 text-white" />
+              ) : (
+                <TrendingDown className="h-6 w-6 text-white" />
+              )}
+            </div>
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-green-700">Total Gain/Loss</div>
-            <div className={`text-2xl font-bold ${summary.totalGainLoss >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+            <div className={`text-sm font-medium ${summary.totalGainLoss >= 0 ? 'text-green-200' : 'text-red-200'}`}>
+              Total Gain/Loss
+            </div>
+            <div className="text-2xl font-bold text-white">
               {formatCurrency(summary.totalGainLoss)}
             </div>
-            <div className={`text-sm ${summary.totalGainLoss >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+            <div className={`text-sm ${summary.totalGainLoss >= 0 ? 'text-green-300' : 'text-red-300'}`}>
               {formatPercent(summary.totalGainLossPercent)}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 p-6">
+      <div className="bg-gradient-to-br from-purple-900/60 to-purple-800/60 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <Percent className="h-8 w-8 text-purple-700" />
+            <div className="bg-purple-600 p-3 rounded-full">
+              <Percent className="h-6 w-6 text-white" />
+            </div>
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-purple-700">Dividend Yield</div>
-            <div className="text-2xl font-bold text-purple-900">{formatPercent(summary.dividendYield)}</div>
-            <div className="text-sm text-purple-600">Annual: {formatCurrency(summary.dividendIncome)}</div>
+            <div className="text-sm font-medium text-purple-200">Dividend Yield</div>
+            <div className="text-2xl font-bold text-white">{formatPercent(summary.dividendYield)}</div>
+            <div className="text-sm text-purple-300">Annual: {formatCurrency(summary.dividendIncome)}</div>
           </div>
         </div>
       </div>

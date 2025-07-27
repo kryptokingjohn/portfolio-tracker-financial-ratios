@@ -94,13 +94,13 @@ const AppContent: React.FC = () => {
     (portfolioMetrics.totalGainLoss / portfolioMetrics.totalCost) * 100 : 0;
   // Desktop version
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
       {/* Error Banner */}
       {portfolioError && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+        <div className="bg-yellow-500/20 border border-yellow-500/50 backdrop-blur-sm p-4">
           <div className="flex">
             <div className="ml-3">
-              <p className="text-sm text-yellow-700">
+              <p className="text-sm text-yellow-200">
                 <strong>Notice:</strong> {portfolioError}. Using demo data for now.
               </p>
             </div>
@@ -109,47 +109,49 @@ const AppContent: React.FC = () => {
       )}
       
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <PieChart className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Portfolio Tracker with Financial Ratios</h1>
+              <div className="bg-blue-600 p-2 rounded-full">
+                <PieChart className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-white">Portfolio Tracker with Financial Ratios</h1>
             </div>
             <div className="flex items-center space-x-4">
               {lastUpdated && (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-300">
                   Last updated: {lastUpdated.toLocaleTimeString()}
                 </div>
               )}
               <button
                 onClick={toggleAutoRefresh}
-                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm ${
                   autoRefreshEnabled 
-                    ? 'text-green-700 bg-green-100 hover:bg-green-200' 
-                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                    ? 'text-green-200 bg-green-600/30 hover:bg-green-600/40 border border-green-500/30' 
+                    : 'text-gray-300 bg-gray-600/30 hover:bg-gray-600/40 border border-gray-500/30'
                 }`}
               >
-                <div className={`w-2 h-2 rounded-full ${autoRefreshEnabled ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${autoRefreshEnabled ? 'bg-green-400' : 'bg-gray-400'}`}></div>
                 <span>Auto-refresh {autoRefreshEnabled ? 'ON' : 'OFF'}</span>
               </button>
               <button
                 onClick={() => setIsExportModalOpen(true)}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-all"
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-purple-200 bg-purple-600/30 rounded-lg hover:bg-purple-600/40 transition-all backdrop-blur-sm border border-purple-500/30"
               >
                 <Download className="h-4 w-4" />
                 <span>Export Report</span>
               </button>
               <button
                 onClick={() => setIsTransactionModalOpen(true)}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Transaction</span>
               </button>
               <button
                 onClick={signOut}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-all"
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-200 bg-red-600/30 rounded-lg hover:bg-red-600/40 transition-all backdrop-blur-sm border border-red-500/30"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Log Out</span>
@@ -162,15 +164,15 @@ const AppContent: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <div className="mb-6">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-2">
             {(['portfolio', 'performance', 'accounts', 'dividends', 'transactions', 'tax', 'ratios'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
+                className={`py-3 px-4 font-medium text-sm capitalize transition-all rounded-lg backdrop-blur-sm ${
                   activeTab === tab
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30 shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
                 }`}
               >
                 {tab === 'portfolio' && (
@@ -228,15 +230,15 @@ const AppContent: React.FC = () => {
 
             {/* Portfolio Filter */}
             <div className="mb-6">
-              <div className="flex space-x-4">
+              <div className="flex space-x-2">
                 {(['all', 'stocks', 'etfs', 'bonds'] as const).map((filter) => (
                   <button
                     key={filter}
                     onClick={() => setPortfolioFilter(filter)}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm ${
                       portfolioFilter === filter
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                        ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
                     }`}
                   >
                     {filter === 'all' ? 'All Holdings' : filter.toUpperCase()}

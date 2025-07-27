@@ -101,9 +101,9 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 overflow-hidden">
       {/* Search and Filter Controls */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
+      <div className="p-4 border-b border-gray-700/50 bg-gray-900/50">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -113,7 +113,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                 placeholder="Search by ticker or company name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
               />
             </div>
           </div>
@@ -122,7 +122,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
             <select
               value={sectorFilter}
               onChange={(e) => setSectorFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
             >
               <option value="all">All Sectors</option>
               {uniqueSectors.map(sector => (
@@ -130,7 +130,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
               ))}
             </select>
           </div>
-          <div className="text-sm text-gray-500 flex items-center">
+          <div className="text-sm text-gray-400 flex items-center">
             {filteredAndSortedHoldings.length} of {holdings.length} holdings
           </div>
         </div>
@@ -138,224 +138,226 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-900/50 backdrop-blur-sm">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider cursor-pointer hover:bg-blue-50 transition-colors"
+              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
                   onClick={() => handleSort('company')}>
                 Company
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider cursor-pointer hover:bg-blue-50 transition-colors"
+              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
                   onClick={() => handleSort('ticker')}>
                 Ticker
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider">
                 Position
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider cursor-pointer hover:bg-blue-50 transition-colors"
+              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
                   onClick={() => handleSort('costBasis')}>
                 Cost Basis
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider">
                 Gain/Loss
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider cursor-pointer hover:bg-blue-50 transition-colors"
+              <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
                   onClick={() => handleSort('currentPrice')}>
                 Current Price
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('yearHigh')}>
                 52W High
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('yearLow')}>
                 52W Low
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('fcf10yr')}>
                 10-yr FCF ($B)
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('evFcf')}>
                 EV/FCF
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('intrinsicValue')}>
                 Intrinsic Value
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Upside %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('pe')}>
                 P/E
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('pb')}>
                 P/B
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('peg')}>
                 PEG
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('debtToEquity')}>
                 Debt/Equity
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('currentRatio')}>
                 Current Ratio
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('quickRatio')}>
                 Quick Ratio
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('roe')}>
                 ROE %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('roa')}>
                 ROA %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('grossMargin')}>
                 Gross Margin %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('netMargin')}>
                 Net Margin %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('operatingMargin')}>
                 Operating Margin %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('assetTurnover')}>
                 Asset Turnover
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('revenueGrowth')}>
                 Revenue Growth %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Narrative
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
             {filteredAndSortedHoldings.map((holding, index) => {
               const { gainLoss, gainLossPercent, currentValue, totalCost } = getGainLoss(holding);
               const upsidePercent = getUpsidePercent(holding);
               
               return (
                 <React.Fragment key={holding.id}>
-                  <tr className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr className={`backdrop-blur-sm hover:bg-gray-700/30 transition-colors ${
+                    index % 2 === 0 ? 'bg-gray-800/20' : 'bg-gray-700/20'
+                  }`}>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{holding.company}</div>
-                    <div className="text-sm text-gray-500">{holding.sector}</div>
+                    <div className="text-sm font-medium text-white">{holding.company}</div>
+                    <div className="text-sm text-gray-400">{holding.sector}</div>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-400">
                     {holding.ticker}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{holding.shares} shares</div>
-                    <div className="text-sm text-gray-500">Avg Cost: {formatCurrency(holding.costBasis)}</div>
-                    <div className="text-sm text-gray-500">Value: {formatCurrency(currentValue)}</div>
+                    <div className="text-sm text-white">{holding.shares} shares</div>
+                    <div className="text-sm text-gray-400">Avg Cost: {formatCurrency(holding.costBasis)}</div>
+                    <div className="text-sm text-gray-400">Value: {formatCurrency(currentValue)}</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatCurrency(holding.costBasis)}</div>
-                    <div className="text-sm text-gray-500">per share</div>
-                    <div className="text-sm text-gray-500">Total: {formatCurrency(totalCost)}</div>
+                    <div className="text-sm text-white">{formatCurrency(holding.costBasis)}</div>
+                    <div className="text-sm text-gray-400">per share</div>
+                    <div className="text-sm text-gray-400">Total: {formatCurrency(totalCost)}</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`text-sm font-medium ${gainLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {gainLoss >= 0 ? <TrendingUp className="inline h-4 w-4 mr-1" /> : <TrendingDown className="inline h-4 w-4 mr-1" />}
                       {formatCurrency(gainLoss)}
                     </div>
-                    <div className={`text-sm ${gainLossPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`text-sm ${gainLossPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(gainLossPercent)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
                     {formatCurrency(holding.currentPrice)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatCurrency(holding.yearHigh)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatCurrency(holding.yearLow)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.fcf10yr, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.evFcf, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatCurrency(holding.intrinsicValue)}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(upsidePercent)}
                     </span>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.pe, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.pb, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.peg, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.debtToEquity, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.currentRatio, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.quickRatio, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatPercent(holding.roe)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatPercent(holding.roa)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatPercent(holding.grossMargin)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatPercent(holding.netMargin)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatPercent(holding.operatingMargin)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatNumber(holding.assetTurnover, 1)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatPercent(holding.revenueGrowth)}
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-700 max-w-xs">
+                  <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
                     <div className="truncate" title={holding.narrative}>
                       {holding.narrative}
                     </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-800 mr-3 p-2 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all shadow-sm hover:shadow-md">
+                    <button className="text-blue-400 hover:text-blue-300 mr-3 p-2 rounded-lg hover:bg-blue-600/20 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
                       <Edit3 className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-800 p-2 rounded-lg hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 transition-all shadow-sm hover:shadow-md">
+                    <button className="text-gray-400 hover:text-gray-300 p-2 rounded-lg hover:bg-gray-600/20 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
                       <ExternalLink className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => openQuickView(holding.ticker, holding.company, holding.type)}
-                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
                     >
                       <BarChart3 className="h-3 w-3" />
                       <span>QuickView</span>
@@ -363,7 +365,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                     </button>
                     <button
                       onClick={() => toggleQuickView(holding.id)}
-                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
                     >
                       <BarChart3 className="h-3 w-3" />
                       <span>Advanced</span>
@@ -372,7 +374,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                 </tr>
                   {expandedQuickView === holding.id && (
                     <tr key={`${holding.id}-quickview`}>
-                      <td colSpan={26} className="px-4 py-4 bg-gray-50">
+                      <td colSpan={26} className="px-4 py-4 bg-gray-900/30 backdrop-blur-sm">
                         <QuickViewChart 
                           holding={holding} 
                           isExpanded={true} 

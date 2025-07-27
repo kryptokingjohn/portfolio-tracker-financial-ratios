@@ -81,7 +81,7 @@ export const LoginScreen: React.FC = () => {
               <TrendingUp className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-white">Portfolio Tracker w Financial Ratios</h2>
+          <h2 className="text-3xl font-bold text-white">Portfolio Tracker with Financial Ratios</h2>
           <p className="mt-2 text-gray-300">
             Professional Portfolio Management with Comprehensive Financial Analytics
           </p>

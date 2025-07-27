@@ -369,7 +369,9 @@ export const usePortfolio = () => {
               evFcf: financialData.evFcf,
               sectorMedianEvFcf: financialData.sectorMedianEvFcf,
               intrinsicValue: financialData.intrinsicValue || holding.intrinsicValue,
-              narrative: `Financial data from Yahoo Finance`
+              narrative: financialData.description?.includes('temporarily unavailable') 
+                ? `Estimated financial data (API temporarily unavailable)`
+                : `Financial data from Yahoo Finance`
             };
           }
           

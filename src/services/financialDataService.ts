@@ -106,9 +106,10 @@ export interface CompanyFinancials {
 class FinancialDataService {
   // Multiple CORS proxy options for reliability
   private static readonly CORS_PROXIES = [
-    'https://corsproxy.io/?',
     'https://api.allorigins.win/get?url=',
-    'https://cors-anywhere.herokuapp.com/'
+    'https://corsproxy.io/?',
+    'https://cors-anywhere.herokuapp.com/',
+    'https://thingproxy.freeboard.io/fetch/'
   ];
   private static readonly YAHOO_BASE_URL = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary';
   
@@ -128,22 +129,35 @@ class FinancialDataService {
       const proxy = this.CORS_PROXIES[i];
       let url: string;
       
+      // Handle different proxy URL formats
       if (proxy.includes('allorigins')) {
         url = `${proxy}${encodeURIComponent(targetUrl)}`;
+      } else if (proxy.includes('thingproxy')) {
+        url = `${proxy}${targetUrl}`;
       } else {
         url = `${proxy}${encodeURIComponent(targetUrl)}`;
       }
 
       try {
-        console.log(`Attempting to fetch Yahoo Finance data for ${symbol} via proxy ${i + 1}...`);
-        const response = await fetch(url, {
+        console.log(`Attempting to fetch Yahoo Finance data for ${symbol} via proxy ${i + 1}: ${proxy.split('/')[2]}...`);
+        
+        const fetchOptions: RequestInit = {
+          method: 'GET',
           headers: {
+            'Accept': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
           }
-        });
+        };
+
+        // For CORS-anywhere, we need to request temporary access
+        if (proxy.includes('cors-anywhere')) {
+          console.log('Note: cors-anywhere requires temporary access at https://cors-anywhere.herokuapp.com/corsdemo');
+        }
+
+        const response = await fetch(url, fetchOptions);
         
         if (!response.ok) {
-          console.warn(`Proxy ${i + 1} failed with status ${response.status}`);
+          console.warn(`Proxy ${i + 1} (${proxy.split('/')[2]}) failed with status ${response.status}: ${response.statusText}`);
           continue;
         }
         
@@ -151,24 +165,29 @@ class FinancialDataService {
         
         if (proxy.includes('allorigins')) {
           const responseData = await response.json();
-          data = JSON.parse(responseData.contents);
+          if (responseData.status && responseData.status.http_code === 200) {
+            data = JSON.parse(responseData.contents);
+          } else {
+            console.warn(`AllOrigins proxy returned HTTP ${responseData.status?.http_code}`);
+            continue;
+          }
         } else {
           data = await response.json();
         }
         
         if (data.quoteSummary?.result?.[0]) {
-          console.log(`Successfully fetched data for ${symbol} via proxy ${i + 1}`);
+          console.log(`✅ Successfully fetched data for ${symbol} via ${proxy.split('/')[2]}`);
           return data;
         }
         
         console.warn(`No data found for symbol ${symbol} via proxy ${i + 1}`);
       } catch (error) {
-        console.warn(`Proxy ${i + 1} failed for ${symbol}:`, error);
+        console.warn(`Proxy ${i + 1} (${proxy.split('/')[2]}) failed for ${symbol}:`, error);
         continue;
       }
     }
     
-    console.error(`All CORS proxies failed for ${symbol}`);
+    console.warn(`⚠️ All CORS proxies failed for ${symbol}, falling back to estimated data`);
     return null;
   }
 

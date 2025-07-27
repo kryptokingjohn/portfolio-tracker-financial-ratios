@@ -20,7 +20,7 @@ export const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ holdings, po
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-6">
         <div className="flex items-center">
           <div className="flex-shrink-0">

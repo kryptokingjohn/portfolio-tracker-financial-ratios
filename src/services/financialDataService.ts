@@ -1,45 +1,57 @@
-interface CompanyOverview {
-  Symbol: string;
-  Name: string;
-  Description: string;
-  Sector: string;
-  Industry: string;
-  MarketCapitalization: string;
-  PERatio: string;
-  PEGRatio: string;
-  BookValue: string;
-  DividendPerShare: string;
-  DividendYield: string;
-  EPS: string;
-  RevenuePerShareTTM: string;
-  ProfitMargin: string;
-  OperatingMarginTTM: string;
-  ReturnOnAssetsTTM: string;
-  ReturnOnEquityTTM: string;
-  RevenueTTM: string;
-  GrossProfitTTM: string;
-  QuarterlyRevenueGrowthYOY: string;
-  QuarterlyEarningsGrowthYOY: string;
-  AnalystTargetPrice: string;
-  '52WeekHigh': string;
-  '52WeekLow': string;
-}
-
-interface BalanceSheet {
-  totalAssets: string;
-  totalCurrentAssets: string;
-  inventory: string;
-  totalCurrentLiabilities: string;
-  totalShareholderEquity: string;
-  totalDebt: string;
-}
-
-interface IncomeStatement {
-  totalRevenue: string;
-  costOfRevenue: string;
-  grossProfit: string;
-  operatingIncome: string;
-  netIncome: string;
+// Yahoo Finance API response interfaces
+interface YahooFinanceData {
+  quoteSummary: {
+    result: [{
+      summaryDetail?: {
+        marketCap?: { raw: number };
+        trailingPE?: { raw: number };
+        pegRatio?: { raw: number };
+        bookValue?: { raw: number };
+        dividendRate?: { raw: number };
+        dividendYield?: { raw: number };
+        fiftyTwoWeekHigh?: { raw: number };
+        fiftyTwoWeekLow?: { raw: number };
+      };
+      financialData?: {
+        returnOnAssets?: { raw: number };
+        returnOnEquity?: { raw: number };
+        revenueGrowth?: { raw: number };
+        profitMargins?: { raw: number };
+        operatingMargins?: { raw: number };
+        grossMargins?: { raw: number };
+        currentRatio?: { raw: number };
+        quickRatio?: { raw: number };
+        debtToEquity?: { raw: number };
+        totalCash?: { raw: number };
+        totalDebt?: { raw: number };
+        totalRevenue?: { raw: number };
+        earningsGrowth?: { raw: number };
+        targetHighPrice?: { raw: number };
+        targetLowPrice?: { raw: number };
+        targetMeanPrice?: { raw: number };
+      };
+      defaultKeyStatistics?: {
+        trailingEps?: { raw: number };
+        forwardEps?: { raw: number };
+        pegRatio?: { raw: number };
+        priceToBook?: { raw: number };
+        enterpriseToRevenue?: { raw: number };
+        enterpriseToEbitda?: { raw: number };
+      };
+      assetProfile?: {
+        sector?: string;
+        industry?: string;
+        longBusinessSummary?: string;
+        fullTimeEmployees?: number;
+        website?: string;
+      };
+      price?: {
+        regularMarketPrice?: { raw: number };
+        shortName?: string;
+        longName?: string;
+      };
+    }];
+  };
 }
 
 export interface CompanyFinancials {
@@ -92,123 +104,122 @@ export interface CompanyFinancials {
 }
 
 class FinancialDataService {
-  private static readonly BASE_URL = 'https://www.alphavantage.co/query';
-  private static readonly API_KEY = import.meta.env.VITE_ALPHA_VANTAGE_KEY;
+  private static readonly YAHOO_BASE_URL = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary';
   
-  private static async fetchFromAlphaVantage(params: Record<string, string>): Promise<any> {
-    if (!this.API_KEY) {
-      console.warn('Alpha Vantage API key not configured');
-      return null;
-    }
-
-    const url = new URL(this.BASE_URL);
-    url.searchParams.append('apikey', this.API_KEY);
+  private static async fetchFromYahoo(symbol: string): Promise<YahooFinanceData | null> {
+    const modules = [
+      'summaryDetail',
+      'financialData', 
+      'defaultKeyStatistics',
+      'assetProfile',
+      'price'
+    ].join(',');
     
-    Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.append(key, value);
-    });
+    const url = `${this.YAHOO_BASE_URL}/${symbol.toUpperCase()}?modules=${modules}`;
 
     try {
-      const response = await fetch(url.toString());
-      const data = await response.json();
+      console.log(`Fetching Yahoo Finance data for ${symbol}...`);
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
       
-      if (data['Error Message']) {
-        throw new Error(data['Error Message']);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      if (data['Note']) {
-        console.warn('Alpha Vantage API limit reached:', data['Note']);
+      const data: YahooFinanceData = await response.json();
+      
+      if (!data.quoteSummary?.result?.[0]) {
+        console.warn(`No data found for symbol ${symbol}`);
         return null;
       }
       
       return data;
     } catch (error) {
-      console.error('Alpha Vantage API error:', error);
+      console.error(`Yahoo Finance API error for ${symbol}:`, error);
       return null;
     }
   }
 
-  static async getCompanyOverview(symbol: string): Promise<CompanyOverview | null> {
-    const data = await this.fetchFromAlphaVantage({
-      function: 'OVERVIEW',
-      symbol: symbol.toUpperCase()
-    });
-    
-    return data;
-  }
-
   static async getCompanyFinancials(symbol: string): Promise<CompanyFinancials | null> {
     try {
-      const overview = await this.getCompanyOverview(symbol);
+      const data = await this.fetchFromYahoo(symbol);
       
-      if (!overview) {
+      if (!data) {
         console.warn(`No financial data found for ${symbol}`);
         return null;
       }
 
-      // Helper function to safely parse numbers
-      const parseNumber = (value: string | undefined): number => {
-        if (!value || value === 'None' || value === '-') return 0;
-        const num = parseFloat(value.replace(/[,%]/g, ''));
-        return isNaN(num) ? 0 : num;
+      const result = data.quoteSummary.result[0];
+      const summary = result.summaryDetail || {};
+      const financial = result.financialData || {};
+      const keyStats = result.defaultKeyStatistics || {};
+      const profile = result.assetProfile || {};
+      const price = result.price || {};
+
+      // Helper function to safely extract values
+      const getValue = (obj: any): number => {
+        return obj?.raw || 0;
       };
 
-      // Calculate P/B ratio
-      const pb = overview.BookValue ? parseNumber(overview.PERatio) / parseNumber(overview.BookValue) : 0;
+      // Calculate estimated cash flows based on revenue and margins
+      const revenue = getValue(financial.totalRevenue);
+      const netMargin = getValue(financial.profitMargins);
+      const estimatedNetIncome = revenue * netMargin;
+      const marketCap = getValue(summary.marketCap);
       
-      // Calculate debt-to-equity (simplified - would need balance sheet for accuracy)
-      const marketCap = parseNumber(overview.MarketCapitalization);
-      
-      // Estimate financial ratios from available data
       const financials: CompanyFinancials = {
         // Basic Info
-        symbol: overview.Symbol || symbol.toUpperCase(),
-        name: overview.Name || symbol,
-        sector: overview.Sector || 'Unknown',
-        industry: overview.Industry || 'Unknown',
-        description: overview.Description || '',
+        symbol: symbol.toUpperCase(),
+        name: price.longName || price.shortName || symbol,
+        sector: profile.sector || 'Unknown',
+        industry: profile.industry || 'Unknown',
+        description: profile.longBusinessSummary || '',
         
-        // Price Data (would need current price from quote API)
-        currentPrice: 0, // Will be updated by market data service
-        yearHigh: parseNumber(overview['52WeekHigh']),
-        yearLow: parseNumber(overview['52WeekLow']),
-        analystTarget: parseNumber(overview.AnalystTargetPrice),
+        // Price Data
+        currentPrice: getValue(price.regularMarketPrice),
+        yearHigh: getValue(summary.fiftyTwoWeekHigh),
+        yearLow: getValue(summary.fiftyTwoWeekLow),
+        analystTarget: getValue(financial.targetMeanPrice),
         
         // Valuation Ratios
-        pe: parseNumber(overview.PERatio),
-        pb: pb,
-        peg: parseNumber(overview.PEGRatio),
+        pe: getValue(summary.trailingPE),
+        pb: getValue(keyStats.priceToBook),
+        peg: getValue(keyStats.pegRatio) || getValue(summary.pegRatio),
         
-        // Financial Health (simplified estimates)
-        debtToEquity: 0, // Would need balance sheet data
-        currentRatio: 0, // Would need balance sheet data
-        quickRatio: 0, // Would need balance sheet data
+        // Financial Health
+        debtToEquity: getValue(financial.debtToEquity),
+        currentRatio: getValue(financial.currentRatio),
+        quickRatio: getValue(financial.quickRatio),
         
-        // Profitability
-        roe: parseNumber(overview.ReturnOnEquityTTM) * 100,
-        roa: parseNumber(overview.ReturnOnAssetsTTM) * 100,
-        grossMargin: 0, // Calculated from gross profit / revenue
-        netMargin: parseNumber(overview.ProfitMargin) * 100,
-        operatingMargin: parseNumber(overview.OperatingMarginTTM) * 100,
+        // Profitability (convert to percentages)
+        roe: getValue(financial.returnOnEquity) * 100,
+        roa: getValue(financial.returnOnAssets) * 100,
+        grossMargin: getValue(financial.grossMargins) * 100,
+        netMargin: getValue(financial.profitMargins) * 100,
+        operatingMargin: getValue(financial.operatingMargins) * 100,
         
         // Efficiency
-        assetTurnover: 0, // Would need balance sheet data
-        revenueGrowth: parseNumber(overview.QuarterlyRevenueGrowthYOY) * 100,
+        assetTurnover: revenue && marketCap ? revenue / marketCap : 0,
+        revenueGrowth: getValue(financial.revenueGrowth) * 100,
         
         // Dividend Info
-        dividend: parseNumber(overview.DividendPerShare),
-        dividendYield: parseNumber(overview.DividendYield) * 100,
+        dividend: getValue(summary.dividendRate),
+        dividendYield: getValue(summary.dividendYield) * 100,
         
-        // Cash Flow (estimated based on market cap and margins)
-        fcf1yr: marketCap * 0.05, // Rough estimate
-        fcf2yr: marketCap * 0.06,
-        fcf3yr: marketCap * 0.07,
-        fcf10yr: marketCap * 0.10,
-        evFcf: overview.PERatio ? parseNumber(overview.PERatio) * 0.8 : 0,
+        // Cash Flow (estimates based on financial data)
+        fcf1yr: estimatedNetIncome * 1.2, // Estimate FCF as 120% of net income
+        fcf2yr: estimatedNetIncome * 1.3,
+        fcf3yr: estimatedNetIncome * 1.4,
+        fcf10yr: estimatedNetIncome * 2.0,
+        evFcf: getValue(keyStats.enterpriseToEbitda) || (getValue(summary.trailingPE) * 0.8),
         sectorMedianEvFcf: 15, // Industry average estimate
-        intrinsicValue: parseNumber(overview.AnalystTargetPrice) || 0
+        intrinsicValue: getValue(financial.targetMeanPrice) || getValue(price.regularMarketPrice)
       };
 
+      console.log(`Successfully fetched financial data for ${symbol}`);
       return financials;
     } catch (error) {
       console.error(`Error fetching financials for ${symbol}:`, error);
@@ -216,109 +227,9 @@ class FinancialDataService {
     }
   }
 
-  // Enhanced method that combines overview with balance sheet for more accurate ratios
+  // Convenience method - just uses the main method since Yahoo Finance provides comprehensive data
   static async getDetailedFinancials(symbol: string): Promise<CompanyFinancials | null> {
-    try {
-      const [overview, balanceSheet, incomeStatement] = await Promise.all([
-        this.getCompanyOverview(symbol),
-        this.getBalanceSheet(symbol),
-        this.getIncomeStatement(symbol)
-      ]);
-
-      if (!overview) return null;
-
-      const parseNumber = (value: string | undefined): number => {
-        if (!value || value === 'None' || value === '-') return 0;
-        const num = parseFloat(value.replace(/[,%]/g, ''));
-        return isNaN(num) ? 0 : num;
-      };
-
-      // Calculate more accurate ratios with additional data
-      let currentRatio = 0;
-      let quickRatio = 0;
-      let debtToEquity = 0;
-      let grossMargin = 0;
-      let assetTurnover = 0;
-
-      if (balanceSheet) {
-        const totalCurrentAssets = parseNumber(balanceSheet.totalCurrentAssets);
-        const totalCurrentLiabilities = parseNumber(balanceSheet.totalCurrentLiabilities);
-        const inventory = parseNumber(balanceSheet.inventory);
-        const totalDebt = parseNumber(balanceSheet.totalDebt);
-        const totalEquity = parseNumber(balanceSheet.totalShareholderEquity);
-        const totalAssets = parseNumber(balanceSheet.totalAssets);
-        const revenue = parseNumber(overview.RevenueTTM);
-
-        currentRatio = totalCurrentLiabilities > 0 ? totalCurrentAssets / totalCurrentLiabilities : 0;
-        quickRatio = totalCurrentLiabilities > 0 ? (totalCurrentAssets - inventory) / totalCurrentLiabilities : 0;
-        debtToEquity = totalEquity > 0 ? totalDebt / totalEquity : 0;
-        assetTurnover = totalAssets > 0 ? revenue / totalAssets : 0;
-      }
-
-      if (incomeStatement) {
-        const revenue = parseNumber(incomeStatement.totalRevenue);
-        const grossProfit = parseNumber(incomeStatement.grossProfit);
-        grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
-      }
-
-      const financials = await this.getCompanyFinancials(symbol);
-      if (!financials) return null;
-
-      // Update with more accurate calculated values
-      return {
-        ...financials,
-        currentRatio,
-        quickRatio,
-        debtToEquity,
-        grossMargin,
-        assetTurnover
-      };
-
-    } catch (error) {
-      console.error(`Error fetching detailed financials for ${symbol}:`, error);
-      return this.getCompanyFinancials(symbol); // Fallback to basic data
-    }
-  }
-
-  private static async getBalanceSheet(symbol: string): Promise<BalanceSheet | null> {
-    const data = await this.fetchFromAlphaVantage({
-      function: 'BALANCE_SHEET',
-      symbol: symbol.toUpperCase()
-    });
-
-    if (data?.quarterlyReports?.[0]) {
-      const latest = data.quarterlyReports[0];
-      return {
-        totalAssets: latest.totalAssets,
-        totalCurrentAssets: latest.totalCurrentAssets,
-        inventory: latest.inventory,
-        totalCurrentLiabilities: latest.totalCurrentLiabilities,
-        totalShareholderEquity: latest.totalShareholderEquity,
-        totalDebt: latest.longTermDebt || latest.shortTermDebt || '0'
-      };
-    }
-
-    return null;
-  }
-
-  private static async getIncomeStatement(symbol: string): Promise<IncomeStatement | null> {
-    const data = await this.fetchFromAlphaVantage({
-      function: 'INCOME_STATEMENT',
-      symbol: symbol.toUpperCase()
-    });
-
-    if (data?.quarterlyReports?.[0]) {
-      const latest = data.quarterlyReports[0];
-      return {
-        totalRevenue: latest.totalRevenue,
-        costOfRevenue: latest.costOfRevenue,
-        grossProfit: latest.grossProfit,
-        operatingIncome: latest.operatingIncome,
-        netIncome: latest.netIncome
-      };
-    }
-
-    return null;
+    return this.getCompanyFinancials(symbol);
   }
 }
 

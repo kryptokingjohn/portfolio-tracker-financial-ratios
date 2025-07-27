@@ -369,7 +369,7 @@ export const usePortfolio = () => {
               evFcf: financialData.evFcf,
               sectorMedianEvFcf: financialData.sectorMedianEvFcf,
               intrinsicValue: financialData.intrinsicValue || holding.intrinsicValue,
-              narrative: `Financial data from Alpha Vantage`
+              narrative: `Financial data from Yahoo Finance`
             };
           }
           

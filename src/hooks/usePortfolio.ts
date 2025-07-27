@@ -177,10 +177,24 @@ export const usePortfolio = () => {
     try {
       setError(null);
       const newTransaction = await DatabaseService.createTransaction(transaction);
-      setTransactions(prev => [newTransaction, ...prev]);
       
-      // Update holdings from the new transaction
-      await updateHoldingsFromTransaction(newTransaction);
+      // Update transactions first
+      const updatedTransactions = [newTransaction, ...transactions];
+      setTransactions(updatedTransactions);
+      
+      // Recalculate all holdings from all transactions
+      const recalculatedHoldings = calculateHoldingsFromTransactions(updatedTransactions);
+      const updatedHoldings = await updateHoldingPrices(recalculatedHoldings);
+      setHoldings(updatedHoldings);
+      
+      // Recalculate all metrics
+      const metrics = PortfolioCalculator.calculatePortfolioMetrics(updatedHoldings);
+      setPortfolioMetrics(metrics);
+      
+      const divAnalysis = DividendTracker.analyzeDividends(updatedHoldings, updatedTransactions);
+      setDividendAnalysis(divAnalysis);
+      
+      setLastUpdated(new Date());
       
       return newTransaction;
     } catch (err) {

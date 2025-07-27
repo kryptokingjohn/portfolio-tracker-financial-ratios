@@ -134,20 +134,6 @@ const AppContent: React.FC = () => {
                 <span>Auto-refresh {autoRefreshEnabled ? 'ON' : 'OFF'}</span>
               </button>
               <button
-                onClick={refreshPrices}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
-              >
-                <TrendingUp className="h-4 w-4" />
-                <span>Refresh Prices</span>
-              </button>
-              <button
-                onClick={savePortfolioSnapshot}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-all"
-              >
-                <DollarSign className="h-4 w-4" />
-                <span>Save Snapshot</span>
-              </button>
-              <button
                 onClick={() => setIsExportModalOpen(true)}
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-all"
               >

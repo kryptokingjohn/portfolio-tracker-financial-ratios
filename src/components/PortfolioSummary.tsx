@@ -20,7 +20,7 @@ export const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ holdings, po
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-6">
         <div className="flex items-center">
           <div className="flex-shrink-0">
@@ -61,27 +61,6 @@ export const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ holdings, po
             </div>
             <div className={`text-sm ${summary.totalGainLoss >= 0 ? 'text-green-700' : 'text-red-700'}`}>
               {formatPercent(summary.totalGainLossPercent)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-6">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            {summary.dayChange >= 0 ? (
-              <TrendingUp className="h-8 w-8 text-orange-700" />
-            ) : (
-              <TrendingDown className="h-8 w-8 text-orange-700" />
-            )}
-          </div>
-          <div className="ml-4">
-            <div className="text-sm font-medium text-orange-700">Today's Change</div>
-            <div className={`text-2xl font-bold ${summary.dayChange >= 0 ? 'text-green-800' : 'text-red-800'}`}>
-              {formatCurrency(summary.dayChange || 0)}
-            </div>
-            <div className={`text-sm ${summary.dayChange >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-              {formatPercent(summary.dayChangePercent || 0)}
             </div>
           </div>
         </div>

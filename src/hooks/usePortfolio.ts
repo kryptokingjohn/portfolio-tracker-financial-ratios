@@ -5,6 +5,7 @@ import { MarketDataService } from '../services/marketDataService';
 import { PortfolioCalculator } from '../utils/portfolioCalculations';
 import { DividendTracker } from '../utils/dividendTracker';
 import { useAuth } from './useAuthSimple';
+import FinancialDataService from '../services/financialDataService';
 
 export const usePortfolio = () => {
   const { user, isDemoMode } = useAuth();
@@ -69,8 +70,12 @@ export const usePortfolio = () => {
       const calculatedHoldings = calculateHoldingsFromTransactions(transactionsData);
       console.log(`Calculated ${calculatedHoldings.length} holdings from transactions`);
       
+      // Enrich with financial data
+      const enrichedHoldings = await enrichHoldingsWithFinancialData(calculatedHoldings);
+      console.log(`Enriched holdings with financial data`);
+      
       // Update current prices for holdings
-      const updatedHoldings = await updateHoldingPrices(calculatedHoldings);
+      const updatedHoldings = await updateHoldingPrices(enrichedHoldings);
 
       setHoldings(updatedHoldings);
       setTransactions(transactionsData);
@@ -325,6 +330,58 @@ export const usePortfolio = () => {
       console.error('Error saving portfolio snapshot:', err);
       setError(err instanceof Error ? err.message : 'Failed to save portfolio snapshot');
     }
+  };
+
+  // Enrich holdings with financial data
+  const enrichHoldingsWithFinancialData = async (holdings: Holding[]): Promise<Holding[]> => {
+    const enrichedHoldings = await Promise.all(
+      holdings.map(async (holding) => {
+        try {
+          console.log(`Fetching financial data for ${holding.ticker}...`);
+          const financialData = await FinancialDataService.getCompanyFinancials(holding.ticker);
+          
+          if (financialData) {
+            return {
+              ...holding,
+              company: financialData.name || holding.company,
+              sector: financialData.sector || holding.sector,
+              pe: financialData.pe,
+              pb: financialData.pb,
+              peg: financialData.peg,
+              debtToEquity: financialData.debtToEquity,
+              currentRatio: financialData.currentRatio,
+              quickRatio: financialData.quickRatio,
+              roe: financialData.roe,
+              roa: financialData.roa,
+              grossMargin: financialData.grossMargin,
+              netMargin: financialData.netMargin,
+              operatingMargin: financialData.operatingMargin,
+              assetTurnover: financialData.assetTurnover,
+              revenueGrowth: financialData.revenueGrowth,
+              yearHigh: financialData.yearHigh || holding.yearHigh,
+              yearLow: financialData.yearLow || holding.yearLow,
+              dividend: financialData.dividend || holding.dividend,
+              dividendYield: financialData.dividendYield || holding.dividendYield,
+              fcf1yr: financialData.fcf1yr,
+              fcf2yr: financialData.fcf2yr,
+              fcf3yr: financialData.fcf3yr,
+              fcf10yr: financialData.fcf10yr,
+              evFcf: financialData.evFcf,
+              sectorMedianEvFcf: financialData.sectorMedianEvFcf,
+              intrinsicValue: financialData.intrinsicValue || holding.intrinsicValue,
+              narrative: `Financial data from Alpha Vantage`
+            };
+          }
+          
+          return holding; // Return original if no financial data
+        } catch (error) {
+          console.warn(`Failed to fetch financial data for ${holding.ticker}:`, error);
+          return holding; // Return original on error
+        }
+      })
+    );
+    
+    return enrichedHoldings;
   };
 
   // Calculate holdings from all transactions

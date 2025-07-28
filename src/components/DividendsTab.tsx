@@ -151,11 +151,11 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
 
   const getFrequencyColor = (frequency: string) => {
     switch (frequency) {
-      case 'monthly': return 'bg-green-100 text-green-800';
-      case 'quarterly': return 'bg-blue-100 text-blue-800';
-      case 'semi-annual': return 'bg-yellow-100 text-yellow-800';
-      case 'annual': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'monthly': return 'bg-green-600/80 text-green-200 border border-green-500/30';
+      case 'quarterly': return 'bg-blue-600/80 text-blue-200 border border-blue-500/30';
+      case 'semi-annual': return 'bg-yellow-600/80 text-yellow-200 border border-yellow-500/30';
+      case 'annual': return 'bg-purple-600/80 text-purple-200 border border-purple-500/30';
+      default: return 'bg-gray-600/80 text-gray-200 border border-gray-500/30';
     }
   };
 
@@ -163,116 +163,126 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
     <div className="space-y-6">
       {/* Dividend Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-6">
+        <div className="bg-gradient-to-br from-green-900/60 to-green-800/60 backdrop-blur-sm rounded-xl border border-green-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <div className="bg-green-600 p-2 rounded-full">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-green-700">Annual Dividends</div>
-              <div className="text-2xl font-bold text-green-900">{formatCurrency(metrics.totalAnnualDividends)}</div>
-              <div className="text-sm text-green-600">Projected for 2024</div>
+              <div className="text-sm font-medium text-green-200">Annual Dividends</div>
+              <div className="text-2xl font-bold text-white">{formatCurrency(metrics.totalAnnualDividends)}</div>
+              <div className="text-sm text-green-300">Projected for 2024</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-6">
+        <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/60 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Calendar className="h-8 w-8 text-blue-600" />
+              <div className="bg-blue-600 p-2 rounded-full">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-blue-700">Monthly Average</div>
-              <div className="text-2xl font-bold text-blue-900">{formatCurrency(metrics.monthlyAverage)}</div>
-              <div className="text-sm text-blue-600">Average per month</div>
+              <div className="text-sm font-medium text-blue-200">Monthly Average</div>
+              <div className="text-2xl font-bold text-white">{formatCurrency(metrics.monthlyAverage)}</div>
+              <div className="text-sm text-blue-300">Average per month</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 p-6">
+        <div className="bg-gradient-to-br from-purple-900/60 to-purple-800/60 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Clock className="h-8 w-8 text-purple-600" />
+              <div className="bg-purple-600 p-2 rounded-full">
+                <Clock className="h-5 w-5 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-purple-700">Next Payment</div>
-              <div className="text-2xl font-bold text-purple-900">{formatCurrency(metrics.nextPayment)}</div>
-              <div className="text-sm text-purple-600">{formatDate(metrics.nextPaymentDate)}</div>
+              <div className="text-sm font-medium text-purple-200">Next Payment</div>
+              <div className="text-2xl font-bold text-white">{formatCurrency(metrics.nextPayment)}</div>
+              <div className="text-sm text-purple-300">{formatDate(metrics.nextPaymentDate)}</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200 p-6">
+        <div className="bg-gradient-to-br from-yellow-900/60 to-yellow-800/60 backdrop-blur-sm rounded-xl border border-yellow-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <TrendingUp className="h-8 w-8 text-yellow-600" />
+              <div className="bg-yellow-600 p-2 rounded-full">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-yellow-700">Yield on Cost</div>
-              <div className="text-2xl font-bold text-yellow-900">{formatPercent(metrics.yieldOnCost)}</div>
-              <div className="text-sm text-yellow-600">Based on purchase price</div>
+              <div className="text-sm font-medium text-yellow-200">Yield on Cost</div>
+              <div className="text-2xl font-bold text-white">{formatPercent(metrics.yieldOnCost)}</div>
+              <div className="text-sm text-yellow-300">Based on purchase price</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Upcoming Dividend Payments */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-green-600 flex items-center">
-            <Building2 className="h-5 w-5 mr-2" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50">
+        <div className="p-6 border-b border-gray-600/50">
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <div className="bg-green-600 p-2 rounded-full mr-3">
+              <Building2 className="h-4 w-4 text-white" />
+            </div>
             Upcoming Dividend Payments
           </h3>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-700/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Symbol
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Company
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Ex-Date
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Pay Date
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Yield
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-600/50">
               {upcomingDividends.map((dividend, index) => (
-                <tr key={dividend.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr key={dividend.id} className={index % 2 === 0 ? 'bg-gray-700/20' : 'bg-gray-600/20'}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-bold text-green-600">{dividend.ticker}</span>
+                    <span className="text-sm font-bold text-green-400">{dividend.ticker}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{dividend.company}</div>
+                    <div className="text-sm font-medium text-white">{dividend.company}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <span className="text-sm font-semibold text-green-600">{formatCurrency(dividend.amount)}</span>
+                    <span className="text-sm font-semibold text-green-400">{formatCurrency(dividend.amount)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                    <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full backdrop-blur-sm bg-blue-600/80 text-blue-200 border border-blue-500/30">
                       {formatDate(dividend.exDate)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                    <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full backdrop-blur-sm bg-purple-600/80 text-purple-200 border border-purple-500/30">
                       {formatDate(dividend.payDate)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <span className="text-sm font-medium text-blue-600">{formatPercent(dividend.yield)}</span>
+                    <span className="text-sm font-medium text-blue-400">{formatPercent(dividend.yield)}</span>
                   </td>
                 </tr>
               ))}
@@ -282,17 +292,19 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
       </div>
 
       {/* Dividend Payment History */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50">
+        <div className="p-6 border-b border-gray-600/50">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-blue-600 flex items-center">
-              <Calendar className="h-5 w-5 mr-2" />
+            <h3 className="text-lg font-semibold text-white flex items-center">
+              <div className="bg-blue-600 p-2 rounded-full mr-3">
+                <Calendar className="h-4 w-4 text-white" />
+              </div>
               Dividend Payment History
             </h3>
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
             >
               <option value="2024">2024</option>
               <option value="2023">2023</option>
@@ -304,15 +316,17 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {dividendHistory.map((month, index) => (
-              <div key={month.month} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 p-4">
+              <div key={month.month} className="bg-gradient-to-br from-gray-700/60 to-gray-600/60 backdrop-blur-sm rounded-xl border border-gray-600/30 p-4 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-700">{month.month}</h4>
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <h4 className="text-sm font-medium text-white">{month.month}</h4>
+                  <div className="bg-green-600 p-1 rounded-full">
+                    <TrendingUp className="h-3 w-3 text-white" />
+                  </div>
                 </div>
-                <div className="text-2xl font-bold text-green-600 mb-1">
+                <div className="text-2xl font-bold text-green-400 mb-1">
                   {formatCurrency(month.amount)}
                 </div>
-                <div className="text-sm text-green-600">
+                <div className="text-sm text-green-300">
                   +{formatPercent(month.yoyGrowth)} YoY growth
                 </div>
               </div>
@@ -322,39 +336,41 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
       </div>
 
       {/* Dividend-Paying Holdings */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Percent className="h-5 w-5 mr-2 text-blue-600" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50">
+        <div className="p-6 border-b border-gray-600/50">
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <div className="bg-blue-600 p-2 rounded-full mr-3">
+              <Percent className="h-4 w-4 text-white" />
+            </div>
             Dividend-Paying Holdings
           </h3>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-700/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Holding
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Shares
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Dividend per Share
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Annual Income
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Current Yield
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Yield on Cost
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-600/50">
               {holdings
                 .filter(holding => holding.dividend && holding.dividend > 0)
                 .sort((a, b) => (b.shares * (b.dividend || 0)) - (a.shares * (a.dividend || 0)))
@@ -364,26 +380,26 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
                   const yieldOnCost = holding.costBasis > 0 ? ((holding.dividend || 0) / holding.costBasis) * 100 : 0;
                   
                   return (
-                    <tr key={holding.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <tr key={holding.id} className={index % 2 === 0 ? 'bg-gray-700/20' : 'bg-gray-600/20'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-blue-600">{holding.ticker}</div>
-                          <div className="text-sm text-gray-500">{holding.company}</div>
+                          <div className="text-sm font-medium text-blue-400">{holding.ticker}</div>
+                          <div className="text-sm text-gray-300">{holding.company}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-white">
                         {holding.shares.toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-white">
                         {formatCurrency(holding.dividend || 0)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-green-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-green-400">
                         {formatCurrency(annualIncome)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-blue-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-blue-400">
                         {formatPercent(currentYield)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-green-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-green-400">
                         {formatPercent(yieldOnCost)}
                       </td>
                     </tr>

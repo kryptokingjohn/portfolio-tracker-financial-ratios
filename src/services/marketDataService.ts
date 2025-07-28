@@ -1,6 +1,6 @@
 import FMPService from './fmpService';
 import { supabase } from '../lib/supabase';
-import { isDatabaseEnabled, logDatabaseStatus } from '../config/database';
+import { isDatabaseEnabled, isApiEnabled, API_CONFIG } from '../config/database';
 
 // Market data service using Financial Modeling Prep API
 export class MarketDataService {
@@ -91,6 +91,12 @@ export class MarketDataService {
         open: cached.price,
         previousClose: cached.price
       };
+    }
+    
+    // Check if API calls are disabled for UI development
+    if (!isApiEnabled() || !API_CONFIG.ENABLE_PRICE_UPDATES) {
+      console.log(`🎭 Price API disabled - using mock data for ${symbol} (saves API costs for UI development)`);
+      return this.getMockQuote(symbol);
     }
     
     // For demo/production without API keys, use realistic mock data immediately

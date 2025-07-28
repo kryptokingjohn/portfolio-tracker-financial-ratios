@@ -2,10 +2,17 @@
 // This replaces the Yahoo Finance integration with FMP
 
 import FMPService, { CompanyFinancials } from './fmpService';
+import { isApiEnabled, API_CONFIG } from '../config/database';
 
 class FinancialDataService {
   // Main method for getting company financials - now uses FMP
   static async getCompanyFinancials(symbol: string): Promise<CompanyFinancials | null> {
+    // Check if financial data API calls are disabled
+    if (!isApiEnabled() || !API_CONFIG.ENABLE_FINANCIAL_DATA) {
+      console.log(`🎭 Financial data API disabled - using mock data for ${symbol} (saves API costs for UI development)`);
+      return this.generateFallbackData(symbol);
+    }
+    
     try {
       console.log(`📊 Getting financial data for ${symbol} via FMP...`);
       
@@ -100,6 +107,12 @@ class FinancialDataService {
 
   // Batch method for multiple symbols
   static async batchGetFinancials(symbols: string[]): Promise<(CompanyFinancials | null)[]> {
+    // Check if financial data API calls are disabled
+    if (!isApiEnabled() || !API_CONFIG.ENABLE_FINANCIAL_DATA) {
+      console.log(`🎭 Batch financial data API disabled - using mock data for ${symbols.length} symbols (saves API costs)`);
+      return symbols.map(symbol => this.generateFallbackData(symbol));
+    }
+    
     return FMPService.batchGetFinancials(symbols);
   }
 }

@@ -16,7 +16,6 @@ export const usePortfolio = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
 
   // Load initial data
   useEffect(() => {
@@ -25,16 +24,7 @@ export const usePortfolio = () => {
     }
   }, [user, isDemoMode]);
   
-  // Auto-refresh prices every 5 minutes
-  useEffect(() => {
-    if (!autoRefreshEnabled || holdings.length === 0) return;
-    
-    const interval = setInterval(() => {
-      refreshPrices();
-    }, 300000); // 5 minutes
-    
-    return () => clearInterval(interval);
-  }, [holdings, autoRefreshEnabled]);
+  // Remove auto-refresh functionality - now using manual refresh only
 
   const loadPortfolioData = async () => {
     try {
@@ -243,20 +233,36 @@ export const usePortfolio = () => {
     }
   };
 
-  const refreshPrices = async () => {
+  const refreshData = async () => {
     try {
       setError(null);
-      const updatedHoldings = await updateHoldingPrices(holdings);
-      setHoldings(updatedHoldings);
+      console.log('🔄 Refreshing all portfolio data...');
       
-      // Recalculate metrics with updated prices
-      const metrics = PortfolioCalculator.calculatePortfolioMetrics(updatedHoldings);
+      // Update prices for all holdings
+      const updatedHoldings = await updateHoldingPrices(holdings);
+      
+      // Re-enrich with latest financial data if not in demo mode
+      let finalHoldings = updatedHoldings;
+      if (!isDemoMode && updatedHoldings.length > 0) {
+        console.log('📊 Refreshing financial ratios and company data...');
+        finalHoldings = await enrichHoldingsWithFinancialData(updatedHoldings);
+      }
+      
+      setHoldings(finalHoldings);
+      
+      // Recalculate all metrics with updated data
+      const metrics = PortfolioCalculator.calculatePortfolioMetrics(finalHoldings);
       setPortfolioMetrics(metrics);
       
+      // Recalculate dividend analysis
+      const divAnalysis = DividendTracker.analyzeDividends(finalHoldings, transactions);
+      setDividendAnalysis(divAnalysis);
+      
       setLastUpdated(new Date());
+      console.log('✅ Portfolio data refresh completed');
     } catch (err) {
-      console.error('Error refreshing prices:', err);
-      setError(err instanceof Error ? err.message : 'Failed to refresh prices');
+      console.error('Error refreshing data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to refresh data');
     }
   };
   
@@ -325,9 +331,7 @@ export const usePortfolio = () => {
     return currentHoldings;
   };
   
-  const toggleAutoRefresh = () => {
-    setAutoRefreshEnabled(!autoRefreshEnabled);
-  };
+  // Removed toggleAutoRefresh - no longer needed
   
   const savePortfolioSnapshot = async () => {
     try {
@@ -485,12 +489,10 @@ export const usePortfolio = () => {
     loading,
     error,
     lastUpdated,
-    autoRefreshEnabled,
     addTransaction,
     updateHolding,
     deleteHolding,
-    refreshPrices,
-    toggleAutoRefresh,
+    refreshData,
     savePortfolioSnapshot,
     reload: loadPortfolioData
   };

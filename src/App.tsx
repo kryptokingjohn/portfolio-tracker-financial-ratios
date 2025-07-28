@@ -17,8 +17,8 @@ import { ExportModal } from './components/ExportModal';
 import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
 import { Holding, Transaction } from './types/portfolio';
-import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut } from 'lucide-react';
-import { logDatabaseStatus } from './config/database';
+import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut, RefreshCw } from 'lucide-react';
+import { logDatabaseStatus, logApiStatus } from './config/database';
 
 // Detect if we're on mobile
 const isMobile = () => {
@@ -26,9 +26,10 @@ const isMobile = () => {
 };
 
 const AppContent: React.FC = () => {
-  // Initialize database status logging
+  // Initialize database and API status logging
   useEffect(() => {
     logDatabaseStatus();
+    logApiStatus();
   }, []);
 
   // Check if this is a QuickView page
@@ -45,10 +46,8 @@ const AppContent: React.FC = () => {
     loading: portfolioLoading, 
     error: portfolioError,
     addTransaction,
-    refreshPrices,
+    refreshData,
     lastUpdated,
-    autoRefreshEnabled,
-    toggleAutoRefresh,
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
@@ -82,7 +81,7 @@ const AppContent: React.FC = () => {
         holdings={holdings}
         transactions={transactions}
         onAddTransaction={addTransaction}
-        onRefresh={refreshPrices}
+        onRefresh={refreshData}
         loading={portfolioLoading}
       />
     );
@@ -131,15 +130,11 @@ const AppContent: React.FC = () => {
                 </div>
               )}
               <button
-                onClick={toggleAutoRefresh}
-                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm ${
-                  autoRefreshEnabled 
-                    ? 'text-green-200 bg-green-600/30 hover:bg-green-600/40 border border-green-500/30' 
-                    : 'text-gray-300 bg-gray-600/30 hover:bg-gray-600/40 border border-gray-500/30'
-                }`}
+                onClick={refreshData}
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-200 bg-blue-600/30 rounded-lg hover:bg-blue-600/40 transition-all backdrop-blur-sm border border-blue-500/30"
               >
-                <div className={`w-2 h-2 rounded-full ${autoRefreshEnabled ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                <span>Auto-refresh {autoRefreshEnabled ? 'ON' : 'OFF'}</span>
+                <RefreshCw className="h-4 w-4" />
+                <span>Refresh Data</span>
               </button>
               <button
                 onClick={() => setIsExportModalOpen(true)}

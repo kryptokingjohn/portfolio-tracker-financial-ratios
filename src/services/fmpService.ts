@@ -1,6 +1,8 @@
 // Financial Modeling Prep API Service
 // Comprehensive financial data including prices, ratios, and fundamentals
 
+import { API_CONFIG, isApiEnabled } from '../config/database';
+
 interface FMPQuoteResponse {
   symbol: string;
   name: string;
@@ -259,6 +261,12 @@ class FMPService {
   }
   
   private static async makeRequest<T>(endpoint: string): Promise<T | null> {
+    // Check if API calls are disabled
+    if (!isApiEnabled()) {
+      console.log(`🎭 FMP API disabled - skipping ${endpoint} (using mock data to save costs)`);
+      return null;
+    }
+    
     // Rate limiting
     const now = Date.now();
     const timeSinceLastCall = now - this.lastCall;

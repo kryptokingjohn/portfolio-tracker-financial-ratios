@@ -13,6 +13,9 @@ export class MarketDataService {
   private static priceCache = new Map<string, { price: number; timestamp: number }>();
   private static readonly CACHE_DURATION = 60000; // 1 minute cache
   
+  // Database permission tracking
+  private static databaseAccessAllowed = true;
+  
   // Primary quote method using FMP
   static async getQuote(symbol: string) {
     // Check cache first
@@ -118,6 +121,11 @@ export class MarketDataService {
 
   // Update company price in database
   private static async updateCompanyPrice(symbol: string, price: number) {
+    // Skip database operations entirely if we've detected permission issues
+    if (!this.databaseAccessAllowed) {
+      return;
+    }
+    
     try {
       // Try to update companies table
       const { error: companiesError } = await supabase
@@ -128,8 +136,9 @@ export class MarketDataService {
         .eq('ticker', symbol.toUpperCase());
         
       if (companiesError && (companiesError.code === '42501' || companiesError.code === '403')) {
-        console.warn(`⚠️ Database permission issue updating companies for ${symbol} - skipping database updates`);
-        return; // Skip further database operations if permissions are restricted
+        console.warn(`⚠️ Database permission issue detected - disabling all database updates for this session`);
+        this.databaseAccessAllowed = false; // Disable all future database operations
+        return;
       }
         
       // Try to update market_data table if companies update succeeded
@@ -149,17 +158,24 @@ export class MarketDataService {
         });
         
       if (marketDataError && (marketDataError.code === '42501' || marketDataError.code === '403')) {
-        console.warn(`⚠️ Database permission issue updating market_data for ${symbol} - continuing without DB storage`);
-        return; // Continue without storing market data if permissions are restricted
+        console.warn(`⚠️ Market data permission issue detected - disabling database updates for this session`);
+        this.databaseAccessAllowed = false; // Disable all future database operations
+        return;
       }
         
     } catch (error) {
       // Handle any other database errors gracefully
-      console.warn(`📊 Skipping database price update for ${symbol} due to permission restrictions:`, error);
+      console.warn(`📊 Database error detected - disabling database updates for this session:`, error);
+      this.databaseAccessAllowed = false; // Disable all future database operations
     }
   }
   
   private static async getCompanyId(symbol: string): Promise<string> {
+    // If database access is disabled, return fallback ID immediately
+    if (!this.databaseAccessAllowed) {
+      return `fallback-${symbol.toUpperCase()}`;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('companies')
@@ -168,13 +184,15 @@ export class MarketDataService {
         .single();
         
       if (error && (error.code === '42501' || error.code === '403')) {
-        console.warn(`⚠️ Permission issue accessing company ID for ${symbol}`);
+        console.warn(`⚠️ Permission issue accessing company ID - disabling database access`);
+        this.databaseAccessAllowed = false;
         return `fallback-${symbol.toUpperCase()}`;
       }
         
-      return data?.id || '';
+      return data?.id || `fallback-${symbol.toUpperCase()}`;
     } catch (error) {
-      console.warn(`📊 Using fallback company ID for ${symbol}:`, error);
+      console.warn(`📊 Database error accessing company ID - using fallback:`, error);
+      this.databaseAccessAllowed = false;
       return `fallback-${symbol.toUpperCase()}`;
     }
   }

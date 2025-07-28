@@ -65,68 +65,80 @@ export const QuickViewPage: React.FC = () => {
   }
 
   const renderStockChart = () => (
-    <div className="bg-gray-900 text-white min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-green-400">
-            {holding.ticker} - {holding.company} Financial Ratios
-          </h1>
+    <div className="bg-gradient-to-br from-gray-900 via-blue-900/20 to-gray-900 min-h-screen p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center space-x-4">
+            <div className="bg-blue-600/20 p-4 rounded-full border border-blue-500/30">
+              <BarChart3 className="h-8 w-8 text-blue-400" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">
+                {holding.ticker} - {holding.company}
+              </h1>
+              <p className="text-blue-300 text-lg">Financial Ratios Analysis</p>
+            </div>
+          </div>
           <button
             onClick={goBack}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 rounded-xl transition-all shadow-lg hover:shadow-xl border border-gray-600/30 backdrop-blur-sm font-medium text-white"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
             <span>Close</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Valuation Ratios */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex items-center mb-4">
-              <DollarSign className="h-6 w-6 text-blue-400 mr-3" />
-              <h2 className="text-xl font-semibold text-blue-400">Valuation Ratios</h2>
+          <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 backdrop-blur-sm rounded-2xl border border-blue-500/30 p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-blue-500/50">
+            <div className="flex items-center mb-6">
+              <div className="bg-blue-600/20 p-3 rounded-full border border-blue-500/30 mr-4">
+                <DollarSign className="h-7 w-7 text-blue-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-blue-300">Valuation Ratios</h2>
             </div>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-blue-200/80 text-sm mb-8 leading-relaxed">
               Determine if a stock is overvalued or undervalued relative to earnings, book value, and growth prospects.
             </p>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">P/E Ratio</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.pe)}x</span>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-blue-200 text-lg font-medium">P/E Ratio</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.pe)}x</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">P/B Ratio</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.pb)}x</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-blue-200 text-lg font-medium">P/B Ratio</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.pb)}x</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">PEG Ratio</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.peg)}x</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-blue-200 text-lg font-medium">PEG Ratio</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.peg)}x</span>
               </div>
             </div>
           </div>
 
           {/* Financial Health */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex items-center mb-4">
-              <Shield className="h-6 w-6 text-yellow-400 mr-3" />
-              <h2 className="text-xl font-semibold text-yellow-400">Financial Health</h2>
+          <div className="bg-gradient-to-br from-yellow-900/40 to-yellow-800/40 backdrop-blur-sm rounded-2xl border border-yellow-500/30 p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-yellow-500/50">
+            <div className="flex items-center mb-6">
+              <div className="bg-yellow-600/20 p-3 rounded-full border border-yellow-500/30 mr-4">
+                <Shield className="h-7 w-7 text-yellow-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-yellow-300">Financial Health</h2>
             </div>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-yellow-200/80 text-sm mb-8 leading-relaxed">
               Assess the company's ability to meet obligations and manage debt effectively.
             </p>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Debt-to-Equity</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.debtToEquity, 2)}x</span>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-yellow-200 text-lg font-medium">Debt-to-Equity</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.debtToEquity, 2)}x</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Current Ratio</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.currentRatio, 2)}x</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-yellow-200 text-lg font-medium">Current Ratio</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.currentRatio, 2)}x</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Quick Ratio</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.quickRatio, 2)}x</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-yellow-200 text-lg font-medium">Quick Ratio</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.quickRatio, 2)}x</span>
               </div>
             </div>
           </div>

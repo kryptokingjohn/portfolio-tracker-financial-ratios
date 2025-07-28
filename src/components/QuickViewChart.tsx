@@ -47,137 +47,153 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
   const [showAdvanced, setShowAdvanced] = React.useState(false);
 
   const renderStockChart = () => (
-    <div className="bg-gray-900 text-white p-6 rounded-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-green-400">
-          {holding.ticker} - {holding.company} Financial Ratios
-        </h3>
+    <div className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-sm border border-gray-600/30 rounded-xl shadow-2xl p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="bg-blue-600/20 p-3 rounded-full border border-blue-500/30">
+            <BarChart3 className="h-6 w-6 text-blue-400" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-white">
+              {holding.ticker} - {holding.company}
+            </h3>
+            <p className="text-blue-300">Financial Ratios Analysis</p>
+          </div>
+        </div>
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+          className="px-4 py-2 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl border border-blue-500/30 text-sm font-medium backdrop-blur-sm"
         >
           {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
         </button>
       </div>
 
       {showAdvanced && (
-        <div className="mb-6">
+        <div className="mb-8">
           <AdvancedRatiosPanel holding={holding} marketData={marketData} />
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Valuation Ratios */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <DollarSign className="h-5 w-5 text-blue-400 mr-2" />
-            <h4 className="text-lg font-medium text-blue-400">Valuation Ratios</h4>
+        <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-blue-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-blue-600/20 p-2 rounded-full border border-blue-500/30 mr-3">
+              <DollarSign className="h-5 w-5 text-blue-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-blue-300">Valuation Ratios</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-blue-200/80 text-sm mb-6 leading-relaxed">
             Determine if a stock is overvalued or undervalued relative to earnings, book value, and growth prospects.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">P/E Ratio</span>
-              <span className="text-white font-semibold">{formatNumber(holding.pe)}x</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">P/E Ratio</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.pe)}x</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">P/B Ratio</span>
-              <span className="text-white font-semibold">{formatNumber(holding.pb)}x</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">P/B Ratio</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.pb)}x</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">PEG Ratio</span>
-              <span className="text-white font-semibold">{formatNumber(holding.peg)}x</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">PEG Ratio</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.peg)}x</span>
             </div>
           </div>
         </div>
 
         {/* Financial Health */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <Shield className="h-5 w-5 text-yellow-400 mr-2" />
-            <h4 className="text-lg font-medium text-yellow-400">Financial Health</h4>
+        <div className="bg-gradient-to-br from-yellow-900/40 to-yellow-800/40 backdrop-blur-sm rounded-xl border border-yellow-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-yellow-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-yellow-600/20 p-2 rounded-full border border-yellow-500/30 mr-3">
+              <Shield className="h-5 w-5 text-yellow-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-yellow-300">Financial Health</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-yellow-200/80 text-sm mb-6 leading-relaxed">
             Assess the company's ability to meet obligations and manage debt effectively.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Debt-to-Equity</span>
-              <span className="text-white font-semibold">{formatNumber(holding.debtToEquity, 2)}x</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-yellow-200 font-medium">Debt-to-Equity</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.debtToEquity, 2)}x</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Current Ratio</span>
-              <span className="text-white font-semibold">{formatNumber(holding.currentRatio, 2)}x</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-yellow-200 font-medium">Current Ratio</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.currentRatio, 2)}x</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Quick Ratio</span>
-              <span className="text-white font-semibold">{formatNumber(holding.quickRatio, 2)}x</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-yellow-200 font-medium">Quick Ratio</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.quickRatio, 2)}x</span>
             </div>
           </div>
         </div>
 
         {/* Profitability */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <TrendingUp className="h-5 w-5 text-green-400 mr-2" />
-            <h4 className="text-lg font-medium text-green-400">Profitability</h4>
+        <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 backdrop-blur-sm rounded-xl border border-green-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-green-600/20 p-2 rounded-full border border-green-500/30 mr-3">
+              <TrendingUp className="h-5 w-5 text-green-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-green-300">Profitability</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-green-200/80 text-sm mb-6 leading-relaxed">
             Measure how efficiently the company generates profits from its assets and equity.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">ROE</span>
-              <span className="text-white font-semibold">{formatPercent(holding.roe)}</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">ROE</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.roe)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">ROA</span>
-              <span className="text-white font-semibold">{formatPercent(holding.roa)}</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">ROA</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.roa)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Gross Margin</span>
-              <span className="text-white font-semibold">{formatPercent(holding.grossMargin)}</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">Gross Margin</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.grossMargin)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Net Margin</span>
-              <span className="text-white font-semibold">{formatPercent(holding.netMargin)}</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">Net Margin</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.netMargin)}</span>
             </div>
           </div>
         </div>
 
         {/* Operating Efficiency */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <BarChart3 className="h-5 w-5 text-purple-400 mr-2" />
-            <h4 className="text-lg font-medium text-purple-400">Operating Efficiency</h4>
+        <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-purple-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-purple-600/20 p-2 rounded-full border border-purple-500/30 mr-3">
+              <BarChart3 className="h-5 w-5 text-purple-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-purple-300">Operating Efficiency</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-purple-200/80 text-sm mb-6 leading-relaxed">
             Evaluate how well management uses company resources to generate revenue and control costs.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Operating Margin</span>
-              <span className="text-white font-semibold">{formatPercent(holding.operatingMargin)}</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Operating Margin</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.operatingMargin)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Asset Turnover</span>
-              <span className="text-white font-semibold">{formatNumber(holding.assetTurnover, 2)}x</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Asset Turnover</span>
+              <span className="text-white font-bold text-lg">{formatNumber(holding.assetTurnover, 2)}x</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Revenue Growth</span>
-              <span className="text-white font-semibold">{formatPercent(holding.revenueGrowth)}</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Revenue Growth</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.revenueGrowth)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-6 flex justify-center">
+      <div className="mt-8 flex justify-center">
         <button
           onClick={onToggle}
-          className="px-6 py-2 bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg flex items-center"
+          className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
         >
-          <ChevronUp className="h-4 w-4 mr-2" />
+          <ChevronUp className="h-5 w-5 mr-2" />
           Close QuickView
         </button>
       </div>
@@ -185,114 +201,131 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
   );
 
   const renderETFChart = () => (
-    <div className="bg-gray-900 text-white p-6 rounded-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-green-400">
-          {holding.ticker} - {holding.company} Performance Metrics
-        </h3>
+    <div className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-sm border border-gray-600/30 rounded-xl shadow-2xl p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="bg-green-600/20 p-3 rounded-full border border-green-500/30">
+            <TrendingUp className="h-6 w-6 text-green-400" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-white">
+              {holding.ticker} - {holding.company}
+            </h3>
+            <p className="text-green-300">Performance Metrics</p>
+          </div>
+        </div>
         <button
           onClick={onToggle}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
         >
-          <ChevronUp className="h-5 w-5" />
+          <ChevronUp className="h-5 w-5 mr-2" />
+          Close QuickView
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {/* Performance Returns */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <TrendingUp className="h-5 w-5 text-green-400 mr-2" />
-            <h4 className="text-lg font-medium text-green-400">Performance Returns</h4>
+        <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 backdrop-blur-sm rounded-xl border border-green-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-green-600/20 p-2 rounded-full border border-green-500/30 mr-3">
+              <TrendingUp className="h-5 w-5 text-green-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-green-300">Performance Returns</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-green-200/80 text-sm mb-6 leading-relaxed">
             Track historical returns and alpha to evaluate fund performance against benchmarks.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">1-Year Return</span>
-              <span className="text-green-400 font-semibold">+24.8%</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">1-Year Return</span>
+              <span className="text-green-400 font-bold text-lg">+24.8%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">3-Year Return</span>
-              <span className="text-green-400 font-semibold">+10.2%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">3-Year Return</span>
+              <span className="text-green-400 font-bold text-lg">+10.2%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">5-Year Return</span>
-              <span className="text-green-400 font-semibold">+15.1%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">5-Year Return</span>
+              <span className="text-green-400 font-bold text-lg">+15.1%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Alpha</span>
-              <span className="text-green-400 font-semibold">+0.1%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">Alpha</span>
+              <span className="text-green-400 font-bold text-lg">+0.1%</span>
             </div>
           </div>
         </div>
 
         {/* Risk Metrics */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <Shield className="h-5 w-5 text-red-400 mr-2" />
-            <h4 className="text-lg font-medium text-red-400">Risk Metrics</h4>
+        <div className="bg-gradient-to-br from-red-900/40 to-red-800/40 backdrop-blur-sm rounded-xl border border-red-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-red-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-red-600/20 p-2 rounded-full border border-red-500/30 mr-3">
+              <Shield className="h-5 w-5 text-red-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-red-300">Risk Metrics</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-red-200/80 text-sm mb-6 leading-relaxed">
             Understand volatility, correlation to market, and risk-adjusted returns for informed decisions.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Beta</span>
-              <span className="text-white font-semibold">1</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-red-200 font-medium">Beta</span>
+              <span className="text-white font-bold text-lg">1.0</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Sharpe Ratio</span>
-              <span className="text-white font-semibold">1.42</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-red-200 font-medium">Sharpe Ratio</span>
+              <span className="text-white font-bold text-lg">1.42</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Standard Deviation</span>
-              <span className="text-white font-semibold">17.8%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-red-200 font-medium">Standard Deviation</span>
+              <span className="text-white font-bold text-lg">17.8%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Tracking Error</span>
-              <span className="text-white font-semibold">0.02%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-red-200 font-medium">Tracking Error</span>
+              <span className="text-white font-bold text-lg">0.02%</span>
             </div>
           </div>
         </div>
 
         {/* Fund Details */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <Info className="h-5 w-5 text-blue-400 mr-2" />
-            <h4 className="text-lg font-medium text-blue-400">Fund Details</h4>
+        <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-blue-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-blue-600/20 p-2 rounded-full border border-blue-500/30 mr-3">
+              <Info className="h-5 w-5 text-blue-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-blue-300">Fund Details</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-blue-200/80 text-sm mb-6 leading-relaxed">
             Critical fund characteristics affecting long-term returns and investment costs.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Expense Ratio</span>
-              <span className="text-white font-semibold">0.03%</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Expense Ratio</span>
+              <span className="text-white font-bold text-lg">0.03%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Assets Under Management</span>
-              <span className="text-white font-semibold">$1.3B</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Assets Under Management</span>
+              <span className="text-white font-bold text-lg">$1.3B</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Risk Assessment */}
-      <div className="bg-gray-800 rounded-lg p-4">
-        <div className="flex items-center mb-3">
-          <BarChart3 className="h-5 w-5 text-purple-400 mr-2" />
-          <h4 className="text-lg font-medium text-purple-400">Risk Assessment</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <span className="text-white font-medium">Beta:</span>
-            <span className="text-gray-300 ml-2">Measures volatility relative to market. More volatile than market.</span>
+      <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 hover:shadow-xl transition-all duration-300">
+        <div className="flex items-center mb-6">
+          <div className="bg-purple-600/20 p-2 rounded-full border border-purple-500/30 mr-3">
+            <BarChart3 className="h-5 w-5 text-purple-400" />
           </div>
-          <div>
-            <span className="text-white font-medium">Sharpe Ratio:</span>
-            <span className="text-gray-300 ml-2">Risk-adjusted return measure. Good risk-adjusted returns.</span>
+          <h4 className="text-xl font-semibold text-purple-300">Risk Assessment</h4>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-gray-800/40 rounded-lg p-4">
+            <span className="text-white font-semibold text-lg">Beta: </span>
+            <span className="text-purple-200">Measures volatility relative to market. More volatile than market.</span>
+          </div>
+          <div className="bg-gray-800/40 rounded-lg p-4">
+            <span className="text-white font-semibold text-lg">Sharpe Ratio: </span>
+            <span className="text-purple-200">Risk-adjusted return measure. Good risk-adjusted returns.</span>
           </div>
         </div>
       </div>
@@ -300,116 +333,133 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
   );
 
   const renderBondChart = () => (
-    <div className="bg-gray-900 text-white p-6 rounded-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-green-400">
-          {holding.ticker} - {holding.company} Bond Metrics
-        </h3>
+    <div className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-sm border border-gray-600/30 rounded-xl shadow-2xl p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="bg-green-600/20 p-3 rounded-full border border-green-500/30">
+            <Percent className="h-6 w-6 text-green-400" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-white">
+              {holding.ticker} - {holding.company}
+            </h3>
+            <p className="text-green-300">Bond Metrics</p>
+          </div>
+        </div>
         <button
           onClick={onToggle}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
         >
-          <ChevronUp className="h-5 w-5" />
+          <ChevronUp className="h-5 w-5 mr-2" />
+          Close QuickView
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Yield & Income */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <Percent className="h-5 w-5 text-green-400 mr-2" />
-            <h4 className="text-lg font-medium text-green-400">Yield & Income</h4>
+        <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 backdrop-blur-sm rounded-xl border border-green-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-green-600/20 p-2 rounded-full border border-green-500/30 mr-3">
+              <Percent className="h-5 w-5 text-green-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-green-300">Yield & Income</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-green-200/80 text-sm mb-6 leading-relaxed">
             Current income generation and yield characteristics of the bond investment.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Current Yield</span>
-              <span className="text-white font-semibold">{formatPercent(holding.dividendYield || 2.51)}</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">Current Yield</span>
+              <span className="text-white font-bold text-lg">{formatPercent(holding.dividendYield || 2.51)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Annual Income</span>
-              <span className="text-white font-semibold">{formatCurrency(holding.shares * (holding.dividend || 0))}</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">Annual Income</span>
+              <span className="text-white font-bold text-lg">{formatCurrency(holding.shares * (holding.dividend || 0))}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Yield to Maturity</span>
-              <span className="text-white font-semibold">4.2%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-green-200 font-medium">Yield to Maturity</span>
+              <span className="text-white font-bold text-lg">4.2%</span>
             </div>
           </div>
         </div>
 
         {/* Risk Characteristics */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <Shield className="h-5 w-5 text-blue-400 mr-2" />
-            <h4 className="text-lg font-medium text-blue-400">Risk Characteristics</h4>
+        <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-blue-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-blue-600/20 p-2 rounded-full border border-blue-500/30 mr-3">
+              <Shield className="h-5 w-5 text-blue-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-blue-300">Risk Characteristics</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-blue-200/80 text-sm mb-6 leading-relaxed">
             Interest rate sensitivity and credit quality assessment for risk management.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Duration</span>
-              <span className="text-white font-semibold">6.8 years</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Duration</span>
+              <span className="text-white font-bold text-lg">6.8 years</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Credit Rating</span>
-              <span className="text-white font-semibold">AAA</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Credit Rating</span>
+              <span className="text-white font-bold text-lg">AAA</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Interest Rate Risk</span>
-              <span className="text-yellow-400 font-semibold">Moderate</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Interest Rate Risk</span>
+              <span className="text-yellow-400 font-bold text-lg">Moderate</span>
             </div>
           </div>
         </div>
 
         {/* Performance Metrics */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <TrendingUp className="h-5 w-5 text-purple-400 mr-2" />
-            <h4 className="text-lg font-medium text-purple-400">Performance Metrics</h4>
+        <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-purple-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-purple-600/20 p-2 rounded-full border border-purple-500/30 mr-3">
+              <TrendingUp className="h-5 w-5 text-purple-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-purple-300">Performance Metrics</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-purple-200/80 text-sm mb-6 leading-relaxed">
             Historical performance and volatility characteristics of the bond fund.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">1-Year Return</span>
-              <span className="text-green-400 font-semibold">+2.1%</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">1-Year Return</span>
+              <span className="text-green-400 font-bold text-lg">+2.1%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">3-Year Return</span>
-              <span className="text-red-400 font-semibold">-1.8%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">3-Year Return</span>
+              <span className="text-red-400 font-bold text-lg">-1.8%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Volatility</span>
-              <span className="text-white font-semibold">3.2%</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Volatility</span>
+              <span className="text-white font-bold text-lg">3.2%</span>
             </div>
           </div>
         </div>
 
         {/* Fund Information */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center mb-3">
-            <Calendar className="h-5 w-5 text-orange-400 mr-2" />
-            <h4 className="text-lg font-medium text-orange-400">Fund Information</h4>
+        <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/40 backdrop-blur-sm rounded-xl border border-orange-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-orange-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-orange-600/20 p-2 rounded-full border border-orange-500/30 mr-3">
+              <Calendar className="h-5 w-5 text-orange-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-orange-300">Fund Information</h4>
           </div>
-          <p className="text-gray-400 text-sm mb-4">
+          <p className="text-orange-200/80 text-sm mb-6 leading-relaxed">
             Key fund characteristics and management details for investment evaluation.
           </p>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Expense Ratio</span>
-              <span className="text-white font-semibold">0.05%</span>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-orange-200 font-medium">Expense Ratio</span>
+              <span className="text-white font-bold text-lg">0.05%</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Average Maturity</span>
-              <span className="text-white font-semibold">8.5 years</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-orange-200 font-medium">Average Maturity</span>
+              <span className="text-white font-bold text-lg">8.5 years</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-300">Assets Under Management</span>
-              <span className="text-white font-semibold">$45.2B</span>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-orange-200 font-medium">Assets Under Management</span>
+              <span className="text-white font-bold text-lg">$45.2B</span>
             </div>
           </div>
         </div>
@@ -421,11 +471,11 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
     return (
       <button
         onClick={onToggle}
-        className="flex items-center space-x-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+        className="flex items-center space-x-2 px-4 py-2 text-xs bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg hover:shadow-lg transition-all border border-blue-500/30 backdrop-blur-sm font-medium"
       >
-        <BarChart3 className="h-3 w-3" />
+        <BarChart3 className="h-4 w-4" />
         <span>QuickView</span>
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-4 w-4" />
       </button>
     );
   }

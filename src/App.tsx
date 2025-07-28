@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './hooks/useAuthSimple';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -18,6 +18,7 @@ import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
 import { Holding, Transaction } from './types/portfolio';
 import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut } from 'lucide-react';
+import { logDatabaseStatus } from './config/database';
 
 // Detect if we're on mobile
 const isMobile = () => {
@@ -25,6 +26,11 @@ const isMobile = () => {
 };
 
 const AppContent: React.FC = () => {
+  // Initialize database status logging
+  useEffect(() => {
+    logDatabaseStatus();
+  }, []);
+
   // Check if this is a QuickView page
   const isQuickViewPage = window.location.pathname === '/quickview' || window.location.search.includes('ticker=');
   

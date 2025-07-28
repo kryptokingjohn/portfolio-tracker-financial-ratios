@@ -1,5 +1,6 @@
 import FMPService from './fmpService';
 import { supabase } from '../lib/supabase';
+import { isDatabaseEnabled, logDatabaseStatus } from '../config/database';
 
 // Market data service using Financial Modeling Prep API
 export class MarketDataService {
@@ -16,6 +17,34 @@ export class MarketDataService {
   // Database permission tracking - start with false for production safety
   private static databaseAccessAllowed = false;
   private static databaseChecked = false;
+  
+  // Generate valid UUID for fallback data
+  private static generateFallbackUUID(ticker: string): string {
+    // Create a deterministic UUID based on the ticker
+    // This ensures the same ticker always gets the same fallback UUID
+    const hash = this.simpleHash(ticker.toUpperCase());
+    const uuid = [
+      hash.substr(0, 8),
+      hash.substr(8, 4),
+      '4' + hash.substr(12, 3), // Version 4 UUID
+      (parseInt(hash.substr(15, 1), 16) & 3 | 8).toString(16) + hash.substr(16, 3), // Variant bits
+      hash.substr(19, 12)
+    ].join('-');
+    return uuid;
+  }
+  
+  // Simple hash function for generating deterministic UUIDs
+  private static simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    // Convert to hex and pad to 32 characters
+    const hex = Math.abs(hash).toString(16).padEnd(32, '0');
+    return hex.substr(0, 32);
+  }
   
   // Test database permissions before attempting operations
   private static async checkDatabasePermissions(): Promise<boolean> {
@@ -151,6 +180,11 @@ export class MarketDataService {
 
   // Update company price in database
   private static async updateCompanyPrice(symbol: string, price: number) {
+    // Skip database operations entirely if disabled at configuration level
+    if (!isDatabaseEnabled()) {
+      return; // Skip all database operations when disabled
+    }
+    
     // Check database permissions before attempting any operations
     const hasAccess = await this.checkDatabasePermissions();
     if (!hasAccess) {
@@ -202,10 +236,15 @@ export class MarketDataService {
   }
   
   private static async getCompanyId(symbol: string): Promise<string> {
+    // Skip database operations entirely if disabled at configuration level
+    if (!isDatabaseEnabled()) {
+      return this.generateFallbackUUID(symbol);
+    }
+    
     // Check database permissions before attempting access
     const hasAccess = await this.checkDatabasePermissions();
     if (!hasAccess) {
-      return `fallback-${symbol.toUpperCase()}`;
+      return this.generateFallbackUUID(symbol);
     }
     
     try {
@@ -218,14 +257,14 @@ export class MarketDataService {
       if (error && (error.code === '42501' || error.code === '403')) {
         console.warn(`⚠️ Permission issue accessing company ID - disabling database access`);
         this.databaseAccessAllowed = false;
-        return `fallback-${symbol.toUpperCase()}`;
+        return this.generateFallbackUUID(symbol);
       }
         
-      return data?.id || `fallback-${symbol.toUpperCase()}`;
+      return data?.id || this.generateFallbackUUID(symbol);
     } catch (error) {
       console.warn(`📊 Database error accessing company ID - using fallback:`, error);
       this.databaseAccessAllowed = false;
-      return `fallback-${symbol.toUpperCase()}`;
+      return this.generateFallbackUUID(symbol);
     }
   }
 

@@ -249,6 +249,15 @@ class FMPService {
   private static lastCall = 0;
   private static readonly RATE_LIMIT_DELAY = 1000; // 1 second between calls for free tier
   
+  // Convert ticker symbols to FMP format
+  private static formatTickerForFMP(symbol: string): string {
+    // Handle common ticker format differences for FMP API
+    return symbol
+      .replace(/\./g, '-')  // Replace dots with hyphens (BRK.B -> BRK-B)
+      .replace(/\//g, '-')  // Replace forward slashes with hyphens (BRK/B -> BRK-B)
+      .toUpperCase();
+  }
+  
   private static async makeRequest<T>(endpoint: string): Promise<T | null> {
     // Rate limiting
     const now = Date.now();
@@ -300,25 +309,29 @@ class FMPService {
   
   // Get current stock quote with basic metrics
   static async getQuote(symbol: string): Promise<any> {
-    const data = await this.makeRequest<FMPQuoteResponse[]>(`/quote/${symbol.toUpperCase()}`);
+    const formattedSymbol = this.formatTickerForFMP(symbol);
+    const data = await this.makeRequest<FMPQuoteResponse[]>(`/quote/${formattedSymbol}`);
     return data?.[0] || null;
   }
   
   // Get detailed financial ratios
   static async getRatios(symbol: string): Promise<FMPRatiosResponse | null> {
-    const data = await this.makeRequest<FMPRatiosResponse[]>(`/ratios/${symbol.toUpperCase()}`);
+    const formattedSymbol = this.formatTickerForFMP(symbol);
+    const data = await this.makeRequest<FMPRatiosResponse[]>(`/ratios/${formattedSymbol}`);
     return data?.[0] || null; // Get most recent ratios
   }
   
   // Get key metrics
   static async getKeyMetrics(symbol: string): Promise<FMPKeyMetricsResponse | null> {
-    const data = await this.makeRequest<FMPKeyMetricsResponse[]>(`/key-metrics/${symbol.toUpperCase()}`);
+    const formattedSymbol = this.formatTickerForFMP(symbol);
+    const data = await this.makeRequest<FMPKeyMetricsResponse[]>(`/key-metrics/${formattedSymbol}`);
     return data?.[0] || null; // Get most recent metrics
   }
   
   // Get company profile
   static async getCompanyProfile(symbol: string): Promise<FMPCompanyProfileResponse | null> {
-    const data = await this.makeRequest<FMPCompanyProfileResponse[]>(`/profile/${symbol.toUpperCase()}`);
+    const formattedSymbol = this.formatTickerForFMP(symbol);
+    const data = await this.makeRequest<FMPCompanyProfileResponse[]>(`/profile/${formattedSymbol}`);
     return data?.[0] || null;
   }
   

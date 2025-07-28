@@ -119,15 +119,21 @@ export class MarketDataService {
   // Update company price in database
   private static async updateCompanyPrice(symbol: string, price: number) {
     try {
-      await supabase
+      // Try to update companies table
+      const { error: companiesError } = await supabase
         .from('companies')
         .update({ 
           updated_at: new Date().toISOString()
         })
         .eq('ticker', symbol.toUpperCase());
         
-      // Also update market_data table if it exists
-      await supabase
+      if (companiesError && (companiesError.code === '42501' || companiesError.code === '403')) {
+        console.warn(`⚠️ Database permission issue updating companies for ${symbol} - skipping database updates`);
+        return; // Skip further database operations if permissions are restricted
+      }
+        
+      // Try to update market_data table if companies update succeeded
+      const { error: marketDataError } = await supabase
         .from('market_data')
         .upsert({
           company_id: (await this.getCompanyId(symbol)),
@@ -141,18 +147,36 @@ export class MarketDataService {
         }, {
           onConflict: 'company_id,date'
         });
+        
+      if (marketDataError && (marketDataError.code === '42501' || marketDataError.code === '403')) {
+        console.warn(`⚠️ Database permission issue updating market_data for ${symbol} - continuing without DB storage`);
+        return; // Continue without storing market data if permissions are restricted
+      }
+        
     } catch (error) {
-      console.warn('Failed to update price in database:', error);
+      // Handle any other database errors gracefully
+      console.warn(`📊 Skipping database price update for ${symbol} due to permission restrictions:`, error);
     }
   }
   
   private static async getCompanyId(symbol: string): Promise<string> {
-    const { data } = await supabase
-      .from('companies')
-      .select('id')
-      .eq('ticker', symbol.toUpperCase())
-      .single();
-    return data?.id || '';
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('ticker', symbol.toUpperCase())
+        .single();
+        
+      if (error && (error.code === '42501' || error.code === '403')) {
+        console.warn(`⚠️ Permission issue accessing company ID for ${symbol}`);
+        return `fallback-${symbol.toUpperCase()}`;
+      }
+        
+      return data?.id || '';
+    } catch (error) {
+      console.warn(`📊 Using fallback company ID for ${symbol}:`, error);
+      return `fallback-${symbol.toUpperCase()}`;
+    }
   }
 
   // Get fundamental data using FMP

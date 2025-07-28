@@ -144,55 +144,59 @@ export const QuickViewPage: React.FC = () => {
           </div>
 
           {/* Profitability */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex items-center mb-4">
-              <TrendingUp className="h-6 w-6 text-green-400 mr-3" />
-              <h2 className="text-xl font-semibold text-green-400">Profitability</h2>
+          <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 backdrop-blur-sm rounded-2xl border border-green-500/30 p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-green-500/50">
+            <div className="flex items-center mb-6">
+              <div className="bg-green-600/20 p-3 rounded-full border border-green-500/30 mr-4">
+                <TrendingUp className="h-7 w-7 text-green-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-green-300">Profitability</h2>
             </div>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-green-200/80 text-sm mb-8 leading-relaxed">
               Measure how efficiently the company generates profits from its assets and equity.
             </p>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">ROE</span>
-                <span className="text-white font-bold text-xl">{formatPercent(holding.roe)}</span>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-green-200 text-lg font-medium">ROE</span>
+                <span className="text-white font-bold text-2xl">{formatPercent(holding.roe)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">ROA</span>
-                <span className="text-white font-bold text-xl">{formatPercent(holding.roa)}</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-green-200 text-lg font-medium">ROA</span>
+                <span className="text-white font-bold text-2xl">{formatPercent(holding.roa)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Gross Margin</span>
-                <span className="text-white font-bold text-xl">{formatPercent(holding.grossMargin)}</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-green-200 text-lg font-medium">Gross Margin</span>
+                <span className="text-white font-bold text-2xl">{formatPercent(holding.grossMargin)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Net Margin</span>
-                <span className="text-white font-bold text-xl">{formatPercent(holding.netMargin)}</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-green-200 text-lg font-medium">Net Margin</span>
+                <span className="text-white font-bold text-2xl">{formatPercent(holding.netMargin)}</span>
               </div>
             </div>
           </div>
 
           {/* Operating Efficiency */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <div className="flex items-center mb-4">
-              <BarChart3 className="h-6 w-6 text-purple-400 mr-3" />
-              <h2 className="text-xl font-semibold text-purple-400">Operating Efficiency</h2>
+          <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-2xl border border-purple-500/30 p-8 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:border-purple-500/50">
+            <div className="flex items-center mb-6">
+              <div className="bg-purple-600/20 p-3 rounded-full border border-purple-500/30 mr-4">
+                <BarChart3 className="h-7 w-7 text-purple-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-purple-300">Operating Efficiency</h2>
             </div>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-purple-200/80 text-sm mb-8 leading-relaxed">
               Evaluate how well management uses company resources to generate revenue and control costs.
             </p>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Operating Margin</span>
-                <span className="text-white font-bold text-xl">{formatPercent(holding.operatingMargin)}</span>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-purple-200 text-lg font-medium">Operating Margin</span>
+                <span className="text-white font-bold text-2xl">{formatPercent(holding.operatingMargin)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Asset Turnover</span>
-                <span className="text-white font-bold text-xl">{formatNumber(holding.assetTurnover, 2)}x</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-purple-200 text-lg font-medium">Asset Turnover</span>
+                <span className="text-white font-bold text-2xl">{formatNumber(holding.assetTurnover, 2)}x</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-300 text-lg">Revenue Growth</span>
-                <span className="text-white font-bold text-xl">{formatPercent(holding.revenueGrowth)}</span>
+              <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-4">
+                <span className="text-purple-200 text-lg font-medium">Revenue Growth</span>
+                <span className="text-white font-bold text-2xl">{formatPercent(holding.revenueGrowth)}</span>
               </div>
             </div>
           </div>

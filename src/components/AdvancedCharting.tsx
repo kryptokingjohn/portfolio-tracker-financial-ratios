@@ -118,10 +118,10 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
               <button
                 key={chart.id}
                 onClick={() => setSelectedChart(chart.id as any)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors backdrop-blur-sm ${
                   selectedChart === chart.id
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                    ? 'bg-blue-600/80 text-white border border-blue-500/50'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50 border border-gray-600/30'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -135,7 +135,7 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
           >
             <option value="1M">1 Month</option>
             <option value="3M">3 Months</option>
@@ -149,13 +149,15 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
 
       {/* Performance Chart */}
       {selectedChart === 'performance' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <div className="bg-blue-600 p-2 rounded-full mr-3">
+              <TrendingUp className="h-4 w-4 text-white" />
+            </div>
             Portfolio Performance vs Benchmark ({timeframe})
           </h3>
           
-          <div className="h-80 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 relative">
+          <div className="h-80 bg-gradient-to-br from-gray-800/30 to-blue-900/30 backdrop-blur-sm rounded-lg p-4 relative border border-gray-600/30">
             <svg viewBox="0 0 800 300" className="w-full h-full">
               {/* Grid lines */}
               {[0, 1, 2, 3, 4, 5].map(i => (
@@ -177,7 +179,7 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
                   x="50"
                   y={55 + i * 40}
                   textAnchor="end"
-                  className="text-xs fill-gray-600"
+                  className="text-xs fill-gray-300"
                 >
                   {(130 - i * 10)}%
                 </text>
@@ -206,14 +208,14 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
             </svg>
             
             {/* Legend */}
-            <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md">
-              <div className="flex items-center space-x-4 text-sm">
+            <div className="absolute bottom-4 left-4 bg-gray-800/80 backdrop-blur-sm p-3 rounded-lg shadow-md border border-gray-600/50">
+              <div className="flex items-center space-x-4 text-sm text-white">
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-1 bg-blue-500"></div>
+                  <div className="w-4 h-1 bg-blue-400"></div>
                   <span>Portfolio</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-1 bg-green-500 border-dashed border-t-2"></div>
+                  <div className="w-4 h-1 bg-green-400 border-dashed border-t-2"></div>
                   <span>Benchmark</span>
                 </div>
               </div>
@@ -222,27 +224,27 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
 
           {/* Performance Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-sm font-medium text-blue-700">Total Return</div>
-              <div className="text-lg font-bold text-blue-900">
+            <div className="text-center p-3 bg-gradient-to-br from-blue-900/60 to-blue-800/60 backdrop-blur-sm rounded-xl border border-blue-500/30 shadow-xl">
+              <div className="text-sm font-medium text-blue-200">Total Return</div>
+              <div className="text-lg font-bold text-white">
                 {formatPercent((performanceData[performanceData.length - 1].portfolio - 100) / 100)}
               </div>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-sm font-medium text-green-700">Benchmark Return</div>
-              <div className="text-lg font-bold text-green-900">
+            <div className="text-center p-3 bg-gradient-to-br from-green-900/60 to-green-800/60 backdrop-blur-sm rounded-xl border border-green-500/30 shadow-xl">
+              <div className="text-sm font-medium text-green-200">Benchmark Return</div>
+              <div className="text-lg font-bold text-white">
                 {formatPercent((performanceData[performanceData.length - 1].benchmark - 100) / 100)}
               </div>
             </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="text-sm font-medium text-purple-700">Alpha</div>
-              <div className="text-lg font-bold text-purple-900">
+            <div className="text-center p-3 bg-gradient-to-br from-purple-900/60 to-purple-800/60 backdrop-blur-sm rounded-xl border border-purple-500/30 shadow-xl">
+              <div className="text-sm font-medium text-purple-200">Alpha</div>
+              <div className="text-lg font-bold text-white">
                 {formatPercent(performanceData[performanceData.length - 1].alpha / 100)}
               </div>
             </div>
-            <div className="text-center p-3 bg-orange-50 rounded-lg">
-              <div className="text-sm font-medium text-orange-700">Volatility</div>
-              <div className="text-lg font-bold text-orange-900">16.8%</div>
+            <div className="text-center p-3 bg-gradient-to-br from-orange-900/60 to-orange-800/60 backdrop-blur-sm rounded-xl border border-orange-500/30 shadow-xl">
+              <div className="text-sm font-medium text-orange-200">Volatility</div>
+              <div className="text-lg font-bold text-white">16.8%</div>
             </div>
           </div>
         </div>
@@ -252,8 +254,8 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
       {selectedChart === 'allocation' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sector Allocation */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h4 className="font-semibold text-gray-900 mb-4">By Sector</h4>
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+            <h4 className="font-semibold text-white mb-4">By Sector</h4>
             <div className="space-y-3">
               {Object.entries(allocationData.sectorAllocation).map(([sector, percentage], index) => {
                 const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-red-500'];
@@ -261,9 +263,9 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
                   <div key={sector} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
-                      <span className="text-sm text-gray-700">{sector}</span>
+                      <span className="text-sm text-gray-300">{sector}</span>
                     </div>
-                    <span className="font-medium text-gray-900">{percentage.toFixed(1)}%</span>
+                    <span className="font-medium text-white">{percentage.toFixed(1)}%</span>
                   </div>
                 );
               })}
@@ -271,8 +273,8 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
           </div>
 
           {/* Asset Type Allocation */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h4 className="font-semibold text-gray-900 mb-4">By Asset Type</h4>
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+            <h4 className="font-semibold text-white mb-4">By Asset Type</h4>
             <div className="space-y-3">
               {Object.entries(allocationData.typeAllocation).map(([type, percentage], index) => {
                 const colors = ['bg-indigo-500', 'bg-teal-500', 'bg-pink-500'];
@@ -280,9 +282,9 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
                   <div key={type} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
-                      <span className="text-sm text-gray-700 capitalize">{type}</span>
+                      <span className="text-sm text-gray-300 capitalize">{type}</span>
                     </div>
-                    <span className="font-medium text-gray-900">{percentage.toFixed(1)}%</span>
+                    <span className="font-medium text-white">{percentage.toFixed(1)}%</span>
                   </div>
                 );
               })}
@@ -290,8 +292,8 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
           </div>
 
           {/* Account Allocation */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h4 className="font-semibold text-gray-900 mb-4">By Account Type</h4>
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+            <h4 className="font-semibold text-white mb-4">By Account Type</h4>
             <div className="space-y-3">
               {Object.entries(allocationData.accountAllocation).map(([account, percentage], index) => {
                 const colors = ['bg-yellow-500', 'bg-cyan-500', 'bg-rose-500', 'bg-lime-500'];
@@ -299,9 +301,9 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
                   <div key={account} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
-                      <span className="text-sm text-gray-700">{account.replace('_', ' ')}</span>
+                      <span className="text-sm text-gray-300">{account.replace('_', ' ')}</span>
                     </div>
-                    <span className="font-medium text-gray-900">{percentage.toFixed(1)}%</span>
+                    <span className="font-medium text-white">{percentage.toFixed(1)}%</span>
                   </div>
                 );
               })}
@@ -312,13 +314,15 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
 
       {/* Risk Metrics Over Time */}
       {selectedChart === 'risk' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <BarChart3 className="h-5 w-5 mr-2 text-red-600" />
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <div className="bg-red-600 p-2 rounded-full mr-3">
+              <BarChart3 className="h-4 w-4 text-white" />
+            </div>
             Risk Metrics Over Time
           </h3>
           
-          <div className="h-80 bg-gradient-to-br from-gray-50 to-red-50 rounded-lg p-4 relative">
+          <div className="h-80 bg-gradient-to-br from-gray-800/30 to-red-900/30 backdrop-blur-sm rounded-lg p-4 relative border border-gray-600/30">
             <svg viewBox="0 0 800 300" className="w-full h-full">
               {/* Grid lines */}
               {[0, 1, 2, 3, 4, 5].map(i => (
@@ -328,7 +332,7 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
                   y1={50 + i * 40}
                   x2="750"
                   y2={50 + i * 40}
-                  stroke="#fee2e2"
+                  stroke="#4b5563"
                   strokeWidth="1"
                 />
               ))}
@@ -355,14 +359,14 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
             </svg>
             
             {/* Legend */}
-            <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md">
-              <div className="flex items-center space-x-4 text-sm">
+            <div className="absolute bottom-4 left-4 bg-gray-800/80 backdrop-blur-sm p-3 rounded-lg shadow-md border border-gray-600/50">
+              <div className="flex items-center space-x-4 text-sm text-white">
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-1 bg-red-500"></div>
+                  <div className="w-4 h-1 bg-red-400"></div>
                   <span>Volatility</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-1 bg-blue-500"></div>
+                  <div className="w-4 h-1 bg-blue-400"></div>
                   <span>Sharpe Ratio</span>
                 </div>
               </div>
@@ -373,9 +377,11 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
 
       {/* Correlation Heatmap */}
       {selectedChart === 'correlation' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Activity className="h-5 w-5 mr-2 text-green-600" />
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <div className="bg-green-600 p-2 rounded-full mr-3">
+              <Activity className="h-4 w-4 text-white" />
+            </div>
             Holdings Correlation Heatmap
           </h3>
           
@@ -401,12 +407,12 @@ export const AdvancedCharting: React.FC<AdvancedChartingProps> = ({ holdings, po
             })}
           </div>
           
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center justify-between text-sm text-gray-300">
             <span>Strong Negative (-1.0)</span>
             <div className="flex items-center space-x-1">
               <div className="w-4 h-4 bg-red-600 rounded"></div>
               <div className="w-4 h-4 bg-red-400 rounded"></div>
-              <div className="w-4 h-4 bg-gray-300 rounded"></div>
+              <div className="w-4 h-4 bg-gray-500 rounded"></div>
               <div className="w-4 h-4 bg-blue-400 rounded"></div>
               <div className="w-4 h-4 bg-blue-600 rounded"></div>
             </div>

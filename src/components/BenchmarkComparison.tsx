@@ -255,13 +255,13 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      broad_market: 'bg-blue-100 text-blue-800',
-      sector: 'bg-green-100 text-green-800',
-      style: 'bg-purple-100 text-purple-800',
-      international: 'bg-orange-100 text-orange-800',
-      fixed_income: 'bg-gray-100 text-gray-800'
+      broad_market: 'bg-blue-600/80 text-blue-200 border border-blue-500/30',
+      sector: 'bg-green-600/80 text-green-200 border border-green-500/30',
+      style: 'bg-purple-600/80 text-purple-200 border border-purple-500/30',
+      international: 'bg-orange-600/80 text-orange-200 border border-orange-500/30',
+      fixed_income: 'bg-gray-600/80 text-gray-200 border border-gray-500/30'
     };
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[category as keyof typeof colors] || 'bg-gray-600/80 text-gray-200 border border-gray-500/30';
   };
 
   const getCategoryLabel = (category: string) => {
@@ -284,10 +284,10 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
             <button
               key={category}
               onClick={() => setSelectedCategory(category as any)}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors backdrop-blur-sm ${
                 selectedCategory === category
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                  ? 'bg-blue-600/80 text-white border border-blue-500/50'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50 border border-gray-600/30'
               }`}
             >
               {category === 'all' ? 'All Benchmarks' : getCategoryLabel(category)}
@@ -298,7 +298,7 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
         <select
           value={selectedPeriod}
           onChange={(e) => setSelectedPeriod(e.target.value as any)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
         >
           <option value="ytd">Year to Date</option>
           <option value="1y">1 Year</option>
@@ -309,110 +309,114 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
       </div>
 
       {/* Portfolio vs Benchmarks Summary */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg border border-blue-200 p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-          <Award className="h-5 w-5 mr-2" />
+      <div className="bg-gradient-to-br from-blue-900/60 to-indigo-900/60 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 shadow-xl">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="bg-blue-600 p-2 rounded-full mr-3">
+            <Award className="h-4 w-4 text-white" />
+          </div>
           Your Portfolio Performance ({selectedPeriod.toUpperCase()})
         </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <div className="text-sm font-medium text-blue-700">Return</div>
-            <div className="text-2xl font-bold text-blue-900">{formatPercent(portfolioReturn)}</div>
+            <div className="text-sm font-medium text-blue-200">Return</div>
+            <div className="text-2xl font-bold text-white">{formatPercent(portfolioReturn)}</div>
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-blue-700">Volatility</div>
-            <div className="text-2xl font-bold text-blue-900">{formatPercent(portfolioPerformance.volatility)}</div>
+            <div className="text-sm font-medium text-blue-200">Volatility</div>
+            <div className="text-2xl font-bold text-white">{formatPercent(portfolioPerformance.volatility)}</div>
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-blue-700">Sharpe Ratio</div>
-            <div className="text-2xl font-bold text-blue-900">{formatRatio(portfolioPerformance.sharpeRatio)}</div>
+            <div className="text-sm font-medium text-blue-200">Sharpe Ratio</div>
+            <div className="text-2xl font-bold text-white">{formatRatio(portfolioPerformance.sharpeRatio)}</div>
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-blue-700">Max Drawdown</div>
-            <div className="text-2xl font-bold text-red-600">{formatPercent(portfolioPerformance.maxDrawdown)}</div>
+            <div className="text-sm font-medium text-blue-200">Max Drawdown</div>
+            <div className="text-2xl font-bold text-red-400">{formatPercent(portfolioPerformance.maxDrawdown)}</div>
           </div>
         </div>
       </div>
 
       {/* Benchmark Comparison Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Target className="h-5 w-5 mr-2 text-green-600" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50">
+        <div className="p-6 border-b border-gray-600/50">
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <div className="bg-green-600 p-2 rounded-full mr-3">
+              <Target className="h-4 w-4 text-white" />
+            </div>
             Benchmark Comparison
           </h3>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-700/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Benchmark
                 </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Category
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Return
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   vs Portfolio
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Volatility
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Sharpe Ratio
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Max Drawdown
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Expense Ratio
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-600/50">
               {filteredBenchmarks.map((benchmark, index) => {
                 const benchmarkReturn = getReturnForPeriod(benchmark, selectedPeriod);
                 const outperformance = portfolioReturn - benchmarkReturn;
                 
                 return (
-                  <tr key={benchmark.ticker} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr key={benchmark.ticker} className={index % 2 === 0 ? 'bg-gray-700/20' : 'bg-gray-600/20'}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{benchmark.name}</div>
-                        <div className="text-sm text-gray-500">{benchmark.ticker}</div>
+                        <div className="text-sm font-medium text-white">{benchmark.name}</div>
+                        <div className="text-sm text-gray-300">{benchmark.ticker}</div>
                         <div className="text-xs text-gray-400">{benchmark.description}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor(benchmark.category)}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full backdrop-blur-sm ${getCategoryColor(benchmark.category)}`}>
                         {getCategoryLabel(benchmark.category)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`text-sm font-medium ${benchmarkReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-sm font-medium ${benchmarkReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {formatPercent(benchmarkReturn)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`text-sm font-bold ${outperformance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-sm font-bold ${outperformance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {outperformance >= 0 ? '+' : ''}{formatPercent(outperformance)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-white">
                       {formatPercent(benchmark.volatility)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-white">
                       {formatRatio(benchmark.sharpeRatio)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-400">
                       {formatPercent(benchmark.maxDrawdown)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-white">
                       {benchmark.expenseRatio ? `${benchmark.expenseRatio.toFixed(2)}%` : 'N/A'}
                     </td>
                   </tr>
@@ -424,9 +428,11 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
       </div>
 
       {/* Performance Ranking */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <BarChart3 className="h-5 w-5 mr-2 text-purple-600" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="bg-purple-600 p-2 rounded-full mr-3">
+            <BarChart3 className="h-4 w-4 text-white" />
+          </div>
           Performance Ranking ({selectedPeriod.toUpperCase()})
         </h3>
         
@@ -443,8 +449,8 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
             .map((item, index) => (
               <div 
                 key={item.name} 
-                className={`flex items-center justify-between p-3 rounded-lg ${
-                  item.isPortfolio ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+                className={`flex items-center justify-between p-3 rounded-lg backdrop-blur-sm ${
+                  item.isPortfolio ? 'bg-blue-900/60 border border-blue-500/30' : 'bg-gray-700/30 border border-gray-600/30'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -456,16 +462,16 @@ export const BenchmarkComparison: React.FC<BenchmarkComparisonProps> = ({ holdin
                   }`}>
                     {index + 1}
                   </div>
-                  <span className={`font-medium ${item.isPortfolio ? 'text-blue-900' : 'text-gray-900'}`}>
+                  <span className={`font-medium ${item.isPortfolio ? 'text-white' : 'text-gray-300'}`}>
                     {item.name}
                   </span>
                   {item.isPortfolio && (
-                    <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                    <span className="px-2 py-1 text-xs font-semibold bg-blue-600/80 text-blue-200 rounded-full backdrop-blur-sm border border-blue-500/30">
                       Your Portfolio
                     </span>
                   )}
                 </div>
-                <span className={`font-bold ${item.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`font-bold ${item.return >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(item.return)}
                 </span>
               </div>

@@ -48,6 +48,21 @@ export const RiskAnalyticsTab: React.FC<RiskAnalyticsTabProps> = ({ holdings }) 
     return 'text-red-400';
   };
 
+  // Helper method for factor descriptions
+  const getFactorDescription = (factor: string): string => {
+    const descriptions = {
+      market: 'Overall market exposure and beta',
+      size: 'Small cap vs large cap bias',
+      value: 'Value vs growth stock preference',
+      profitability: 'Profitable vs unprofitable companies',
+      investment: 'Conservative vs aggressive investment',
+      momentum: 'Recent price momentum exposure',
+      quality: 'High quality vs low quality companies',
+      lowVolatility: 'Low volatility vs high volatility stocks'
+    };
+    return descriptions[factor as keyof typeof descriptions] || 'Factor exposure';
+  };
+
   return (
     <div className="space-y-6">
       {/* Risk Analytics Navigation */}
@@ -395,19 +410,4 @@ export const RiskAnalyticsTab: React.FC<RiskAnalyticsTabProps> = ({ holdings }) 
       )}
     </div>
   );
-
-  // Helper method for factor descriptions
-  const getFactorDescription = (factor: string): string => {
-    const descriptions = {
-      market: 'Overall market exposure and beta',
-      size: 'Small cap vs large cap bias',
-      value: 'Value vs growth stock preference',
-      profitability: 'Profitable vs unprofitable companies',
-      investment: 'Conservative vs aggressive investment',
-      momentum: 'Recent price momentum exposure',
-      quality: 'High quality vs low quality companies',
-      lowVolatility: 'Low volatility vs high volatility stocks'
-    };
-    return descriptions[factor as keyof typeof descriptions] || 'Factor exposure';
-  };
 };

@@ -204,7 +204,14 @@ export const usePortfolio = () => {
       return newTransaction;
     } catch (err) {
       console.error('Error adding transaction:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add transaction');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add transaction';
+      
+      // Provide helpful guidance for database permission issues
+      if (errorMessage.includes('Database permission issue') || errorMessage.includes('row-level security')) {
+        setError('Database access restricted. Try using Demo Mode instead to explore the portfolio tracker features.');
+      } else {
+        setError(errorMessage);
+      }
       throw err;
     }
   };

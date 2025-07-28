@@ -406,7 +406,14 @@ export class DatabaseService {
       `)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // If RLS policy blocks transaction insert, provide helpful error message
+      if (error.code === '42501' || error.message?.includes('row-level security')) {
+        console.error('❌ Database permission issue: Cannot create transactions due to row-level security policy');
+        throw new Error('Database permission issue: Cannot create transactions. Please check your authentication or use demo mode.');
+      }
+      throw error;
+    }
 
     return this.mapDatabaseTransactionToTransaction(data);
   }
@@ -524,7 +531,25 @@ export class DatabaseService {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // If RLS policy blocks insert, return a fallback company object
+      if (error.code === '42501' || error.message?.includes('row-level security')) {
+        console.warn(`⚠️ Database permission issue for ${ticker}, using fallback company data`);
+        return {
+          id: `fallback-${ticker.toUpperCase()}`,
+          ticker: ticker.toUpperCase(),
+          company_name: companyData?.company_name || ticker,
+          sector: companyData?.sector || 'Unknown',
+          industry: companyData?.industry || 'Unknown',
+          asset_type: companyData?.asset_type || 'stocks',
+          exchange: companyData?.exchange || 'Unknown',
+          currency: 'USD',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        } as DatabaseCompany;
+      }
+      throw error;
+    }
     return data;
   }
 

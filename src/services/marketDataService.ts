@@ -13,8 +13,38 @@ export class MarketDataService {
   private static priceCache = new Map<string, { price: number; timestamp: number }>();
   private static readonly CACHE_DURATION = 60000; // 1 minute cache
   
-  // Database permission tracking
-  private static databaseAccessAllowed = true;
+  // Database permission tracking - start with false for production safety
+  private static databaseAccessAllowed = false;
+  private static databaseChecked = false;
+  
+  // Test database permissions before attempting operations
+  private static async checkDatabasePermissions(): Promise<boolean> {
+    if (this.databaseChecked) {
+      return this.databaseAccessAllowed;
+    }
+    
+    try {
+      // Test with a simple read operation first
+      const { error } = await supabase
+        .from('companies')
+        .select('id')
+        .limit(1);
+        
+      if (error && (error.code === '42501' || error.code === '403' || error.code === 406)) {
+        console.warn('🔒 Database access restricted - running in API-only mode');
+        this.databaseAccessAllowed = false;
+      } else {
+        console.log('✅ Database access confirmed');
+        this.databaseAccessAllowed = true;
+      }
+    } catch (error) {
+      console.warn('🔒 Database connectivity issue - running in API-only mode:', error);
+      this.databaseAccessAllowed = false;
+    }
+    
+    this.databaseChecked = true;
+    return this.databaseAccessAllowed;
+  }
   
   // Primary quote method using FMP
   static async getQuote(symbol: string) {
@@ -121,9 +151,10 @@ export class MarketDataService {
 
   // Update company price in database
   private static async updateCompanyPrice(symbol: string, price: number) {
-    // Skip database operations entirely if we've detected permission issues
-    if (!this.databaseAccessAllowed) {
-      return;
+    // Check database permissions before attempting any operations
+    const hasAccess = await this.checkDatabasePermissions();
+    if (!hasAccess) {
+      return; // Skip all database operations if permissions are restricted
     }
     
     try {
@@ -171,8 +202,9 @@ export class MarketDataService {
   }
   
   private static async getCompanyId(symbol: string): Promise<string> {
-    // If database access is disabled, return fallback ID immediately
-    if (!this.databaseAccessAllowed) {
+    // Check database permissions before attempting access
+    const hasAccess = await this.checkDatabasePermissions();
+    if (!hasAccess) {
       return `fallback-${symbol.toUpperCase()}`;
     }
     

@@ -25,7 +25,8 @@ interface MonthlyDividendHistory {
 }
 
 export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAnalysis }) => {
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
 
   // Generate upcoming dividend payments based on actual portfolio holdings
   const upcomingDividends: DividendPayment[] = holdings
@@ -64,28 +65,37 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
       return total;
     }, 0);
     
-    // Generate 6 months of estimated history
-    const months = ['Jan 2024', 'Feb 2024', 'Mar 2024', 'Apr 2024', 'May 2024', 'Jun 2024'];
-    return months.map(month => ({
-      month,
+    // Generate months based on selected year
+    const year = parseInt(selectedYear);
+    const currentMonth = new Date().getMonth(); // 0-based
+    const currentYearNum = new Date().getFullYear();
+    
+    // If selected year is current year, show months up to current month
+    // If selected year is past year, show all 12 months
+    const monthsToShow = year === currentYearNum ? currentMonth + 1 : 12;
+    
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    return Array.from({ length: monthsToShow }, (_, index) => ({
+      month: `${monthNames[index]} ${year}`,
       amount: monthlyEstimate * (0.8 + Math.random() * 0.4), // Add some variation
       yoyGrowth: 5 + Math.random() * 10 // Random growth between 5-15%
     }));
   })();
 
-  // Calculate dividend metrics
+  // Calculate dividend metrics with current year projection
   const calculateDividendMetrics = () => {
     if (dividendAnalysis) {
       return {
         totalAnnualDividends: dividendAnalysis.totalAnnualIncome,
         monthlyAverage: dividendAnalysis.monthlyAverage,
         nextPayment: dividendAnalysis.upcomingPayments[0]?.estimatedAmount || 0,
-        nextPaymentDate: dividendAnalysis.upcomingPayments[0]?.nextPayDate || '2024-07-15',
+        nextPaymentDate: dividendAnalysis.upcomingPayments[0]?.nextPayDate || `${currentYear}-07-15`,
         yieldOnCost: dividendAnalysis.yieldOnCost
       };
     }
     
-    // Fallback calculation
+    // Calculate projected annual dividends for current year
     let totalAnnualDividends = 0;
     let totalPortfolioValue = 0;
 
@@ -120,7 +130,7 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
       }
     });
     
-    const nextPaymentDate = '2024-07-15'; // Mock next payment date
+    const nextPaymentDate = `${currentYear}-07-15`; // Mock next payment date
 
     return {
       totalAnnualDividends,
@@ -173,7 +183,7 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
             <div className="ml-4">
               <div className="text-sm font-medium text-green-200">Annual Dividends</div>
               <div className="text-2xl font-bold text-white">{formatCurrency(metrics.totalAnnualDividends)}</div>
-              <div className="text-sm text-green-300">Projected for 2024</div>
+              <div className="text-sm text-green-300">Projected for {currentYear}</div>
             </div>
           </div>
         </div>
@@ -306,9 +316,9 @@ export const DividendsTab: React.FC<DividendsTabProps> = ({ holdings, dividendAn
               onChange={(e) => setSelectedYear(e.target.value)}
               className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
             >
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
+              <option value={currentYear.toString()}>{currentYear}</option>
+              <option value={(currentYear - 1).toString()}>{currentYear - 1}</option>
+              <option value={(currentYear - 2).toString()}>{currentYear - 2}</option>
             </select>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, AlertTriangle, TrendingDown, Target, DollarSign, Info, CheckCircle, XCircle } from 'lucide-react';
+import { Calculator, AlertTriangle, TrendingDown, Target, DollarSign, Info, CheckCircle, XCircle, Clock, Shield, TrendingUp, PiggyBank, Lightbulb } from 'lucide-react';
 import { Holding, Transaction } from '../types/portfolio';
 import { TaxOptimizer, TaxOptimizationSuggestion, AssetLocationAnalysis } from '../utils/taxOptimizer';
 
@@ -286,52 +286,158 @@ export const TaxOptimizationTab: React.FC<TaxOptimizationTabProps> = ({ holdings
         </div>
       </div>
 
-      {/* Tax Planning Tips */}
-      <div className="bg-gradient-to-br from-blue-900/60 to-indigo-900/60 backdrop-blur-sm rounded-xl border border-blue-500/30 shadow-xl p-6">
-        <h3 className="text-lg font-semibold text-blue-300 mb-4 flex items-center">
-          <Info className="h-5 w-5 mr-2 text-blue-400" />
-          Tax Planning Best Practices
-        </h3>
+      {/* Tax Planning Best Practices */}
+      <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl">
+        <div className="p-6 border-b border-gray-700/50">
+          <h3 className="text-xl font-semibold text-white mb-2 flex items-center">
+            <Lightbulb className="h-6 w-6 mr-3 text-yellow-400" />
+            Tax Planning Best Practices
+          </h3>
+          <p className="text-gray-400 text-sm">Essential strategies to minimize your tax burden and maximize after-tax returns</p>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium text-blue-300 mb-2">Tax-Loss Harvesting</h4>
-            <ul className="text-sm text-blue-200 space-y-1">
-              <li>• Realize losses to offset gains</li>
-              <li>• Avoid wash sale rules (30-day period)</li>
-              <li>• Consider substantially identical securities</li>
-              <li>• Harvest losses throughout the year</li>
-            </ul>
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Tax-Loss Harvesting */}
+            <div className="bg-gradient-to-br from-red-900/30 to-red-800/30 backdrop-blur-sm rounded-xl border border-red-500/20 p-6 hover:shadow-lg transition-all duration-300 hover:border-red-500/40">
+              <div className="flex items-center mb-4">
+                <div className="bg-red-600/20 p-3 rounded-full border border-red-500/30">
+                  <TrendingDown className="h-6 w-6 text-red-400" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-red-300 text-lg">Tax-Loss Harvesting</h4>
+                  <p className="text-red-200/70 text-sm">Offset gains with strategic losses</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-red-100 text-sm">Realize losses to offset capital gains and reduce taxable income</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-red-100 text-sm">Avoid wash sale rules by waiting 30 days before repurchasing</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-red-100 text-sm">Consider substantially identical securities when reinvesting</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-red-100 text-sm">Harvest losses throughout the year, not just at year-end</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Asset Location */}
+            <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/30 backdrop-blur-sm rounded-xl border border-blue-500/20 p-6 hover:shadow-lg transition-all duration-300 hover:border-blue-500/40">
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-600/20 p-3 rounded-full border border-blue-500/30">
+                  <Target className="h-6 w-6 text-blue-400" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-blue-300 text-lg">Asset Location</h4>
+                  <p className="text-blue-200/70 text-sm">Optimize account placement</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-blue-100 text-sm">Hold bonds and REITs in tax-deferred accounts (401k, IRA)</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-blue-100 text-sm">Keep high-growth stocks in tax-free accounts (Roth IRA)</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-blue-100 text-sm">Place tax-efficient index funds in taxable accounts</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-blue-100 text-sm">Review and rebalance allocation annually</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Timing Strategies */}
+            <div className="bg-gradient-to-br from-green-900/30 to-green-800/30 backdrop-blur-sm rounded-xl border border-green-500/20 p-6 hover:shadow-lg transition-all duration-300 hover:border-green-500/40">
+              <div className="flex items-center mb-4">
+                <div className="bg-green-600/20 p-3 rounded-full border border-green-500/30">
+                  <Clock className="h-6 w-6 text-green-400" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-green-300 text-lg">Timing Strategies</h4>
+                  <p className="text-green-200/70 text-sm">Optimize when you buy and sell</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-green-100 text-sm">Hold investments over 1 year for long-term capital gains rates</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-green-100 text-sm">Coordinate rebalancing with tax-loss harvesting opportunities</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-green-100 text-sm">Implement year-end tax planning before December 31st</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-green-100 text-sm">Use new contributions for rebalancing to avoid taxable events</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Optimization */}
+            <div className="bg-gradient-to-br from-purple-900/30 to-purple-800/30 backdrop-blur-sm rounded-xl border border-purple-500/20 p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-500/40">
+              <div className="flex items-center mb-4">
+                <div className="bg-purple-600/20 p-3 rounded-full border border-purple-500/30">
+                  <PiggyBank className="h-6 w-6 text-purple-400" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-purple-300 text-lg">Account Optimization</h4>
+                  <p className="text-purple-200/70 text-sm">Maximize tax-advantaged opportunities</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-purple-100 text-sm">Maximize contributions to 401(k), IRA, and HSA accounts</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-purple-100 text-sm">Consider Roth conversions during low-income years</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-purple-100 text-sm">Use HSA as secondary retirement account after age 65</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-purple-100 text-sm">Plan optimal withdrawal sequences for retirement</p>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div>
-            <h4 className="font-medium text-blue-300 mb-2">Asset Location</h4>
-            <ul className="text-sm text-blue-200 space-y-1">
-              <li>• Hold bonds in tax-deferred accounts</li>
-              <li>• Keep growth stocks in tax-free accounts</li>
-              <li>• Place dividend stocks in tax-advantaged accounts</li>
-              <li>• Review allocation annually</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-medium text-blue-300 mb-2">Timing Strategies</h4>
-            <ul className="text-sm text-blue-200 space-y-1">
-              <li>• Hold investments {'>'} 1 year for long-term rates</li>
-              <li>• Time rebalancing with tax-loss harvesting</li>
-              <li>• Consider year-end tax planning</li>
-              <li>• Use new contributions for rebalancing</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-medium text-blue-300 mb-2">Account Optimization</h4>
-            <ul className="text-sm text-blue-200 space-y-1">
-              <li>• Maximize tax-advantaged account contributions</li>
-              <li>• Consider Roth conversions in low-income years</li>
-              <li>• Use HSA as retirement account after 65</li>
-              <li>• Plan withdrawal sequences in retirement</li>
-            </ul>
+          {/* Additional Tips Banner */}
+          <div className="mt-8 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 backdrop-blur-sm rounded-xl border border-yellow-500/20 p-6">
+            <div className="flex items-start space-x-4">
+              <div className="bg-yellow-600/20 p-2 rounded-full border border-yellow-500/30 flex-shrink-0">
+                <Shield className="h-5 w-5 text-yellow-400" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-yellow-300 mb-2">Pro Tip: Consult a Tax Professional</h4>
+                <p className="text-yellow-100/80 text-sm">
+                  Tax laws are complex and change frequently. Consider consulting with a qualified tax advisor or CPA 
+                  to ensure your tax optimization strategies align with your specific financial situation and goals. 
+                  This tool provides general guidance but cannot replace professional tax advice.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

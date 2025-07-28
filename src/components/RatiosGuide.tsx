@@ -1,12 +1,31 @@
-import React from 'react';
-import { Info, TrendingUp, Shield, DollarSign, BarChart3, Calculator, Target } from 'lucide-react';
+import React, { useState } from 'react';
+import { Info, TrendingUp, Shield, DollarSign, BarChart3, Calculator, Target, BookOpen, ChevronDown, ChevronRight, AlertCircle, CheckCircle } from 'lucide-react';
 
 export const RatiosGuide: React.FC = () => {
+  const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
+  const [expandedRatios, setExpandedRatios] = useState<{ [key: string]: boolean }>({});
+
+  const toggleCategory = (categoryIndex: number) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryIndex]: !prev[categoryIndex]
+    }));
+  };
+
+  const toggleRatio = (categoryIndex: number, ratioIndex: number) => {
+    const key = `${categoryIndex}-${ratioIndex}`;
+    setExpandedRatios(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
   const ratioCategories = [
     {
       category: 'Valuation Ratios',
       icon: DollarSign,
-      color: 'text-blue-600',
+      color: 'text-blue-400',
+      bgGradient: 'from-blue-900/40 to-blue-800/40',
+      borderColor: 'border-blue-500/30',
       description: 'Metrics that help determine if a stock is overvalued or undervalued relative to its fundamentals',
       ratios: [
         {
@@ -74,7 +93,9 @@ export const RatiosGuide: React.FC = () => {
     {
       category: 'Financial Health & Leverage',
       icon: Shield,
-      color: 'text-green-600',
+      color: 'text-green-400',
+      bgGradient: 'from-green-900/40 to-green-800/40',
+      borderColor: 'border-green-500/30',
       description: 'Ratios that assess a company\'s financial stability and ability to meet its obligations',
       ratios: [
         {
@@ -118,7 +139,9 @@ export const RatiosGuide: React.FC = () => {
     {
       category: 'Profitability Ratios',
       icon: TrendingUp,
-      color: 'text-purple-600',
+      color: 'text-purple-400',
+      bgGradient: 'from-purple-900/40 to-purple-800/40',
+      borderColor: 'border-purple-500/30',
       description: 'Metrics that measure how effectively a company generates profits from its operations',
       ratios: [
         {
@@ -186,7 +209,9 @@ export const RatiosGuide: React.FC = () => {
     {
       category: 'Efficiency & Growth',
       icon: BarChart3,
-      color: 'text-orange-600',
+      color: 'text-orange-400',
+      bgGradient: 'from-orange-900/40 to-orange-800/40',
+      borderColor: 'border-orange-500/30',
       description: 'Ratios that measure how efficiently a company uses its resources and grows its business',
       ratios: [
         {
@@ -218,7 +243,9 @@ export const RatiosGuide: React.FC = () => {
     {
       category: 'Cash Flow Analysis',
       icon: Calculator,
-      color: 'text-teal-600',
+      color: 'text-teal-400',
+      bgGradient: 'from-teal-900/40 to-teal-800/40',
+      borderColor: 'border-teal-500/30',
       description: 'Metrics focused on cash generation and financial sustainability',
       ratios: [
         {
@@ -250,7 +277,9 @@ export const RatiosGuide: React.FC = () => {
     {
       category: 'Market Performance',
       icon: Target,
-      color: 'text-red-600',
+      color: 'text-pink-400',
+      bgGradient: 'from-pink-900/40 to-pink-800/40',
+      borderColor: 'border-pink-500/30',
       description: 'Price-based metrics that reflect market sentiment and trading ranges',
       ratios: [
         {
@@ -296,12 +325,17 @@ export const RatiosGuide: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg border border-blue-200 p-6">
-        <div className="flex items-center space-x-2 mb-4">
-          <Info className="h-6 w-6 text-blue-700" />
-          <h2 className="text-2xl font-bold text-blue-900">Financial Ratios Guide</h2>
+      <div className="bg-gradient-to-br from-gray-900/80 to-blue-900/80 backdrop-blur-sm rounded-xl border border-blue-500/30 shadow-2xl p-8">
+        <div className="flex items-center space-x-4 mb-6">
+          <div className="bg-blue-600/20 p-3 rounded-full border border-blue-500/30">
+            <BookOpen className="h-8 w-8 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold text-white mb-2">Financial Ratios Guide</h2>
+            <p className="text-blue-200">Master the metrics that drive investment decisions</p>
+          </div>
         </div>
-        <p className="text-blue-800">
+        <p className="text-gray-300 text-lg leading-relaxed">
           Comprehensive guide to understanding the financial ratios and metrics used in portfolio analysis. 
           Each ratio provides unique insights into company performance, financial health, and valuation.
         </p>
@@ -310,87 +344,180 @@ export const RatiosGuide: React.FC = () => {
       {/* Ratio Categories */}
       {ratioCategories.map((category, categoryIndex) => {
         const CategoryIcon = category.icon;
+        const isExpanded = expandedCategories[categoryIndex];
         
         return (
-          <div key={categoryIndex} className="bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center space-x-3 mb-3">
-                <CategoryIcon className={`h-6 w-6 ${category.color}`} />
-                <h3 className="text-xl font-semibold text-gray-800">{category.category}</h3>
+          <div key={categoryIndex} className={`bg-gradient-to-br ${category.bgGradient} backdrop-blur-sm rounded-xl border ${category.borderColor} shadow-xl transition-all duration-300 hover:shadow-2xl`}>
+            <div 
+              className="p-6 border-b border-gray-600/50 cursor-pointer hover:bg-white/5 transition-colors"
+              onClick={() => toggleCategory(categoryIndex)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`bg-${category.color.split('-')[1]}-600/20 p-3 rounded-full border border-${category.color.split('-')[1]}-500/30`}>
+                    <CategoryIcon className={`h-6 w-6 ${category.color}`} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-1">{category.category}</h3>
+                    <p className="text-gray-300 text-sm">{category.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-400 font-medium">{category.ratios.length} ratios</span>
+                  {isExpanded ? (
+                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
               </div>
-              <p className="text-gray-700">{category.description}</p>
             </div>
             
-            <div className="p-6">
-              <div className="grid grid-cols-1 gap-6">
-                {category.ratios.map((ratio, ratioIndex) => (
-                  <div key={ratioIndex} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="mb-4">
-                      <h4 className="text-lg font-semibold text-gray-800 mb-2">{ratio.name}</h4>
-                      <div className="bg-blue-50 rounded-md p-3 mb-3 border border-blue-200">
-                        <span className="text-sm font-medium text-gray-700">Formula: </span>
-                        <code className="text-sm text-blue-700 font-mono">{ratio.formula}</code>
-                      </div>
-                      <p className="text-gray-700 mb-4">{ratio.description}</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <h5 className="font-medium text-gray-900 mb-2">Interpretation Guidelines</h5>
-                        <div className="space-y-2">
-                          <div className="flex items-start">
-                            <div className="w-3 h-3 bg-red-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                            <span className="text-sm text-gray-600">{ratio.interpretation.low}</span>
+            {isExpanded && (
+              <div className="p-6">
+                <div className="grid grid-cols-1 gap-6">
+                  {category.ratios.map((ratio, ratioIndex) => {
+                    const ratioKey = `${categoryIndex}-${ratioIndex}`;
+                    const isRatioExpanded = expandedRatios[ratioKey];
+                    
+                    return (
+                      <div key={ratioIndex} className="bg-gray-800/40 backdrop-blur-sm border border-gray-600/30 rounded-xl overflow-hidden hover:border-gray-600/50 transition-all duration-300">
+                        <div 
+                          className="p-6 cursor-pointer hover:bg-white/5 transition-colors"
+                          onClick={() => toggleRatio(categoryIndex, ratioIndex)}
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-lg font-semibold text-white">{ratio.name}</h4>
+                            {isRatioExpanded ? (
+                              <ChevronDown className="h-5 w-5 text-gray-400" />
+                            ) : (
+                              <ChevronRight className="h-5 w-5 text-gray-400" />
+                            )}
                           </div>
-                          <div className="flex items-start">
-                            <div className="w-3 h-3 bg-yellow-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                            <span className="text-sm text-gray-600">{ratio.interpretation.medium}</span>
+                          
+                          <div className="bg-gray-900/60 rounded-lg p-4 mb-4 border border-gray-600/30">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Calculator className="h-4 w-4 text-blue-400" />
+                              <span className="text-sm font-medium text-blue-300">Formula</span>
+                            </div>
+                            <code className="text-blue-200 font-mono text-sm">{ratio.formula}</code>
                           </div>
-                          <div className="flex items-start">
-                            <div className="w-3 h-3 bg-green-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                            <span className="text-sm text-gray-600">{ratio.interpretation.high}</span>
-                          </div>
+                          
+                          <p className="text-gray-300 leading-relaxed">{ratio.description}</p>
                         </div>
-                      </div>
 
-                      <div>
-                        <h5 className="font-medium text-gray-900 mb-2">Why It Matters</h5>
-                        <p className="text-sm text-blue-700 bg-blue-50 p-3 rounded-md">{ratio.importance}</p>
-                      </div>
-                    </div>
+                        {isRatioExpanded && (
+                          <div className="px-6 pb-6 space-y-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {/* Interpretation Guidelines */}
+                              <div className="bg-gray-900/40 rounded-xl p-5 border border-gray-600/20">
+                                <div className="flex items-center space-x-2 mb-4">
+                                  <BarChart3 className="h-5 w-5 text-yellow-400" />
+                                  <h5 className="font-semibold text-yellow-300">Interpretation Guidelines</h5>
+                                </div>
+                                <div className="space-y-3">
+                                  <div className="flex items-start space-x-3">
+                                    <div className="w-3 h-3 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                                    <span className="text-sm text-red-200">{ratio.interpretation.low}</span>
+                                  </div>
+                                  <div className="flex items-start space-x-3">
+                                    <div className="w-3 h-3 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
+                                    <span className="text-sm text-yellow-200">{ratio.interpretation.medium}</span>
+                                  </div>
+                                  <div className="flex items-start space-x-3">
+                                    <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                    <span className="text-sm text-green-200">{ratio.interpretation.high}</span>
+                                  </div>
+                                </div>
+                              </div>
 
-                    <div>
-                      <h5 className="font-medium text-gray-900 mb-2">Limitations & Considerations</h5>
-                      <p className="text-sm text-orange-700 bg-orange-50 p-3 rounded-md">{ratio.limitations}</p>
-                    </div>
-                  </div>
-                ))}
+                              {/* Why It Matters */}
+                              <div className="bg-blue-900/30 rounded-xl p-5 border border-blue-500/20">
+                                <div className="flex items-center space-x-2 mb-4">
+                                  <CheckCircle className="h-5 w-5 text-blue-400" />
+                                  <h5 className="font-semibold text-blue-300">Why It Matters</h5>
+                                </div>
+                                <p className="text-sm text-blue-100 leading-relaxed">{ratio.importance}</p>
+                              </div>
+                            </div>
+
+                            {/* Limitations */}
+                            <div className="bg-orange-900/30 rounded-xl p-5 border border-orange-500/20">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <AlertCircle className="h-5 w-5 text-orange-400" />
+                                <h5 className="font-semibold text-orange-300">Limitations & Considerations</h5>
+                              </div>
+                              <p className="text-sm text-orange-100 leading-relaxed">{ratio.limitations}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}
 
-      {/* Additional Resources */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-3">Key Takeaways</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
-          <div>
-            <h4 className="font-medium mb-2">Best Practices:</h4>
-            <ul className="space-y-1">
-              <li>• Compare ratios within the same industry</li>
-              <li>• Look at trends over multiple periods</li>
-              <li>• Use multiple ratios for comprehensive analysis</li>
-              <li>• Consider business cycle and market conditions</li>
+      {/* Key Takeaways */}
+      <div className="bg-gradient-to-br from-gray-900/80 to-indigo-900/80 backdrop-blur-sm rounded-xl border border-indigo-500/30 shadow-2xl p-8">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="bg-indigo-600/20 p-2 rounded-full border border-indigo-500/30">
+            <Info className="h-6 w-6 text-indigo-400" />
+          </div>
+          <h3 className="text-2xl font-semibold text-white">Key Takeaways</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-green-900/20 rounded-xl p-6 border border-green-500/20">
+            <div className="flex items-center space-x-2 mb-4">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+              <h4 className="font-semibold text-green-300">Best Practices</h4>
+            </div>
+            <ul className="space-y-3 text-green-100">
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Compare ratios within the same industry for meaningful insights</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Analyze trends over multiple periods to identify patterns</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Use multiple ratios for comprehensive analysis</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Consider business cycle and market conditions</span>
+              </li>
             </ul>
           </div>
-          <div>
-            <h4 className="font-medium mb-2">Remember:</h4>
-            <ul className="space-y-1">
-              <li>• No single ratio tells the complete story</li>
-              <li>• Context and industry norms matter</li>
-              <li>• Quality of earnings and cash flows is crucial</li>
-              <li>• Combine quantitative analysis with qualitative factors</li>
+          
+          <div className="bg-yellow-900/20 rounded-xl p-6 border border-yellow-500/20">
+            <div className="flex items-center space-x-2 mb-4">
+              <AlertCircle className="h-5 w-5 text-yellow-400" />
+              <h4 className="font-semibold text-yellow-300">Important Reminders</h4>
+            </div>
+            <ul className="space-y-3 text-yellow-100">
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">No single ratio tells the complete story</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Context and industry norms are crucial</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Quality of earnings and cash flows matters most</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Combine quantitative analysis with qualitative factors</span>
+              </li>
             </ul>
           </div>
         </div>

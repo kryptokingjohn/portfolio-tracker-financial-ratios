@@ -401,41 +401,47 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 p-6">
+        <div className="bg-gradient-to-br from-purple-900/60 to-purple-800/60 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Target className="h-8 w-8 text-purple-700" />
+              <div className="bg-purple-600 p-3 rounded-full">
+                <Target className="h-6 w-6 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-purple-700">Sharpe Ratio</div>
-              <div className="text-2xl font-bold text-purple-900">{formatNumber(portfolioMetrics.sharpeRatio)}</div>
-              <div className="text-xs text-purple-600">Risk-adjusted return</div>
+              <div className="text-sm font-medium text-purple-200">Sharpe Ratio</div>
+              <div className="text-2xl font-bold text-white">{formatNumber(portfolioMetrics.sharpeRatio)}</div>
+              <div className="text-xs text-purple-300">Risk-adjusted return</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200 p-6">
+        <div className="bg-gradient-to-br from-orange-900/60 to-orange-800/60 backdrop-blur-sm rounded-xl border border-orange-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <BarChart3 className="h-8 w-8 text-orange-700" />
+              <div className="bg-orange-600 p-3 rounded-full">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-orange-700">Volatility</div>
-              <div className="text-2xl font-bold text-orange-900">{formatPercent(portfolioMetrics.volatility)}</div>
-              <div className="text-xs text-orange-600">Annual standard deviation</div>
+              <div className="text-sm font-medium text-orange-200">Volatility</div>
+              <div className="text-2xl font-bold text-white">{formatPercent(portfolioMetrics.volatility)}</div>
+              <div className="text-xs text-orange-300">Annual standard deviation</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg border border-red-200 p-6">
+        <div className="bg-gradient-to-br from-red-900/60 to-red-800/60 backdrop-blur-sm rounded-xl border border-red-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <TrendingDown className="h-8 w-8 text-red-700" />
+              <div className="bg-red-600 p-3 rounded-full">
+                <TrendingDown className="h-6 w-6 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-red-700">Max Drawdown</div>
-              <div className="text-2xl font-bold text-red-800">{formatPercent(portfolioMetrics.maxDrawdown)}</div>
-              <div className="text-xs text-red-600">Largest peak-to-trough decline</div>
+              <div className="text-sm font-medium text-red-200">Max Drawdown</div>
+              <div className="text-2xl font-bold text-white">{formatPercent(portfolioMetrics.maxDrawdown)}</div>
+              <div className="text-xs text-red-300">Largest peak-to-trough decline</div>
             </div>
           </div>
         </div>
@@ -504,15 +510,15 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
           {/* Legend and Data */}
           <div className="space-y-3">
             {allocationData.map(([label, percentage], index) => (
-              <div key={label} className="flex items-center justify-between p-3 bg-gradient-to-r from-white to-purple-50 rounded-lg border border-purple-100 hover:shadow-md transition-all">
+              <div key={label} className="flex items-center justify-between p-3 bg-gray-700/30 backdrop-blur-sm rounded-lg border border-gray-600/30 hover:bg-gray-600/40 transition-all">
                 <div className="flex items-center space-x-3">
                   <div 
                     className="w-4 h-4 rounded-full shadow-sm"
                     style={{ backgroundColor: allocationColors[index % allocationColors.length] }}
                   ></div>
-                  <span className="font-semibold text-purple-900">{label}</span>
+                  <span className="font-semibold text-white">{label}</span>
                 </div>
-                <span className="text-sm font-bold text-purple-700">
+                <span className="text-sm font-bold text-gray-200">
                   {percentage.toFixed(1)}%
                 </span>
               </div>
@@ -522,58 +528,60 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       </div>
 
       {/* Key Portfolio Metrics */}
-      <div className="bg-gradient-to-br from-white to-indigo-50 rounded-lg shadow-lg border border-indigo-200 p-6">
-        <h3 className="text-lg font-semibold text-indigo-900 mb-6 flex items-center">
-          <Activity className="h-5 w-5 mr-2 text-indigo-600" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+        <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+          <div className="bg-indigo-600 p-2 rounded-full mr-3">
+            <Activity className="h-4 w-4 text-white" />
+          </div>
           Key Portfolio Metrics
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Valuation Metrics */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-indigo-900 border-b border-indigo-200 pb-2">Valuation</h4>
+            <h4 className="font-semibold text-white border-b border-gray-600/50 pb-2">Valuation</h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Weighted P/E Ratio</span>
-                <span className="font-bold text-indigo-900">{keyMetrics.weightedPE.toFixed(1)}</span>
+                <span className="text-sm text-gray-300">Weighted P/E Ratio</span>
+                <span className="font-bold text-white">{keyMetrics.weightedPE.toFixed(1)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Weighted P/B Ratio</span>
-                <span className="font-bold text-indigo-900">{keyMetrics.weightedPB.toFixed(1)}</span>
+                <span className="text-sm text-gray-300">Weighted P/B Ratio</span>
+                <span className="font-bold text-white">{keyMetrics.weightedPB.toFixed(1)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Dividend Yield</span>
-                <span className="font-semibold text-green-600">{keyMetrics.weightedDividendYield.toFixed(2)}%</span>
+                <span className="text-sm text-gray-300">Dividend Yield</span>
+                <span className="font-semibold text-green-400">{keyMetrics.weightedDividendYield.toFixed(2)}%</span>
               </div>
             </div>
           </div>
 
           {/* Profitability Metrics */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-indigo-900 border-b border-indigo-200 pb-2">Profitability</h4>
+            <h4 className="font-semibold text-white border-b border-gray-600/50 pb-2">Profitability</h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Weighted ROE</span>
-                <span className="font-semibold text-green-600">{keyMetrics.weightedROE.toFixed(1)}%</span>
+                <span className="text-sm text-gray-300">Weighted ROE</span>
+                <span className="font-semibold text-green-400">{keyMetrics.weightedROE.toFixed(1)}%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Revenue Growth</span>
-                <span className="font-semibold text-blue-600">{keyMetrics.weightedRevenueGrowth.toFixed(1)}%</span>
+                <span className="text-sm text-gray-300">Revenue Growth</span>
+                <span className="font-semibold text-blue-400">{keyMetrics.weightedRevenueGrowth.toFixed(1)}%</span>
               </div>
             </div>
           </div>
 
           {/* Risk Metrics */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-indigo-900 border-b border-indigo-200 pb-2">Risk</h4>
+            <h4 className="font-semibold text-white border-b border-gray-600/50 pb-2">Risk</h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Debt/Equity Ratio</span>
-                <span className="font-bold text-indigo-900">{keyMetrics.weightedDebtToEquity.toFixed(2)}</span>
+                <span className="text-sm text-gray-300">Debt/Equity Ratio</span>
+                <span className="font-bold text-white">{keyMetrics.weightedDebtToEquity.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-indigo-600">Portfolio Beta</span>
-                <span className="font-bold text-indigo-900">{portfolioMetrics.beta.toFixed(2)}</span>
+                <span className="text-sm text-gray-300">Portfolio Beta</span>
+                <span className="font-bold text-white">{portfolioMetrics.beta.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -581,7 +589,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
 
         {/* Key Metrics Bar Chart */}
         <div className="mt-8">
-          <h4 className="font-semibold text-indigo-900 mb-4">Portfolio vs Market Averages</h4>
+          <h4 className="font-semibold text-white mb-4">Portfolio vs Market Averages</h4>
           <div className="space-y-4">
             {[
               { label: 'P/E Ratio', portfolio: keyMetrics.weightedPE, market: 21.5, unit: '' },
@@ -592,14 +600,14 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
             ].map((metric) => (
               <div key={metric.label} className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="font-semibold text-indigo-700">{metric.label}</span>
+                  <span className="font-semibold text-gray-300">{metric.label}</span>
                   <div className="flex space-x-4">
-                    <span className="font-semibold text-blue-600">Portfolio: {metric.portfolio.toFixed(1)}{metric.unit}</span>
-                    <span className="font-medium text-gray-500">Market: {metric.market}{metric.unit}</span>
+                    <span className="font-semibold text-blue-400">Portfolio: {metric.portfolio.toFixed(1)}{metric.unit}</span>
+                    <span className="font-medium text-gray-400">Market: {metric.market}{metric.unit}</span>
                   </div>
                 </div>
                 <div className="relative">
-                  <div className="w-full bg-gradient-to-r from-gray-200 to-gray-300 rounded-full h-3 shadow-inner">
+                  <div className="w-full bg-gradient-to-r from-gray-700 to-gray-600 rounded-full h-3 shadow-inner">
                     <div 
                       className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 shadow-sm"
                       style={{ 
@@ -608,7 +616,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                     ></div>
                   </div>
                   <div 
-                    className="absolute top-0 w-1 h-3 bg-gray-600 rounded-full shadow-sm"
+                    className="absolute top-0 w-1 h-3 bg-gray-300 rounded-full shadow-sm"
                     style={{ 
                       left: `${Math.min((metric.market / (Math.max(metric.portfolio, metric.market) * 1.2)) * 100, 100)}%` 
                     }}
@@ -621,17 +629,19 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       </div>
 
       {/* Performance Comparison */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Award className="h-5 w-5 mr-2 text-blue-600" />
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <div className="bg-yellow-600 p-2 rounded-full mr-3">
+              <Award className="h-4 w-4 text-white" />
+            </div>
             Performance vs Benchmarks
           </h3>
           <div>
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
             >
               <option value="ytd">Year to Date</option>
               <option value="1y">1 Year</option>
@@ -643,9 +653,9 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-sm font-medium text-gray-500 mb-1">Your Portfolio</div>
-            <div className={`text-2xl font-bold ${portfolioReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="text-center p-4 bg-blue-600/20 backdrop-blur-sm rounded-lg border border-blue-500/30">
+            <div className="text-sm font-medium text-gray-300 mb-1">Your Portfolio</div>
+            <div className={`text-2xl font-bold ${portfolioReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {formatPercent(portfolioReturn)}
             </div>
           </div>
@@ -653,15 +663,16 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
           {benchmarks.map((benchmark, index) => {
             const benchmarkReturn = getReturnForPeriod(benchmark, selectedPeriod);
             const outperformance = portfolioReturn - benchmarkReturn;
-            const colors = ['bg-gray-50', 'bg-green-50', 'bg-purple-50', 'bg-orange-50', 'bg-indigo-50'];
+            const colors = ['bg-gray-700/30', 'bg-green-700/30', 'bg-purple-700/30', 'bg-orange-700/30', 'bg-indigo-700/30'];
+            const borderColors = ['border-gray-600/30', 'border-green-600/30', 'border-purple-600/30', 'border-orange-600/30', 'border-indigo-600/30'];
             
             return (
-              <div key={benchmark.ticker} className={`text-center p-4 ${colors[index % colors.length]} rounded-lg`}>
-                <div className="text-xs font-medium text-gray-500 mb-1">{benchmark.ticker}</div>
-                <div className={`text-lg font-bold ${benchmarkReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div key={benchmark.ticker} className={`text-center p-4 ${colors[index % colors.length]} backdrop-blur-sm rounded-lg border ${borderColors[index % borderColors.length]}`}>
+                <div className="text-xs font-medium text-gray-300 mb-1">{benchmark.ticker}</div>
+                <div className={`text-lg font-bold ${benchmarkReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(benchmarkReturn)}
                 </div>
-                <div className={`text-xs ${outperformance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`text-xs ${outperformance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {outperformance >= 0 ? '+' : ''}{formatPercent(outperformance)} vs you
                 </div>
               </div>
@@ -671,25 +682,27 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {benchmarks.map(benchmark => (
-            <div key={benchmark.ticker} className="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
-              <div className="font-semibold text-gray-900 mb-1">
+            <div key={benchmark.ticker} className="text-sm text-gray-300 p-3 bg-gray-700/30 backdrop-blur-sm rounded-lg border border-gray-600/30">
+              <div className="font-semibold text-white mb-1">
                 {benchmark.name} ({benchmark.ticker})
               </div>
-              <div>{benchmark.description}</div>
+              <div className="text-gray-300">{benchmark.description}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Performance Chart Placeholder */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-          <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="bg-blue-600 p-2 rounded-full mr-3">
+            <BarChart3 className="h-4 w-4 text-white" />
+          </div>
           Performance Chart ({selectedPeriod.toUpperCase()})
         </h3>
         
         {/* Simple Line Chart Visualization */}
-        <div className="h-80 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 relative border border-blue-100">
+        <div className="h-80 bg-gradient-to-br from-gray-700/50 to-gray-600/50 backdrop-blur-sm rounded-lg p-4 relative border border-gray-600/30">
           <svg viewBox="0 0 800 300" className="w-full h-full">
             {/* Grid lines */}
             {[0, 1, 2, 3, 4, 5].map(i => (
@@ -699,7 +712,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                 y1={50 + i * 40}
                 x2="750"
                 y2={50 + i * 40}
-                stroke="#dbeafe"
+                stroke="#4B5563"
                 strokeWidth="1"
               />
             ))}
@@ -711,7 +724,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                 x="50"
                 y={55 + i * 40}
                 textAnchor="end"
-                className="text-xs fill-blue-600 font-medium"
+                className="text-xs fill-gray-300 font-medium"
               >
                 {(125 - i * 10)}%
               </text>
@@ -732,7 +745,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                 x={60 + (index * (690 / (chartData.length - 1)))}
                 y="280"
                 textAnchor="middle"
-                className={`${selectedPeriod === '10y' || selectedPeriod === '3y' ? 'text-xs' : 'text-xs'} fill-blue-600 font-medium`}
+                className={`${selectedPeriod === '10y' || selectedPeriod === '3y' ? 'text-xs' : 'text-xs'} fill-gray-300 font-medium`}
               >
                 {point.period}
               </text>
@@ -777,11 +790,11 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
           </svg>
           
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 bg-gradient-to-br from-white to-blue-50 p-4 rounded-lg shadow-lg border border-blue-200">
+          <div className="absolute bottom-4 left-4 bg-gray-800/80 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-gray-600/50">
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full shadow-sm"></div>
-                <span className="font-medium text-blue-900">Your Portfolio</span>
+                <span className="font-medium text-white">Your Portfolio</span>
               </div>
               {benchmarks.map((benchmark, index) => {
                 const colors = ['#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
@@ -791,7 +804,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                       className="w-4 h-4 rounded-full shadow-sm"
                       style={{ backgroundColor: colors[index % colors.length] }}
                     ></div>
-                    <span className="font-medium text-gray-700">{benchmark.ticker}</span>
+                    <span className="font-medium text-gray-300">{benchmark.ticker}</span>
                   </div>
                 );
               })}
@@ -801,94 +814,96 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       </div>
 
       {/* Benchmark Comparison Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="bg-green-600 p-2 rounded-full mr-3">
+            <Calendar className="h-4 w-4 text-white" />
+          </div>
           All Benchmarks Comparison
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-700/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Benchmark
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   YTD
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   1 Year
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   3 Years
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   5 Years
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   10 Years
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <tr className="bg-blue-50">
+            <tbody className="divide-y divide-gray-600/50">
+              <tr className="bg-blue-600/20">
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-blue-900">Your Portfolio</div>
+                  <div className="text-sm font-medium text-white">Your Portfolio</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${portfolioMetrics.ytdReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-medium ${portfolioMetrics.ytdReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {formatPercent(portfolioMetrics.ytdReturn)}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${portfolioMetrics.oneYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-medium ${portfolioMetrics.oneYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {formatPercent(portfolioMetrics.oneYearReturn)}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${portfolioMetrics.threeYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-medium ${portfolioMetrics.threeYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {formatPercent(portfolioMetrics.threeYearReturn)}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${portfolioMetrics.fiveYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-medium ${portfolioMetrics.fiveYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {formatPercent(portfolioMetrics.fiveYearReturn)}
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${portfolioMetrics.tenYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-medium ${portfolioMetrics.tenYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {formatPercent(portfolioMetrics.tenYearReturn)}
                   </span>
                 </td>
               </tr>
               {benchmarks.map((benchmark, index) => (
-                <tr key={benchmark.ticker} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr key={benchmark.ticker} className={index % 2 === 0 ? 'bg-gray-700/20' : 'bg-gray-600/20'}>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{benchmark.name}</div>
-                    <div className="text-sm text-gray-500">{benchmark.ticker}</div>
+                    <div className="text-sm font-medium text-white">{benchmark.name}</div>
+                    <div className="text-sm text-gray-300">{benchmark.ticker}</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${benchmark.ytdReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-sm ${benchmark.ytdReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(benchmark.ytdReturn)}
                     </span>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${benchmark.oneYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-sm ${benchmark.oneYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(benchmark.oneYearReturn)}
                     </span>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${benchmark.threeYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-sm ${benchmark.threeYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(benchmark.threeYearReturn)}
                     </span>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${benchmark.fiveYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-sm ${benchmark.fiveYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(benchmark.fiveYearReturn)}
                     </span>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${benchmark.tenYearReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`text-sm ${benchmark.tenYearReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatPercent(benchmark.tenYearReturn)}
                     </span>
                   </td>
@@ -900,28 +915,28 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       </div>
 
       {/* Risk Metrics */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Risk Metrics</h3>
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Risk Metrics</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <div className="text-sm font-medium text-gray-500 mb-1">Beta</div>
-            <div className="text-xl font-bold text-gray-900">{formatNumber(portfolioMetrics.beta)}</div>
-            <div className="text-xs text-gray-500">vs S&P 500</div>
+          <div className="text-center p-4 border border-gray-600/30 bg-gray-700/30 backdrop-blur-sm rounded-lg">
+            <div className="text-sm font-medium text-gray-300 mb-1">Beta</div>
+            <div className="text-xl font-bold text-white">{formatNumber(portfolioMetrics.beta)}</div>
+            <div className="text-xs text-gray-400">vs S&P 500</div>
           </div>
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <div className="text-sm font-medium text-gray-500 mb-1">Sharpe Ratio</div>
-            <div className="text-xl font-bold text-gray-900">{formatNumber(portfolioMetrics.sharpeRatio)}</div>
-            <div className="text-xs text-gray-500">Risk-adjusted return</div>
+          <div className="text-center p-4 border border-gray-600/30 bg-gray-700/30 backdrop-blur-sm rounded-lg">
+            <div className="text-sm font-medium text-gray-300 mb-1">Sharpe Ratio</div>
+            <div className="text-xl font-bold text-white">{formatNumber(portfolioMetrics.sharpeRatio)}</div>
+            <div className="text-xs text-gray-400">Risk-adjusted return</div>
           </div>
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <div className="text-sm font-medium text-gray-500 mb-1">Volatility</div>
-            <div className="text-xl font-bold text-gray-900">{formatPercent(portfolioMetrics.volatility)}</div>
-            <div className="text-xs text-gray-500">Annual std deviation</div>
+          <div className="text-center p-4 border border-gray-600/30 bg-gray-700/30 backdrop-blur-sm rounded-lg">
+            <div className="text-sm font-medium text-gray-300 mb-1">Volatility</div>
+            <div className="text-xl font-bold text-white">{formatPercent(portfolioMetrics.volatility)}</div>
+            <div className="text-xs text-gray-400">Annual std deviation</div>
           </div>
-          <div className="text-center p-4 border border-gray-200 rounded-lg">
-            <div className="text-sm font-medium text-gray-500 mb-1">Max Drawdown</div>
-            <div className="text-xl font-bold text-red-600">{formatPercent(portfolioMetrics.maxDrawdown)}</div>
-            <div className="text-xs text-gray-500">Worst decline</div>
+          <div className="text-center p-4 border border-gray-600/30 bg-gray-700/30 backdrop-blur-sm rounded-lg">
+            <div className="text-sm font-medium text-gray-300 mb-1">Max Drawdown</div>
+            <div className="text-xl font-bold text-red-400">{formatPercent(portfolioMetrics.maxDrawdown)}</div>
+            <div className="text-xs text-gray-400">Worst decline</div>
           </div>
         </div>
       </div>

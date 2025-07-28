@@ -207,49 +207,49 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
   return (
     <div className="space-y-6">
       {/* Account Performance Summary */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-6 flex items-center">
-          <BarChart3 className="h-5 w-5 mr-2 text-blue-700" />
+      <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl p-6">
+        <h3 className="text-lg font-semibold text-blue-400 mb-6 flex items-center">
+          <BarChart3 className="h-5 w-5 mr-2 text-blue-400" />
           Account Performance Summary
         </h3>
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-800/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Account
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Balance
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Cost Basis
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   YTD %
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   1YR %
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   3YR %
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   5YR %
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   10YR %
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                   % of Portfolio
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Tax Status
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-gray-900/40 divide-y divide-gray-700/50">
               {accountSummaries.map((account, index) => {
                 const portfolioPercentage = (account.totalValue / totalPortfolioValue) * 100;
                 // Mock YTD change - in real app this would be calculated from historical data
@@ -302,7 +302,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                 };
                 
                 return (
-                  <tr key={account.accountType} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr key={account.accountType} className={index % 2 === 0 ? 'bg-gray-900/20' : 'bg-gray-800/20'}>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
                         <div 
@@ -312,16 +312,16 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                           <account.icon className="h-4 w-4" />
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{account.displayName}</div>
-                          <div className="text-xs text-gray-500">{account.holdings.length} holdings</div>
+                          <div className="text-sm font-medium text-gray-100">{account.displayName}</div>
+                          <div className="text-xs text-gray-400">{account.holdings.length} holdings</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-semibold text-gray-900">{formatCurrency(account.totalValue)}</div>
+                      <div className="text-sm font-semibold text-gray-100">{formatCurrency(account.totalValue)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm text-gray-600">{formatCurrency(account.totalCost)}</div>
+                      <div className="text-sm text-gray-300">{formatCurrency(account.totalCost)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
                       <div className={`text-sm font-medium ${ytdChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -363,7 +363,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                 );
               })}
             </tbody>
-            <tfoot className="bg-gray-50">
+            <tfoot className="bg-gray-800/50">
               <tr>
                 <td className="px-4 py-3 text-sm font-semibold text-gray-900">Total Portfolio</td>
                 <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
@@ -390,9 +390,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
       </div>
 
       {/* Portfolio Overview */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-          <PieChart className="h-5 w-5 mr-2 text-blue-700" />
+      <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl p-6">
+        <h3 className="text-lg font-semibold text-blue-400 mb-4 flex items-center">
+          <PieChart className="h-5 w-5 mr-2 text-blue-400" />
           Account Allocation Overview
         </h3>
         
@@ -478,7 +478,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
           const isExpanded = showAccountDetails[account.accountType];
           
           return (
-            <div key={account.accountType} className="bg-gradient-to-br from-gray-50 to-white rounded-lg shadow-sm border border-gray-200">
+            <div key={account.accountType} className="bg-gradient-to-br from-gray-800/60 to-gray-700/60 backdrop-blur-sm rounded-xl border border-gray-600/30 shadow-lg">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -489,13 +489,13 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                       <Icon className="h-6 w-6" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900">{account.displayName}</h4>
-                      <p className="text-sm text-gray-500">{account.holdings.length} holdings</p>
+                      <h4 className="text-lg font-semibold text-gray-100">{account.displayName}</h4>
+                      <p className="text-sm text-gray-400">{account.holdings.length} holdings</p>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleAccountDetails(account.accountType)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-gray-400 hover:text-gray-200 transition-colors"
                   >
                     {isExpanded ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -504,11 +504,11 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                 {/* Account Summary */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <div className="text-sm font-medium text-gray-500">Total Value</div>
-                    <div className="text-xl font-bold text-gray-900">{formatCurrency(account.totalValue)}</div>
+                    <div className="text-sm font-medium text-gray-400">Total Value</div>
+                    <div className="text-xl font-bold text-gray-100">{formatCurrency(account.totalValue)}</div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-500">Gain/Loss</div>
+                    <div className="text-sm font-medium text-gray-400">Gain/Loss</div>
                     <div className={`text-xl font-bold ${account.gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {formatCurrency(account.gainLoss)}
                     </div>
@@ -518,7 +518,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4">{account.description}</p>
+                <p className="text-sm text-gray-300 mb-4">{account.description}</p>
 
                 {/* Expanded Details */}
                 {isExpanded && (
@@ -590,9 +590,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
       </div>
 
       {/* Account Type Information */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-          <Info className="h-5 w-5 mr-2 text-blue-700" />
+      <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl p-6">
+        <h3 className="text-lg font-semibold text-blue-400 mb-4 flex items-center">
+          <Info className="h-5 w-5 mr-2 text-blue-400" />
           Account Types Guide
         </h3>
         
@@ -604,20 +604,20 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
             return (
               <div 
                 key={key} 
-                className={`border rounded-lg p-4 ${hasHoldings ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}
+                className={`border rounded-lg p-4 ${hasHoldings ? 'border-blue-500/50 bg-blue-900/30' : 'border-gray-600/50 bg-gray-800/30'}`}
               >
                 <div className="flex items-center space-x-2 mb-2">
-                  <Icon className={`h-5 w-5 ${hasHoldings ? 'text-blue-600' : 'text-gray-500'}`} />
-                  <h4 className={`font-medium ${hasHoldings ? 'text-blue-900' : 'text-gray-900'}`}>
+                  <Icon className={`h-5 w-5 ${hasHoldings ? 'text-blue-400' : 'text-gray-400'}`} />
+                  <h4 className={`font-medium ${hasHoldings ? 'text-blue-300' : 'text-gray-100'}`}>
                     {config.displayName}
                   </h4>
                 </div>
-                <p className="text-sm text-gray-600 mb-2">{config.description}</p>
-                <div className="text-xs text-gray-500">
+                <p className="text-sm text-gray-300 mb-2">{config.description}</p>
+                <div className="text-xs text-gray-400">
                   <strong>Tax:</strong> {config.taxTreatment}
                 </div>
                 {config.contributionLimit && (
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-400 mt-1">
                     <strong>Limit:</strong> {config.contributionLimit}
                   </div>
                 )}

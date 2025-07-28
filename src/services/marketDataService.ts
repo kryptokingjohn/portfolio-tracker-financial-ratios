@@ -1,10 +1,9 @@
-import axios from 'axios';
+import FMPService from './fmpService';
 import { supabase } from '../lib/supabase';
 
-// Market data service with multiple providers for redundancy
+// Market data service using Financial Modeling Prep API
 export class MarketDataService {
-  private static readonly ALPHA_VANTAGE_KEY = import.meta.env.VITE_ALPHA_VANTAGE_KEY || 'demo';
-  private static readonly IEX_CLOUD_KEY = import.meta.env.VITE_IEX_CLOUD_KEY || 'demo';
+  private static readonly FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY || 'demo';
   
   // Rate limiting
   private static lastApiCall = 0;
@@ -14,7 +13,7 @@ export class MarketDataService {
   private static priceCache = new Map<string, { price: number; timestamp: number }>();
   private static readonly CACHE_DURATION = 60000; // 1 minute cache
   
-  // Primary quote method with enhanced fallback strategy
+  // Primary quote method using FMP
   static async getQuote(symbol: string) {
     // Check cache first
     const cached = this.priceCache.get(symbol);
@@ -33,83 +32,31 @@ export class MarketDataService {
     }
     
     // For demo/production without API keys, use realistic mock data immediately
-    if (this.ALPHA_VANTAGE_KEY === 'demo' || !this.ALPHA_VANTAGE_KEY) {
-      console.log(`Using realistic mock data for ${symbol} (no API key configured)`);
-      return this.getMockQuote(symbol);
-    }
-    
-    // Rate limiting for free tier
-    const now = Date.now();
-    if (now - this.lastApiCall < this.API_DELAY) {
-      console.warn(`Rate limited, using mock data for ${symbol}`);
+    if (this.FMP_API_KEY === 'demo' || !this.FMP_API_KEY) {
+      console.log(`💰 Using realistic mock data for ${symbol} (no FMP API key configured)`);
       return this.getMockQuote(symbol);
     }
     
     try {
-      this.lastApiCall = now;
+      console.log(`📈 Fetching current price for ${symbol} via FMP...`);
       
-      // Set a shorter timeout for the API call
-      const response = await axios.get(
-        `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${this.ALPHA_VANTAGE_KEY}`,
-        { timeout: 5000 } // 5 second timeout
-      );
+      const marketData = await FMPService.getMarketData(symbol);
       
-      const quote = response.data['Global Quote'];
-      if (!quote || Object.keys(quote).length === 0) {
-        throw new Error('No data found or API limit reached');
+      if (!marketData) {
+        console.warn(`⚠️ FMP market data unavailable for ${symbol}, using mock data`);
+        return this.getMockQuote(symbol);
       }
       
       const result = {
-        symbol,
-        price: parseFloat(quote['05. price']),
-        change: parseFloat(quote['09. change']),
-        changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
-        volume: parseInt(quote['06. volume']),
-        high: parseFloat(quote['03. high']),
-        low: parseFloat(quote['04. low']),
-        open: parseFloat(quote['02. open']),
-        previousClose: parseFloat(quote['08. previous close'])
-      };
-      
-      // Cache the price
-      this.priceCache.set(symbol, { price: result.price, timestamp: now });
-      
-      // Update database with latest price (non-blocking)
-      this.updateCompanyPrice(symbol, result.price).catch(err => 
-        console.warn('Failed to update price in DB:', err)
-      );
-      
-      return result;
-    } catch (error) {
-      console.warn(`Alpha Vantage failed for ${symbol}, trying fallback:`, error.message);
-      return this.getQuoteFallback(symbol);
-    }
-  }
-
-  // IEX Cloud fallback with timeout and better error handling
-  static async getQuoteFallback(symbol: string) {
-    // Skip IEX if using demo token
-    if (this.IEX_CLOUD_KEY === 'demo' || !this.IEX_CLOUD_KEY) {
-      console.log(`Skipping IEX (demo token), using mock data for ${symbol}`);
-      return this.getMockQuote(symbol);
-    }
-
-    try {
-      const response = await axios.get(
-        `https://cloud.iexapis.com/stable/stock/${symbol}/quote?token=${this.IEX_CLOUD_KEY}`,
-        { timeout: 3000 } // 3 second timeout for fallback
-      );
-      
-      const result = {
-        symbol,
-        price: response.data.latestPrice,
-        change: response.data.change,
-        changePercent: response.data.changePercent * 100,
-        volume: response.data.latestVolume,
-        high: response.data.high,
-        low: response.data.low,
-        open: response.data.open,
-        previousClose: response.data.previousClose
+        symbol: marketData.symbol,
+        price: marketData.price,
+        change: marketData.change,
+        changePercent: marketData.changePercent,
+        volume: marketData.volume,
+        high: marketData.high,
+        low: marketData.low,
+        open: marketData.open,
+        previousClose: marketData.previousClose
       };
       
       // Cache the price
@@ -120,13 +67,15 @@ export class MarketDataService {
         console.warn('Failed to update price in DB:', err)
       );
       
+      console.log(`✅ Successfully fetched FMP price for ${symbol}: $${result.price}`);
       return result;
+      
     } catch (error) {
-      console.warn(`All market data providers failed for ${symbol}:`, error.message);
-      // Return mock data as last resort
+      console.warn(`❌ FMP failed for ${symbol}:`, error);
       return this.getMockQuote(symbol);
     }
   }
+
 
   // Mock data for development/demo with realistic prices for known stocks
   static getMockQuote(symbol: string) {
@@ -206,39 +155,41 @@ export class MarketDataService {
     return data?.id || '';
   }
 
-  // Get fundamental data
+  // Get fundamental data using FMP
   static async getFundamentals(symbol: string) {
     try {
-      const response = await axios.get(
-        `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=${this.ALPHA_VANTAGE_KEY}`
-      );
+      console.log(`📊 Getting fundamentals for ${symbol} via FMP...`);
       
-      const data = response.data;
-      if (!data || Object.keys(data).length === 0) throw new Error('No fundamental data');
+      const financials = await FMPService.getCompanyFinancials(symbol);
+      
+      if (!financials) {
+        console.warn(`⚠️ FMP fundamentals unavailable for ${symbol}, using mock data`);
+        return this.getMockFundamentals(symbol);
+      }
       
       return {
-        symbol,
-        marketCap: parseInt(data.MarketCapitalization) || 0,
-        peRatio: parseFloat(data.PERatio) || 0,
-        pbRatio: parseFloat(data.PriceToBookRatio) || 0,
-        pegRatio: parseFloat(data.PEGRatio) || 0,
-        dividendYield: parseFloat(data.DividendYield) || 0,
-        eps: parseFloat(data.EPS) || 0,
-        beta: parseFloat(data.Beta) || 1,
-        roe: parseFloat(data.ReturnOnEquityTTM) || 0,
-        roa: parseFloat(data.ReturnOnAssetsTTM) || 0,
-        debtToEquity: parseFloat(data.DebtToEquityRatio) || 0,
-        currentRatio: parseFloat(data.CurrentRatio) || 0,
-        quickRatio: parseFloat(data.QuickRatio) || 0,
-        grossMargin: parseFloat(data.GrossProfitMarginTTM) || 0,
-        operatingMargin: parseFloat(data.OperatingMarginTTM) || 0,
-        netMargin: parseFloat(data.ProfitMarginTTM) || 0,
-        revenueGrowth: parseFloat(data.QuarterlyRevenueGrowthYOY) || 0,
-        sector: data.Sector || 'Unknown',
-        industry: data.Industry || 'Unknown'
+        symbol: financials.symbol,
+        marketCap: 0, // Would need separate endpoint for market cap
+        peRatio: financials.pe,
+        pbRatio: financials.pb,
+        pegRatio: financials.peg,
+        dividendYield: financials.dividendYield,
+        eps: 0, // Would need separate endpoint for EPS
+        beta: 1, // Would need separate endpoint for beta
+        roe: financials.roe,
+        roa: financials.roa,
+        debtToEquity: financials.debtToEquity,
+        currentRatio: financials.currentRatio,
+        quickRatio: financials.quickRatio,
+        grossMargin: financials.grossMargin,
+        operatingMargin: financials.operatingMargin,
+        netMargin: financials.netMargin,
+        revenueGrowth: financials.revenueGrowth,
+        sector: financials.sector,
+        industry: financials.industry
       };
     } catch (error) {
-      console.warn('Fundamentals API failed, using mock data:', error);
+      console.warn('FMP fundamentals failed, using mock data:', error);
       return this.getMockFundamentals(symbol);
     }
   }
@@ -267,33 +218,11 @@ export class MarketDataService {
     };
   }
 
-  // Get historical data for charts
+  // Get historical data for charts - using mock data for now
+  // FMP historical data would require separate endpoint implementation
   static async getHistoricalData(symbol: string, period: string = '1y') {
-    try {
-      const response = await axios.get(
-        `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${this.ALPHA_VANTAGE_KEY}`
-      );
-      
-      const timeSeries = response.data['Time Series (Daily)'];
-      if (!timeSeries) throw new Error('No historical data');
-      
-      const data = Object.entries(timeSeries)
-        .slice(0, 252) // ~1 year of trading days
-        .map(([date, values]: [string, any]) => ({
-          date,
-          open: parseFloat(values['1. open']),
-          high: parseFloat(values['2. high']),
-          low: parseFloat(values['3. low']),
-          close: parseFloat(values['4. close']),
-          volume: parseInt(values['5. volume'])
-        }))
-        .reverse();
-      
-      return data;
-    } catch (error) {
-      console.warn('Historical data failed, using mock data:', error);
-      return this.getMockHistoricalData(symbol);
-    }
+    console.log(`📈 Generating mock historical data for ${symbol} (${period})`);
+    return this.getMockHistoricalData(symbol);
   }
   
   // Batch update prices for multiple symbols

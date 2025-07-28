@@ -336,8 +336,8 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
   return (
     <div className="space-y-6">
       {/* Sub-navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+      <div className="border-b border-gray-700/50">
+        <nav className="flex space-x-2">
           {[
             { id: 'overview', label: 'Performance Overview', icon: TrendingUp },
             { id: 'attribution', label: 'Attribution Analysis', icon: Target },
@@ -350,10 +350,10 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id as any)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center transition-colors ${
+                className={`py-3 px-4 font-medium text-sm flex items-center transition-all rounded-lg backdrop-blur-sm ${
                   activeSubTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30 shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
                 }`}
               >
                 <Icon className="h-4 w-4 mr-2" />
@@ -385,14 +385,16 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
         <>
       {/* Performance Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-6">
+        <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/60 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <TrendingUp className="h-8 w-8 text-blue-700" />
+              <div className="bg-blue-600 p-3 rounded-full">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-blue-700">Total Return</div>
-              <div className={`text-2xl font-bold ${portfolioMetrics.totalReturn >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+              <div className="text-sm font-medium text-blue-200">Total Return</div>
+              <div className={`text-2xl font-bold ${portfolioMetrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatPercent(portfolioMetrics.totalReturn)}
               </div>
             </div>
@@ -440,16 +442,18 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       </div>
 
       {/* Asset Allocation */}
-      <div className="bg-gradient-to-br from-white to-purple-50 rounded-lg shadow-lg border border-purple-200 p-6">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-purple-900 flex items-center">
-            <PieChart className="h-5 w-5 mr-2 text-purple-600" />
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <div className="bg-purple-600 p-2 rounded-full mr-3">
+              <PieChart className="h-4 w-4 text-white" />
+            </div>
             Asset Allocation
           </h3>
           <select
             value={selectedAllocationView}
             onChange={(e) => setSelectedAllocationView(e.target.value as any)}
-            className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white shadow-sm"
+            className="px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 backdrop-blur-sm"
           >
             <option value="cap">By Market Cap</option>
             <option value="sector">By Sector</option>

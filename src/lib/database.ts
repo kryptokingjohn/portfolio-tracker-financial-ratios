@@ -84,6 +84,39 @@ export interface DatabaseCompany {
 }
 
 export class DatabaseService {
+  // Database permission tracking - start with false for production safety
+  private static databaseAccessAllowed = false;
+  private static databaseChecked = false;
+  
+  // Test database permissions before attempting operations
+  private static async checkDatabasePermissions(): Promise<boolean> {
+    if (this.databaseChecked) {
+      return this.databaseAccessAllowed;
+    }
+    
+    try {
+      // Test with a simple read operation first
+      const { error } = await supabase
+        .from('companies')
+        .select('id')
+        .limit(1);
+        
+      if (error && (error.code === '42501' || error.code === '403' || error.code === 406)) {
+        console.warn('🔒 Database access restricted - transactions will use demo mode');
+        this.databaseAccessAllowed = false;
+      } else {
+        console.log('✅ Database access confirmed for transactions');
+        this.databaseAccessAllowed = true;
+      }
+    } catch (error) {
+      console.warn('🔒 Database connectivity issue - transactions will use demo mode:', error);
+      this.databaseAccessAllowed = false;
+    }
+    
+    this.databaseChecked = true;
+    return this.databaseAccessAllowed;
+  }
+  
   // User Profile Management
   static async ensureUserProfile(user: any) {
     try {
@@ -375,6 +408,12 @@ export class DatabaseService {
   }
 
   static async createTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction> {
+    // Check database permissions first
+    const hasAccess = await this.checkDatabasePermissions();
+    if (!hasAccess) {
+      throw new Error('Database access restricted. Please use Demo Mode to explore the portfolio tracker features.');
+    }
+    
     const user = await this.getCurrentUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -506,6 +545,25 @@ export class DatabaseService {
   }
 
   private static async getOrCreateCompany(ticker: string, companyData?: Partial<DatabaseCompany>): Promise<DatabaseCompany> {
+    // Check database permissions before attempting any operations
+    const hasAccess = await this.checkDatabasePermissions();
+    if (!hasAccess) {
+      // Return fallback company immediately if database access is restricted
+      console.warn(`⚠️ Database permission issue for ${ticker}, using fallback company data`);
+      return {
+        id: `fallback-${ticker.toUpperCase()}`,
+        ticker: ticker.toUpperCase(),
+        company_name: companyData?.company_name || ticker,
+        sector: companyData?.sector || 'Unknown',
+        industry: companyData?.industry || 'Unknown',
+        asset_type: companyData?.asset_type || 'stocks',
+        exchange: companyData?.exchange || 'Unknown',
+        currency: 'USD',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as DatabaseCompany;
+    }
+    
     // First try to get existing company
     const { data: existing, error: getError } = await supabase
       .from('companies')

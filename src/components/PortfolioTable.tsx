@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Edit3, ExternalLink, BarChart3, Search, Filter } from 'lucide-react';
 import { Holding } from '../types/portfolio';
 import { QuickViewChart } from './QuickViewChart';
+import { AdvancedModal } from './AdvancedModal';
 
 interface PortfolioTableProps {
   holdings: Holding[];
@@ -11,6 +12,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [expandedQuickView, setExpandedQuickView] = useState<string | null>(null);
+  const [advancedModalHolding, setAdvancedModalHolding] = useState<Holding | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
 
@@ -36,6 +38,14 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     });
     const url = `${window.location.origin}/?${params.toString()}`;
     window.open(url, '_blank');
+  };
+
+  const openAdvanced = (holding: Holding) => {
+    setAdvancedModalHolding(holding);
+  };
+
+  const closeAdvanced = () => {
+    setAdvancedModalHolding(null);
   };
 
   // First sort by total value (shares * currentPrice) in descending order by default
@@ -364,8 +374,8 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                       <ExternalLink className="h-3 w-3" />
                     </button>
                     <button
-                      onClick={() => toggleQuickView(holding.id)}
-                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
+                      onClick={() => openAdvanced(holding)}
+                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
                     >
                       <BarChart3 className="h-3 w-3" />
                       <span>Advanced</span>
@@ -389,6 +399,15 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
           </tbody>
         </table>
       </div>
+
+      {/* Advanced Modal */}
+      {advancedModalHolding && (
+        <AdvancedModal
+          holding={advancedModalHolding}
+          isOpen={!!advancedModalHolding}
+          onClose={closeAdvanced}
+        />
+      )}
     </div>
   );
 };

@@ -341,11 +341,13 @@ export const RiskAnalyticsTab: React.FC<RiskAnalyticsTabProps> = ({ holdings }) 
                       
                       return (
                         <td key={holding2.ticker} className="px-3 py-2 text-center">
-                          <div 
-                            className={`inline-block w-8 h-8 rounded text-white text-xs flex items-center justify-center ${color}`}
-                            style={{ opacity: intensity }}
-                          >
-                            {formatRatio(correlation, 1)}
+                          <div className="flex justify-center items-center">
+                            <div 
+                              className={`w-8 h-8 rounded text-white text-xs flex items-center justify-center ${color}`}
+                              style={{ opacity: intensity }}
+                            >
+                              {formatRatio(correlation, 1)}
+                            </div>
                           </div>
                         </td>
                       );

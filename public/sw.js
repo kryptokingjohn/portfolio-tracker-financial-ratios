@@ -1,8 +1,6 @@
 const CACHE_NAME = 'portfolio-tracker-v1';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json',
   '/icon-192x192.png',
   '/icon-512x512.png'

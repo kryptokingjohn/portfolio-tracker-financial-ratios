@@ -14,10 +14,12 @@ import { AccountsTab } from './components/AccountsTab';
 import { DividendsTab } from './components/DividendsTab';
 import { TaxOptimizationTab } from './components/TaxOptimizationTab';
 import { ExportModal } from './components/ExportModal';
+import { PricingModal } from './components/PricingModal';
+import { StripeCheckout } from './components/StripeCheckout';
 import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
 import { Holding, Transaction } from './types/portfolio';
-import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut, RefreshCw, Crown } from 'lucide-react';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
 // Detect if we're on mobile
@@ -54,6 +56,9 @@ const AppContent: React.FC = () => {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'portfolio' | 'transactions' | 'performance' | 'ratios' | 'accounts' | 'dividends' | 'tax'>('portfolio');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
   const [portfolioFilter, setPortfolioFilter] = useState<'stocks' | 'etfs' | 'bonds' | 'all'>('all');
 
   if (loading) {
@@ -149,6 +154,13 @@ const AppContent: React.FC = () => {
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Transaction</span>
+              </button>
+              <button
+                onClick={() => setIsPricingModalOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <Crown className="h-4 w-4" />
+                <span>Upgrade</span>
               </button>
               <button
                 onClick={signOut}
@@ -297,6 +309,57 @@ const AppContent: React.FC = () => {
           transactions={transactions}
           portfolioMetrics={portfolioMetrics}
         />
+      )}
+
+      {/* Pricing Modal */}
+      {isPricingModalOpen && (
+        <PricingModal
+          isOpen={isPricingModalOpen}
+          onClose={() => setIsPricingModalOpen(false)}
+          onSelectPlan={(planId) => {
+            setSelectedPlan(planId);
+            setIsPricingModalOpen(false);
+            setShowCheckout(true);
+          }}
+        />
+      )}
+
+      {/* Checkout Modal */}
+      {showCheckout && selectedPlan && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 z-[9999] backdrop-blur-sm overflow-y-auto"
+          onClick={() => setShowCheckout(false)}
+        >
+          <div 
+            className="bg-gray-900/95 backdrop-blur-md border border-gray-600/30 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] my-8 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-600/30 p-6 flex items-center justify-between rounded-t-2xl">
+              <h2 className="text-2xl font-bold text-white">Complete Your Subscription</h2>
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="px-4 py-2 bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl border border-red-500/30 text-sm font-medium backdrop-blur-sm"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6">
+              <StripeCheckout
+                planId={selectedPlan}
+                onSuccess={() => {
+                  setShowCheckout(false);
+                  setSelectedPlan(null);
+                  // Handle successful subscription
+                  alert('Subscription successful! Welcome to Portfolio Pro!');
+                }}
+                onError={(error) => {
+                  console.error('Payment error:', error);
+                  alert('Payment failed. Please try again.');
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -8,10 +8,11 @@ interface QuickViewChartProps {
   isExpanded: boolean;
   onToggle: () => void;
   hideCloseButton?: boolean;
+  hideAdvancedButton?: boolean;
 }
 import { MarketDataService } from '../services/marketDataService';
 
-export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpanded, onToggle, hideCloseButton = false }) => {
+export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpanded, onToggle, hideCloseButton = false, hideAdvancedButton = false }) => {
   const formatNumber = (num: number, decimals: number = 1) => {
     if (num === 0) return '0';
     return num.toFixed(decimals);
@@ -61,12 +62,14 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
             <p className="text-blue-300">Financial Ratios Analysis</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl border border-blue-500/30 text-sm font-medium backdrop-blur-sm"
-        >
-          {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
-        </button>
+        {!hideAdvancedButton && (
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl border border-blue-500/30 text-sm font-medium backdrop-blur-sm"
+          >
+            {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+          </button>
+        )}
       </div>
 
       {showAdvanced && (

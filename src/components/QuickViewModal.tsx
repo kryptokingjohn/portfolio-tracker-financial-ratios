@@ -13,8 +13,14 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ holding, isOpen,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-gray-900/95 backdrop-blur-md border border-gray-600/30 rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 z-[9999] backdrop-blur-sm overflow-y-auto"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gray-900/95 backdrop-blur-md border border-gray-600/30 rounded-2xl shadow-2xl max-w-7xl w-full max-h-[85vh] my-8 overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-600/30 p-6 flex items-center justify-between rounded-t-2xl">
           <h3 className="text-2xl font-bold text-white flex items-center">
             <div className="bg-green-600/20 p-2 rounded-full border border-green-500/30 mr-3">
@@ -35,6 +41,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ holding, isOpen,
             isExpanded={true} 
             onToggle={onClose}
             hideCloseButton={true}
+            hideAdvancedButton={true}
           />
         </div>
       </div>

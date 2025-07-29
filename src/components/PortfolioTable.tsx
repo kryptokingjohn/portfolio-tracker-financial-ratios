@@ -27,7 +27,9 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
   };
 
 
-  const openQuickView = (holding: Holding) => {
+  const openQuickView = (e: React.MouseEvent, holding: Holding) => {
+    e.preventDefault();
+    e.stopPropagation();
     setQuickViewModalHolding(holding);
   };
 
@@ -35,7 +37,9 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     setQuickViewModalHolding(null);
   };
 
-  const openAdvanced = (holding: Holding) => {
+  const openAdvanced = (e: React.MouseEvent, holding: Holding) => {
+    e.preventDefault();
+    e.stopPropagation();
     setAdvancedModalHolding(holding);
   };
 
@@ -361,14 +365,14 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                       <ExternalLink className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => openQuickView(holding)}
+                      onClick={(e) => openQuickView(e, holding)}
                       className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
                     >
                       <BarChart3 className="h-3 w-3" />
                       <span>QuickView</span>
                     </button>
                     <button
-                      onClick={() => openAdvanced(holding)}
+                      onClick={(e) => openAdvanced(e, holding)}
                       className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
                     >
                       <BarChart3 className="h-3 w-3" />

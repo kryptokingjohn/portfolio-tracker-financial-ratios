@@ -81,8 +81,23 @@ export const useAuthState = () => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      // Add timeout for Supabase requests (10 seconds)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+      
+      const signInPromise = supabase.auth.signInWithPassword({ email, password });
+      
+      const { error } = await Promise.race([signInPromise, timeoutPromise]) as any;
+      
       return { error };
+    } catch (err: any) {
+      console.warn('Sign in failed:', err.message);
+      if (err.message === 'Connection timeout' || err.message?.includes('ERR_TIMED_OUT')) {
+        return { error: { message: 'Connection timeout. You can continue in demo mode.' } };
+      }
+      return { error: err };
     } finally {
       setLoading(false);
     }
@@ -91,8 +106,23 @@ export const useAuthState = () => {
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({ email, password });
+      
+      // Add timeout for Supabase requests (10 seconds)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+      
+      const signUpPromise = supabase.auth.signUp({ email, password });
+      
+      const { error } = await Promise.race([signUpPromise, timeoutPromise]) as any;
+      
       return { error };
+    } catch (err: any) {
+      console.warn('Sign up failed:', err.message);
+      if (err.message === 'Connection timeout' || err.message?.includes('ERR_TIMED_OUT')) {
+        return { error: { message: 'Connection timeout. You can continue in demo mode.' } };
+      }
+      return { error: err };
     } finally {
       setLoading(false);
     }

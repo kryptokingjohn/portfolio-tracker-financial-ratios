@@ -12,7 +12,6 @@ interface PortfolioTableProps {
 export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [expandedQuickView, setExpandedQuickView] = useState<string | null>(null);
   const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
   const [advancedModalHolding, setAdvancedModalHolding] = useState<Holding | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,9 +26,6 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     }
   };
 
-  const toggleQuickView = (holdingId: string) => {
-    setExpandedQuickView(expandedQuickView === holdingId ? null : holdingId);
-  };
 
   const openQuickView = (holding: Holding) => {
     setQuickViewModalHolding(holding);
@@ -380,17 +376,6 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                     </button>
                   </td>
                 </tr>
-                  {expandedQuickView === holding.id && (
-                    <tr key={`${holding.id}-quickview`}>
-                      <td colSpan={26} className="px-4 py-4 bg-gray-900/30 backdrop-blur-sm">
-                        <QuickViewChart 
-                          holding={holding} 
-                          isExpanded={true} 
-                          onToggle={() => setExpandedQuickView(null)} 
-                        />
-                      </td>
-                    </tr>
-                  )}
                 </React.Fragment>
               );
             })}

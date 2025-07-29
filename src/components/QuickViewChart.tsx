@@ -7,10 +7,11 @@ interface QuickViewChartProps {
   holding: Holding;
   isExpanded: boolean;
   onToggle: () => void;
+  hideCloseButton?: boolean;
 }
 import { MarketDataService } from '../services/marketDataService';
 
-export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpanded, onToggle }) => {
+export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpanded, onToggle, hideCloseButton = false }) => {
   const formatNumber = (num: number, decimals: number = 1) => {
     if (num === 0) return '0';
     return num.toFixed(decimals);
@@ -206,15 +207,17 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
         </div>
       </div>
 
-      <div className="mt-8 flex justify-center">
-        <button
-          onClick={onToggle}
-          className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
-        >
-          <ChevronUp className="h-5 w-5 mr-2" />
-          Close QuickView
-        </button>
-      </div>
+      {!hideCloseButton && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={onToggle}
+            className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
+          >
+            <ChevronUp className="h-5 w-5 mr-2" />
+            Close QuickView
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -232,13 +235,15 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
             <p className="text-green-300">Performance Metrics</p>
           </div>
         </div>
-        <button
-          onClick={onToggle}
-          className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
-        >
-          <ChevronUp className="h-5 w-5 mr-2" />
-          Close QuickView
-        </button>
+        {!hideCloseButton && (
+          <button
+            onClick={onToggle}
+            className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
+          >
+            <ChevronUp className="h-5 w-5 mr-2" />
+            Close QuickView
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
@@ -364,13 +369,15 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
             <p className="text-green-300">Bond Metrics</p>
           </div>
         </div>
-        <button
-          onClick={onToggle}
-          className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
-        >
-          <ChevronUp className="h-5 w-5 mr-2" />
-          Close QuickView
-        </button>
+        {!hideCloseButton && (
+          <button
+            onClick={onToggle}
+            className="px-8 py-3 bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600/80 hover:to-gray-700/80 text-white rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center border border-gray-600/30 backdrop-blur-sm font-medium"
+          >
+            <ChevronUp className="h-5 w-5 mr-2" />
+            Close QuickView
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

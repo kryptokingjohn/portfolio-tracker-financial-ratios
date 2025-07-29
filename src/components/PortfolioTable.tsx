@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Edit3, ExternalLink, BarChart3, Search, Filte
 import { Holding } from '../types/portfolio';
 import { QuickViewChart } from './QuickViewChart';
 import { AdvancedModal } from './AdvancedModal';
+import { QuickViewModal } from './QuickViewModal';
 
 interface PortfolioTableProps {
   holdings: Holding[];
@@ -12,6 +13,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [expandedQuickView, setExpandedQuickView] = useState<string | null>(null);
+  const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
   const [advancedModalHolding, setAdvancedModalHolding] = useState<Holding | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
@@ -29,15 +31,12 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     setExpandedQuickView(expandedQuickView === holdingId ? null : holdingId);
   };
 
-  const openQuickView = (ticker: string, company: string, type: string) => {
-    // Create a URL with the holding information
-    const params = new URLSearchParams({
-      ticker,
-      company,
-      type
-    });
-    const url = `${window.location.origin}/?${params.toString()}`;
-    window.open(url, '_blank');
+  const openQuickView = (holding: Holding) => {
+    setQuickViewModalHolding(holding);
+  };
+
+  const closeQuickView = () => {
+    setQuickViewModalHolding(null);
   };
 
   const openAdvanced = (holding: Holding) => {
@@ -366,12 +365,11 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                       <ExternalLink className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => openQuickView(holding.ticker, holding.company, holding.type)}
-                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
+                      onClick={() => openQuickView(holding)}
+                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
                     >
                       <BarChart3 className="h-3 w-3" />
                       <span>QuickView</span>
-                      <ExternalLink className="h-3 w-3" />
                     </button>
                     <button
                       onClick={() => openAdvanced(holding)}
@@ -399,6 +397,15 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
           </tbody>
         </table>
       </div>
+
+      {/* QuickView Modal */}
+      {quickViewModalHolding && (
+        <QuickViewModal
+          holding={quickViewModalHolding}
+          isOpen={!!quickViewModalHolding}
+          onClose={closeQuickView}
+        />
+      )}
 
       {/* Advanced Modal */}
       {advancedModalHolding && (

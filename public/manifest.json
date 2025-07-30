@@ -73,7 +73,6 @@
       "src": "/icon-512x512.png", 
       "sizes": "750x1334",
       "type": "image/png",
-      "form_factor": "narrow",
       "label": "Mobile portfolio view with transaction history"
     }
   ],

@@ -31,6 +31,20 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
     interest: 'Interest'
   };
 
+  const accountTypeLabels = {
+    taxable: 'Taxable',
+    '401k': '401(k)',
+    traditional_ira: 'Traditional IRA',
+    roth_ira: 'Roth IRA',
+    hsa: 'HSA',
+    sep_ira: 'SEP-IRA',
+    simple_ira: 'SIMPLE IRA',
+    '529': '529 Education',
+    cash_money_market: 'Cash & Money Market',
+    trust: 'Trust',
+    custodial: 'Custodial'
+  };
+
   const transactionTypeColors = {
     buy: 'bg-green-600/30 text-green-300 border border-green-500/30',
     sell: 'bg-red-600/30 text-red-300 border border-red-500/30',
@@ -161,6 +175,12 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
               >
                 Type
               </th>
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                onClick={() => handleSort('accountType')}
+              >
+                Account
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Details
               </th>
@@ -169,6 +189,12 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                 onClick={() => handleSort('amount')}
               >
                 Amount
+              </th>
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                onClick={() => handleSort('fees')}
+              >
+                Fees
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Notes
@@ -192,6 +218,11 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <span className="inline-flex px-2 py-1 text-xs font-medium rounded-md bg-blue-600/20 text-blue-300 border border-blue-500/30">
+                    {accountTypeLabels[transaction.accountType as keyof typeof accountTypeLabels] || transaction.accountType || 'Taxable'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                   {transaction.shares && (
                     <div>{transaction.shares} shares @ {formatCurrency(transaction.price || 0)}</div>
                   )}
@@ -201,9 +232,6 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                   {transaction.newTicker && (
                     <div>New ticker: {transaction.newTicker}</div>
                   )}
-                  {transaction.fees && transaction.fees > 0 && (
-                    <div className="text-xs text-gray-400">Fees: {formatCurrency(transaction.fees)}</div>
-                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className={`${
@@ -212,6 +240,15 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                     {['buy', 'fee'].includes(transaction.type) ? '-' : '+'}
                     {formatCurrency(transaction.amount)}
                   </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  {transaction.fees && transaction.fees > 0 ? (
+                    <div className="text-red-400">
+                      {formatCurrency(transaction.fees)}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500">-</div>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-400 max-w-xs">
                   <div className="truncate" title={transaction.notes}>

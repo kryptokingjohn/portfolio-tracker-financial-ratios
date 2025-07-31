@@ -44,6 +44,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
     const transaction: Omit<Transaction, 'id'> = {
       ticker: formData.ticker.toUpperCase(),
       type: formData.type,
+      accountType: formData.accountType,
       date: formData.date,
       amount: formData.amount,
       fees: formData.fees || 0,

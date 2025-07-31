@@ -261,7 +261,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings, transactions
             </thead>
             <tbody className="bg-gray-900/40 divide-y divide-gray-700/50">
               {accountSummaries.map((account, index) => {
-                const portfolioPercentage = (account.totalValue / totalPortfolioValue) * 100;
+                const portfolioPercentage = totalPortfolioValue > 0 ? (account.totalValue / totalPortfolioValue) * 100 : 0;
                 const accountAge = getAccountAge(account.accountType);
                 
                 // Only show performance data if account has sufficient history
@@ -384,7 +384,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings, transactions
                       )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-medium text-blue-400">{portfolioPercentage.toFixed(1)}%</div>
+                      <div className="text-sm font-medium text-blue-400">
+                        {totalPortfolioValue > 0 ? `${portfolioPercentage.toFixed(1)}%` : '0.0%'}
+                      </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTaxStatusColor(account.accountType)}`}>
@@ -434,7 +436,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings, transactions
             <div className="relative w-64 h-64">
               <svg viewBox="0 0 200 200" className="w-full h-full transform -rotate-90">
                 {accountSummaries.reduce((acc, account, index) => {
-                  const percentage = (account.totalValue / totalPortfolioValue) * 100;
+                  const percentage = totalPortfolioValue > 0 ? (account.totalValue / totalPortfolioValue) * 100 : 0;
                   const startAngle = acc.currentAngle;
                   const angle = (percentage / 100) * 360;
                   const endAngle = startAngle + angle;

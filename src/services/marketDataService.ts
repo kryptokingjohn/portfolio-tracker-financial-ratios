@@ -375,7 +375,7 @@ export class MarketDataService {
       } catch (error) {
         console.error('Real-time update failed:', error);
       }
-    }, 300000); // Update every 5 minutes
+    }, 900000); // Update every 15 minutes
     
     return () => clearInterval(interval);
   }

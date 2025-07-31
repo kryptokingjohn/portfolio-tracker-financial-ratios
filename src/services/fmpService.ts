@@ -245,7 +245,7 @@ class FMPService {
   
   // Cache for API responses
   private static cache = new Map<string, { data: any; timestamp: number }>();
-  private static readonly CACHE_DURATION = 300000; // 5 minutes
+  private static readonly CACHE_DURATION = 900000; // 15 minutes
   
   // Rate limiting
   private static lastCall = 0;

@@ -426,7 +426,8 @@ export class DatabaseService {
       .from('transactions')
       .select(`
         *,
-        companies!transactions_company_id_fkey (ticker, company_name)
+        companies!transactions_company_id_fkey (ticker, company_name),
+        accounts!transactions_account_id_fkey (account_type)
       `)
       .eq('user_id', user.id)
       .order('transaction_date', { ascending: false });
@@ -454,8 +455,8 @@ export class DatabaseService {
     // Ensure company exists
     const company = await this.getOrCreateCompany(transaction.ticker);
     
-    // Get or create default account
-    const account = await this.ensureAccountExists('taxable', user.id);
+    // Get or create account for the specified account type
+    const account = await this.ensureAccountExists(transaction.accountType || 'taxable', user.id);
 
     const { data, error } = await supabase
       .from('transactions')
@@ -475,7 +476,8 @@ export class DatabaseService {
       })
       .select(`
         *,
-        companies!transactions_company_id_fkey (ticker, company_name)
+        companies!transactions_company_id_fkey (ticker, company_name),
+        accounts!transactions_account_id_fkey (account_type)
       `)
       .single();
 
@@ -520,12 +522,20 @@ export class DatabaseService {
       newCompanyId = newCompany.id;
     }
 
+    // Handle account type changes
+    let accountId;
+    if (updates.accountType) {
+      const account = await this.ensureAccountExists(updates.accountType, user.id);
+      accountId = account.id;
+    }
+
     const updateData: any = {
       updated_at: new Date().toISOString()
     };
 
     // Only update fields that are provided
     if (companyId) updateData.company_id = companyId;
+    if (accountId) updateData.account_id = accountId;
     if (updates.type) updateData.transaction_type = updates.type;
     if (updates.date) updateData.transaction_date = updates.date;
     if (updates.shares !== undefined) updateData.shares = updates.shares;
@@ -543,7 +553,8 @@ export class DatabaseService {
       .eq('user_id', user.id)
       .select(`
         *,
-        companies!transactions_company_id_fkey (ticker, company_name)
+        companies!transactions_company_id_fkey (ticker, company_name),
+        accounts!transactions_account_id_fkey (account_type)
       `)
       .single();
 
@@ -847,6 +858,7 @@ export class DatabaseService {
       id: dbTransaction.id,
       ticker: dbTransaction.companies.ticker,
       type: dbTransaction.transaction_type,
+      accountType: dbTransaction.accounts?.account_type || 'taxable',
       date: dbTransaction.transaction_date,
       shares: dbTransaction.shares,
       price: dbTransaction.price_per_share,

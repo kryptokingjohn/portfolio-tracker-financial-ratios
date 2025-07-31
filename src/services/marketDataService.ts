@@ -12,7 +12,7 @@ export class MarketDataService {
   
   // Cache for market data
   private static priceCache = new Map<string, { price: number; timestamp: number }>();
-  private static readonly CACHE_DURATION = 60000; // 1 minute cache
+  private static readonly CACHE_DURATION = API_CONFIG.PRICE_CACHE_DURATION || 60000; // 10 minutes default
   
   // Database permission tracking - start with false for production safety
   private static databaseAccessAllowed = false;
@@ -366,6 +366,12 @@ export class MarketDataService {
   
   // Real-time price updates using WebSocket (for future implementation)
   static setupRealTimeUpdates(symbols: string[], callback: (data: any) => void) {
+    // Check if auto-refresh is disabled
+    if (API_CONFIG.DISABLE_AUTO_REFRESH || API_CONFIG.MANUAL_REFRESH_ONLY) {
+      console.log('🔒 Auto-refresh disabled - updates require manual refresh only');
+      return () => {}; // Return empty cleanup function
+    }
+    
     // This would connect to a WebSocket service for real-time updates
     // For now, we'll use polling
     const interval = setInterval(async () => {

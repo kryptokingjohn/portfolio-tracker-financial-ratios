@@ -245,7 +245,7 @@ class FMPService {
   
   // Cache for API responses
   private static cache = new Map<string, { data: any; timestamp: number }>();
-  private static readonly CACHE_DURATION = 900000; // 15 minutes
+  private static readonly CACHE_DURATION = API_CONFIG.EXTENDED_CACHE_DURATION || 900000; // 30 minutes default
   
   // Rate limiting
   private static lastCall = 0;

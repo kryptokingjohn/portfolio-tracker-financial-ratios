@@ -18,16 +18,22 @@ export const DATABASE_CONFIG = {
 export const API_CONFIG = {
   // Disable FMP API calls to save costs during UI development
   // When disabled, uses realistic mock data instead
-  ENABLE_FMP_API_CALLS: false, // Set to true only when you need real market data
+  ENABLE_FMP_API_CALLS: true, // Set to true only when you need real market data
   
   // Control specific API endpoints
-  ENABLE_PRICE_UPDATES: false,      // Market quotes and price data
-  ENABLE_FINANCIAL_DATA: false,     // Company financials and ratios
-  ENABLE_COMPANY_PROFILES: false,   // Company information lookups
+  ENABLE_PRICE_UPDATES: true,       // Market quotes and price data
+  ENABLE_FINANCIAL_DATA: true,      // Company financials and ratios
+  ENABLE_COMPANY_PROFILES: true,    // Company information lookups
   
   // Development modes
-  USE_MOCK_DATA_ONLY: true,         // Force mock data for UI development
+  USE_MOCK_DATA_ONLY: false,        // Force mock data for UI development
   CACHE_API_RESPONSES: true,        // Cache responses to reduce API calls
+  
+  // API optimization settings
+  EXTENDED_CACHE_DURATION: 1800000, // 30 minutes (vs 15 minutes default)
+  PRICE_CACHE_DURATION: 600000,     // 10 minutes (vs 1 minute default)
+  DISABLE_AUTO_REFRESH: false,      // Set to true to disable automatic updates
+  MANUAL_REFRESH_ONLY: true,        // Set to true for manual-only updates (RECOMMENDED for API limits)
 };
 
 export const isDatabaseEnabled = () => {

@@ -77,7 +77,7 @@ export const LoginScreen: React.FC = () => {
         {/* Logo and Header */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-xl">
+            <div className="bg-black p-3 rounded-xl">
               <img 
                 src="/icon-96x96.png" 
                 alt="Portfolio Tracker Logo" 

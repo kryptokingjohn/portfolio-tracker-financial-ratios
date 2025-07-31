@@ -166,8 +166,12 @@ const AppContent: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-blue-600 p-2 rounded-full">
-                <PieChart className="h-6 w-6 text-white" />
+              <div className="bg-white/10 p-2 rounded-full backdrop-blur-sm border border-white/20">
+                <img 
+                  src="/icon-192x192.png" 
+                  alt="Portfolio Tracker Icon" 
+                  className="h-8 w-8 rounded"
+                />
               </div>
               <h1 className="text-2xl font-bold text-white">Portfolio Tracker with Financial Ratios</h1>
             </div>

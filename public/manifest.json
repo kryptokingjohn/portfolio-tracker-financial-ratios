@@ -61,21 +61,6 @@
       "purpose": "any"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Portfolio dashboard showing holdings and performance metrics"
-    },
-    {
-      "src": "/icon-512x512.png", 
-      "sizes": "512x512",
-      "type": "image/png",
-      "label": "Mobile portfolio view with transaction history"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Add Transaction",

@@ -352,7 +352,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-medium text-gray-900">{portfolioPercentage.toFixed(1)}%</div>
+                      <div className="text-sm font-medium text-blue-400">{portfolioPercentage.toFixed(1)}%</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTaxStatusColor(account.accountType)}`}>
@@ -365,23 +365,23 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
             </tbody>
             <tfoot className="bg-gray-800/50">
               <tr>
-                <td className="px-4 py-3 text-sm font-semibold text-gray-900">Total Portfolio</td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                <td className="px-4 py-3 text-sm font-semibold text-gray-100">Total Portfolio</td>
+                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-100">
                   {formatCurrency(totalPortfolioValue)}
                 </td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-600">
+                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-300">
                   {formatCurrency(accountSummaries.reduce((sum, acc) => sum + acc.totalCost, 0))}
                 </td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-100">
                   {/* Portfolio-wide YTD would be calculated here */}
-                  <div className="text-green-600">+18.4%</div>
-                  <div className="text-xs text-green-600">+${(totalPortfolioValue * 0.184).toLocaleString()}</div>
+                  <div className="text-green-400">+18.4%</div>
+                  <div className="text-xs text-green-400">+${(totalPortfolioValue * 0.184).toLocaleString()}</div>
                 </td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-green-600">+22.1%</td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-green-600">+11.8%</td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-green-600">+13.2%</td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-green-600">+12.7%</td>
-                <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">100.0%</td>
+                <td className="px-4 py-3 text-right text-sm font-semibold text-green-400">+22.1%</td>
+                <td className="px-4 py-3 text-right text-sm font-semibold text-green-400">+11.8%</td>
+                <td className="px-4 py-3 text-right text-sm font-semibold text-green-400">+13.2%</td>
+                <td className="px-4 py-3 text-right text-sm font-semibold text-green-400">+12.7%</td>
+                <td className="px-4 py-3 text-right text-sm font-semibold text-blue-400">100.0%</td>
                 <td className="px-4 py-3"></td>
               </tr>
             </tfoot>
@@ -446,7 +446,7 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                 <div 
                   key={account.accountType} 
                   className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${
-                    selectedAccount === account.accountType ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
+                    selectedAccount === account.accountType ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-gray-800/30 hover:bg-gray-700/30'
                   }`}
                   onClick={() => setSelectedAccount(selectedAccount === account.accountType ? null : account.accountType)}
                 >
@@ -456,13 +456,13 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                       style={{ backgroundColor: account.color }}
                     ></div>
                     <div>
-                      <span className="font-medium text-gray-900">{account.displayName}</span>
-                      <div className="text-sm text-gray-500">{account.holdings.length} holdings</div>
+                      <span className="font-medium text-gray-100">{account.displayName}</span>
+                      <div className="text-sm text-gray-400">{account.holdings.length} holdings</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-gray-900">{formatCurrency(account.totalValue)}</div>
-                    <div className="text-sm text-gray-500">{percentage.toFixed(1)}%</div>
+                    <div className="font-semibold text-gray-100">{formatCurrency(account.totalValue)}</div>
+                    <div className="text-sm text-blue-400 font-medium">{percentage.toFixed(1)}%</div>
                   </div>
                 </div>
               );
@@ -522,29 +522,29 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
 
                 {/* Expanded Details */}
                 {isExpanded && (
-                  <div className="space-y-4 border-t border-gray-200 pt-4">
+                  <div className="space-y-4 border-t border-gray-600/30 pt-4">
                     <div>
-                      <h5 className="font-medium text-gray-900 mb-2">Tax Treatment</h5>
-                      <p className="text-sm text-gray-600">{account.taxTreatment}</p>
+                      <h5 className="font-medium text-gray-200 mb-2">Tax Treatment</h5>
+                      <p className="text-sm text-gray-300">{account.taxTreatment}</p>
                     </div>
 
                     {account.contributionLimit && (
                       <div>
-                        <h5 className="font-medium text-gray-900 mb-2">Contribution Limit</h5>
-                        <p className="text-sm text-gray-600">{account.contributionLimit}</p>
+                        <h5 className="font-medium text-gray-200 mb-2">Contribution Limit</h5>
+                        <p className="text-sm text-gray-300">{account.contributionLimit}</p>
                       </div>
                     )}
 
                     {account.withdrawalRules && (
                       <div>
-                        <h5 className="font-medium text-gray-900 mb-2">Withdrawal Rules</h5>
-                        <p className="text-sm text-gray-600">{account.withdrawalRules}</p>
+                        <h5 className="font-medium text-gray-200 mb-2">Withdrawal Rules</h5>
+                        <p className="text-sm text-gray-300">{account.withdrawalRules}</p>
                       </div>
                     )}
 
                     <div>
-                      <h5 className="font-medium text-gray-900 mb-2">Tax Benefits</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
+                      <h5 className="font-medium text-gray-200 mb-2">Tax Benefits</h5>
+                      <ul className="text-sm text-gray-300 space-y-1">
                         {account.taxBenefits.map((benefit, index) => (
                           <li key={index} className="flex items-start">
                             <span className="text-green-500 mr-2">•</span>

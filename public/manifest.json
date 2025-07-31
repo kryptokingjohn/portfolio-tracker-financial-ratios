@@ -64,14 +64,14 @@
   "screenshots": [
     {
       "src": "/icon-512x512.png",
-      "sizes": "1280x720",
+      "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Portfolio dashboard showing holdings and performance metrics"
     },
     {
       "src": "/icon-512x512.png", 
-      "sizes": "750x1334",
+      "sizes": "512x512",
       "type": "image/png",
       "label": "Mobile portfolio view with transaction history"
     }

@@ -329,7 +329,7 @@ const AppContent: React.FC = () => {
         )}
 
         {activeTab === 'accounts' && (
-          <AccountsTab holdings={holdings} />
+          <AccountsTab holdings={holdings} transactions={transactions} />
         )}
 
         {activeTab === 'dividends' && (

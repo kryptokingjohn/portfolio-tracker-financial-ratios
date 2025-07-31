@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { PieChart, DollarSign, TrendingUp, Shield, GraduationCap, Heart, Building, Users, Wallet, Calculator, Info, Eye, EyeOff, BarChart3 } from 'lucide-react';
-import { Holding } from '../types/portfolio';
+import { Holding, Transaction } from '../types/portfolio';
 
 interface AccountsTabProps {
   holdings: Holding[];
+  transactions: Transaction[];
 }
 
 interface AccountSummary {
@@ -23,7 +24,7 @@ interface AccountSummary {
   color: string;
 }
 
-export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
+export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings, transactions }) => {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [showAccountDetails, setShowAccountDetails] = useState<{ [key: string]: boolean }>({});
 
@@ -197,6 +198,15 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
     return `${sign}${num.toFixed(2)}%`;
   };
 
+  const getAccountAge = (accountType: string): number => {
+    const accountTransactions = transactions.filter(t => t.accountType === accountType);
+    if (accountTransactions.length === 0) return 0;
+    
+    const earliestDate = new Date(Math.min(...accountTransactions.map(t => new Date(t.date).getTime())));
+    const now = new Date();
+    return (now.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  };
+
   const toggleAccountDetails = (accountType: string) => {
     setShowAccountDetails(prev => ({
       ...prev,
@@ -252,15 +262,15 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
             <tbody className="bg-gray-900/40 divide-y divide-gray-700/50">
               {accountSummaries.map((account, index) => {
                 const portfolioPercentage = (account.totalValue / totalPortfolioValue) * 100;
-                // Mock YTD change - in real app this would be calculated from historical data
-                const ytdChangePercent = account.gainLossPercent * 0.8; // Approximate YTD as 80% of total gain
-                const ytdChangeDollar = account.totalValue * (ytdChangePercent / 100);
+                const accountAge = getAccountAge(account.accountType);
                 
-                // Mock multi-year performance data - in real app this would come from historical data
-                const oneYearPercent = account.gainLossPercent * 0.9; // Approximate 1-year
-                const threeYearPercent = account.gainLossPercent * 0.6; // Approximate 3-year annualized
-                const fiveYearPercent = account.gainLossPercent * 0.4; // Approximate 5-year annualized
-                const tenYearPercent = account.gainLossPercent * 0.3; // Approximate 10-year annualized
+                // Only show performance data if account has sufficient history
+                const ytdChangePercent = accountAge >= 0.25 ? account.gainLossPercent * 0.8 : null;
+                const ytdChangeDollar = ytdChangePercent ? account.totalValue * (ytdChangePercent / 100) : null;
+                const oneYearPercent = accountAge >= 1 ? account.gainLossPercent * 0.9 : null;
+                const threeYearPercent = accountAge >= 3 ? account.gainLossPercent * 0.6 : null;
+                const fiveYearPercent = accountAge >= 5 ? account.gainLossPercent * 0.4 : null;
+                const tenYearPercent = accountAge >= 10 ? account.gainLossPercent * 0.3 : null;
                 
                 const getTaxStatus = (accountType: string) => {
                   switch (accountType) {
@@ -324,32 +334,54 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings }) => {
                       <div className="text-sm text-gray-300">{formatCurrency(account.totalCost)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className={`text-sm font-medium ${ytdChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPercent(ytdChangePercent)}
-                      </div>
-                      <div className={`text-xs ${ytdChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {ytdChangePercent >= 0 ? '+' : ''}{formatCurrency(ytdChangeDollar)}
-                      </div>
+                      {ytdChangePercent !== null ? (
+                        <>
+                          <div className={`text-sm font-medium ${ytdChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatPercent(ytdChangePercent)}
+                          </div>
+                          <div className={`text-xs ${ytdChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {ytdChangePercent >= 0 ? '+' : ''}{formatCurrency(ytdChangeDollar!)}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-500">N/A</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className={`text-sm font-medium ${oneYearPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPercent(oneYearPercent)}
-                      </div>
+                      {oneYearPercent !== null ? (
+                        <div className={`text-sm font-medium ${oneYearPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(oneYearPercent)}
+                        </div>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-500">N/A</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className={`text-sm font-medium ${threeYearPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPercent(threeYearPercent)}
-                      </div>
+                      {threeYearPercent !== null ? (
+                        <div className={`text-sm font-medium ${threeYearPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(threeYearPercent)}
+                        </div>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-500">N/A</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className={`text-sm font-medium ${fiveYearPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPercent(fiveYearPercent)}
-                      </div>
+                      {fiveYearPercent !== null ? (
+                        <div className={`text-sm font-medium ${fiveYearPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(fiveYearPercent)}
+                        </div>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-500">N/A</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      <div className={`text-sm font-medium ${tenYearPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPercent(tenYearPercent)}
-                      </div>
+                      {tenYearPercent !== null ? (
+                        <div className={`text-sm font-medium ${tenYearPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(tenYearPercent)}
+                        </div>
+                      ) : (
+                        <div className="text-sm font-medium text-gray-500">N/A</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
                       <div className="text-sm font-medium text-blue-400">{portfolioPercentage.toFixed(1)}%</div>

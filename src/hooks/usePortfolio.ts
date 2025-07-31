@@ -473,11 +473,14 @@ export const usePortfolio = () => {
 
   // Calculate holdings from all transactions
   const calculateHoldingsFromTransactions = (transactions: Transaction[]): Holding[] => {
+    // Use ticker-accountType combination as key to support same ticker in multiple accounts
     const holdingsMap = new Map<string, Holding>();
 
     transactions.forEach(transaction => {
       const ticker = transaction.ticker;
-      const existing = holdingsMap.get(ticker);
+      const accountType = transaction.accountType || 'taxable';
+      const holdingKey = `${ticker}-${accountType}`;
+      const existing = holdingsMap.get(holdingKey);
 
       if (transaction.type === 'buy') {
         if (existing) {
@@ -486,15 +489,16 @@ export const usePortfolio = () => {
           const newTotalCost = (existing.shares * existing.costBasis) + (transaction.amount || 0);
           const newCostBasis = newShares > 0 ? newTotalCost / newShares : existing.costBasis;
 
-          holdingsMap.set(ticker, {
+          holdingsMap.set(holdingKey, {
             ...existing,
             shares: newShares,
-            costBasis: newCostBasis
+            costBasis: newCostBasis,
+            accountType: accountType // Ensure account type is preserved
           });
         } else {
           // Create new holding with all required fields
-          holdingsMap.set(ticker, {
-            id: `holding-${ticker}`,
+          holdingsMap.set(holdingKey, {
+            id: `holding-${ticker}-${accountType}`,
             ticker: ticker,
             company: ticker,
             shares: transaction.shares || 0,
@@ -502,7 +506,7 @@ export const usePortfolio = () => {
             currentPrice: transaction.price || 0,
             type: 'stocks' as any,
             sector: 'Unknown',
-            accountType: 'taxable',
+            accountType: accountType, // Use transaction's account type
             // Price Data
             yearHigh: transaction.price || 0,
             yearLow: transaction.price || 0,
@@ -541,12 +545,13 @@ export const usePortfolio = () => {
         // Reduce shares for sell transactions
         const newShares = Math.max(0, existing.shares - (transaction.shares || 0));
         if (newShares > 0) {
-          holdingsMap.set(ticker, {
+          holdingsMap.set(holdingKey, {
             ...existing,
-            shares: newShares
+            shares: newShares,
+            accountType: accountType // Ensure account type is preserved
           });
         } else {
-          holdingsMap.delete(ticker);
+          holdingsMap.delete(holdingKey);
         }
       }
     });

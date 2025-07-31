@@ -77,8 +77,12 @@ export const LoginScreen: React.FC = () => {
         {/* Logo and Header */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <TrendingUp className="h-8 w-8 text-white" />
+            <div className="bg-blue-600 p-3 rounded-xl">
+              <img 
+                src="/icon-96x96.png" 
+                alt="Portfolio Tracker Logo" 
+                className="h-12 w-12"
+              />
             </div>
           </div>
           <h2 className="text-3xl font-bold text-white">Portfolio Tracker with Financial Ratios</h2>

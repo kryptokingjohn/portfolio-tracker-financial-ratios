@@ -264,9 +264,9 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings, transactions
                 const portfolioPercentage = totalPortfolioValue > 0 ? (account.totalValue / totalPortfolioValue) * 100 : 0;
                 const accountAge = getAccountAge(account.accountType);
                 
-                // Only show performance data if account has sufficient history
-                const ytdChangePercent = accountAge >= 0.25 ? account.gainLossPercent * 0.8 : null;
-                const ytdChangeDollar = ytdChangePercent ? account.totalValue * (ytdChangePercent / 100) : null;
+                // YTD should always show (since it's from start of current year)
+                const ytdChangePercent = account.gainLossPercent * 0.8;
+                const ytdChangeDollar = account.totalValue * (ytdChangePercent / 100);
                 const oneYearPercent = accountAge >= 1 ? account.gainLossPercent * 0.9 : null;
                 const threeYearPercent = accountAge >= 3 ? account.gainLossPercent * 0.6 : null;
                 const fiveYearPercent = accountAge >= 5 ? account.gainLossPercent * 0.4 : null;
@@ -334,18 +334,12 @@ export const AccountsTab: React.FC<AccountsTabProps> = ({ holdings, transactions
                       <div className="text-sm text-gray-300">{formatCurrency(account.totalCost)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
-                      {ytdChangePercent !== null ? (
-                        <>
-                          <div className={`text-sm font-medium ${ytdChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {formatPercent(ytdChangePercent)}
-                          </div>
-                          <div className={`text-xs ${ytdChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {ytdChangePercent >= 0 ? '+' : ''}{formatCurrency(ytdChangeDollar!)}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-sm font-medium text-gray-500">N/A</div>
-                      )}
+                      <div className={`text-sm font-medium ${ytdChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {formatPercent(ytdChangePercent)}
+                      </div>
+                      <div className={`text-xs ${ytdChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {ytdChangePercent >= 0 ? '+' : ''}{formatCurrency(ytdChangeDollar)}
+                      </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-right">
                       {oneYearPercent !== null ? (

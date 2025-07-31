@@ -6,6 +6,7 @@ import { QuickViewPage } from './components/QuickViewPage';
 import { MobileApp } from './components/mobile/MobileApp';
 import { PortfolioTable } from './components/PortfolioTable';
 import { AddTransactionModal } from './components/AddHoldingModal';
+import { EditTransactionModal } from './components/EditTransactionModal';
 import { TransactionHistory } from './components/TransactionHistory';
 import { RatiosGuide } from './components/RatiosGuide';
 import { PortfolioSummary } from './components/PortfolioSummary';
@@ -48,12 +49,17 @@ const AppContent: React.FC = () => {
     loading: portfolioLoading, 
     error: portfolioError,
     addTransaction,
+    updateTransaction,
+    deleteTransaction,
     refreshData,
     lastUpdated,
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'portfolio' | 'transactions' | 'performance' | 'ratios' | 'accounts' | 'dividends' | 'tax'>('portfolio');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
@@ -78,6 +84,43 @@ const AppContent: React.FC = () => {
     : holdings.filter(holding => holding.type === portfolioFilter);
 
   const existingTickers = holdings.map(h => h.ticker);
+
+  // Handler functions for transaction editing
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveTransaction = async (id: string, updates: Partial<Transaction>) => {
+    try {
+      await updateTransaction(id, updates);
+      setIsEditModalOpen(false);
+      setEditingTransaction(null);
+    } catch (error) {
+      console.error('Failed to update transaction:', error);
+      // Error handling is already done in the usePortfolio hook
+    }
+  };
+
+  const handleDeleteClick = (transactionId: string) => {
+    setDeleteConfirmId(transactionId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmId) {
+      try {
+        await deleteTransaction(deleteConfirmId);
+        setDeleteConfirmId(null);
+      } catch (error) {
+        console.error('Failed to delete transaction:', error);
+        // Error handling is already done in the usePortfolio hook
+      }
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmId(null);
+  };
 
   // Use mobile app for mobile devices
   if (isMobile()) {
@@ -268,6 +311,8 @@ const AppContent: React.FC = () => {
         {activeTab === 'transactions' && (
           <TransactionHistory 
             transactions={transactions}
+            onEdit={handleEditTransaction}
+            onDelete={handleDeleteClick}
           />
         )}
 
@@ -299,6 +344,45 @@ const AppContent: React.FC = () => {
           onAdd={addTransaction}
           existingTickers={existingTickers}
         />
+      )}
+
+      {/* Edit Transaction Modal */}
+      {isEditModalOpen && editingTransaction && (
+        <EditTransactionModal
+          transaction={editingTransaction}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingTransaction(null);
+          }}
+          onSave={handleSaveTransaction}
+          existingTickers={existingTickers}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-900/95 backdrop-blur-md border border-gray-600/30 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-lg font-semibold text-white mb-4">Delete Transaction</h3>
+            <p className="text-gray-300 mb-6">
+              Are you sure you want to delete this transaction? This action cannot be undone and will recalculate your portfolio holdings.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleCancelDelete}
+                className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700/50 rounded-lg hover:bg-gray-600/50 transition-colors backdrop-blur-sm border border-gray-600/30"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl"
+              >
+                Delete Transaction
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Export Modal */}

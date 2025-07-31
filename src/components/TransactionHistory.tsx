@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, DollarSign, TrendingUp, TrendingDown, Filter, Search } from 'lucide-react';
+import { Calendar, DollarSign, TrendingUp, TrendingDown, Filter, Search, Edit2, Trash2 } from 'lucide-react';
 import { Transaction } from '../types/portfolio';
 
 interface TransactionHistoryProps {
@@ -199,6 +199,9 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Notes
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
@@ -253,6 +256,28 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                 <td className="px-6 py-4 text-sm text-gray-400 max-w-xs">
                   <div className="truncate" title={transaction.notes}>
                     {transaction.notes || '-'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <div className="flex items-center space-x-2">
+                    {onEdit && (
+                      <button
+                        onClick={() => onEdit(transaction)}
+                        className="text-blue-400 hover:text-blue-300 transition-colors p-1 hover:bg-blue-600/20 rounded"
+                        title="Edit transaction"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(transaction.id)}
+                        className="text-red-400 hover:text-red-300 transition-colors p-1 hover:bg-red-600/20 rounded"
+                        title="Delete transaction"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

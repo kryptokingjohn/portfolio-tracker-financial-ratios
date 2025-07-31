@@ -206,6 +206,80 @@ export const usePortfolio = () => {
     }
   };
 
+  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+    try {
+      setError(null);
+      const updatedTransaction = await DatabaseService.updateTransaction(id, updates);
+      
+      // Update transactions array
+      const updatedTransactions = transactions.map(t => t.id === id ? updatedTransaction : t);
+      setTransactions(updatedTransactions);
+      
+      // Recalculate all holdings from all transactions
+      const recalculatedHoldings = calculateHoldingsFromTransactions(updatedTransactions);
+      const updatedHoldings = await updateHoldingPrices(recalculatedHoldings);
+      setHoldings(updatedHoldings);
+      
+      // Recalculate all metrics
+      const metrics = PortfolioCalculator.calculatePortfolioMetrics(updatedHoldings);
+      setPortfolioMetrics(metrics);
+      
+      const divAnalysis = DividendTracker.analyzeDividends(updatedHoldings, updatedTransactions);
+      setDividendAnalysis(divAnalysis);
+      
+      setLastUpdated(new Date());
+      
+      return updatedTransaction;
+    } catch (err) {
+      console.error('Error updating transaction:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update transaction';
+      
+      // Provide helpful guidance for database permission issues
+      if (errorMessage.includes('Database permission issue') || errorMessage.includes('row-level security')) {
+        setError('Database access restricted. Try using Demo Mode instead to explore the portfolio tracker features.');
+      } else {
+        setError(errorMessage);
+      }
+      throw err;
+    }
+  };
+
+  const deleteTransaction = async (id: string) => {
+    try {
+      setError(null);
+      await DatabaseService.deleteTransaction(id);
+      
+      // Remove transaction from array
+      const updatedTransactions = transactions.filter(t => t.id !== id);
+      setTransactions(updatedTransactions);
+      
+      // Recalculate all holdings from remaining transactions
+      const recalculatedHoldings = calculateHoldingsFromTransactions(updatedTransactions);
+      const updatedHoldings = await updateHoldingPrices(recalculatedHoldings);
+      setHoldings(updatedHoldings);
+      
+      // Recalculate all metrics
+      const metrics = PortfolioCalculator.calculatePortfolioMetrics(updatedHoldings);
+      setPortfolioMetrics(metrics);
+      
+      const divAnalysis = DividendTracker.analyzeDividends(updatedHoldings, updatedTransactions);
+      setDividendAnalysis(divAnalysis);
+      
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Error deleting transaction:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete transaction';
+      
+      // Provide helpful guidance for database permission issues
+      if (errorMessage.includes('Database permission issue') || errorMessage.includes('row-level security')) {
+        setError('Database access restricted. Try using Demo Mode instead to explore the portfolio tracker features.');
+      } else {
+        setError(errorMessage);
+      }
+      throw err;
+    }
+  };
+
   const updateHolding = async (id: string, updates: Partial<Holding>) => {
     try {
       setError(null);
@@ -490,6 +564,8 @@ export const usePortfolio = () => {
     error,
     lastUpdated,
     addTransaction,
+    updateTransaction,
+    deleteTransaction,
     updateHolding,
     deleteHolding,
     refreshData,

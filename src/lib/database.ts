@@ -491,6 +491,103 @@ export class DatabaseService {
     return this.mapDatabaseTransactionToTransaction(data);
   }
 
+  static async updateTransaction(id: string, updates: Partial<Transaction>): Promise<Transaction> {
+    // Skip database operations entirely if disabled at configuration level
+    if (!isDatabaseEnabled()) {
+      throw new Error('Database operations are disabled. Please use Demo Mode to explore the portfolio tracker features.');
+    }
+    
+    // Check database permissions first
+    const hasAccess = await this.checkDatabasePermissions();
+    if (!hasAccess) {
+      throw new Error('Database access restricted. Please use Demo Mode to explore the portfolio tracker features.');
+    }
+    
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // If ticker is being updated, ensure the new company exists
+    let companyId;
+    if (updates.ticker) {
+      const company = await this.getOrCreateCompany(updates.ticker);
+      companyId = company.id;
+    }
+
+    // Handle newTicker for spinoff/merger transactions
+    let newCompanyId;
+    if (updates.newTicker) {
+      const newCompany = await this.getOrCreateCompany(updates.newTicker);
+      newCompanyId = newCompany.id;
+    }
+
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    };
+
+    // Only update fields that are provided
+    if (companyId) updateData.company_id = companyId;
+    if (updates.type) updateData.transaction_type = updates.type;
+    if (updates.date) updateData.transaction_date = updates.date;
+    if (updates.shares !== undefined) updateData.shares = updates.shares;
+    if (updates.price !== undefined) updateData.price_per_share = updates.price;
+    if (updates.amount !== undefined) updateData.total_amount = updates.amount;
+    if (updates.fees !== undefined) updateData.fees = updates.fees;
+    if (updates.splitRatio !== undefined) updateData.split_ratio = updates.splitRatio;
+    if (newCompanyId) updateData.new_company_id = newCompanyId;
+    if (updates.notes !== undefined) updateData.notes = updates.notes;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select(`
+        *,
+        companies!transactions_company_id_fkey (ticker, company_name)
+      `)
+      .single();
+
+    if (error) {
+      if (error.code === '42501' || error.message?.includes('row-level security')) {
+        console.error('❌ Database permission issue: Cannot update transactions due to row-level security policy');
+        throw new Error('Database permission issue: Cannot update transactions. Please check your authentication or use demo mode.');
+      }
+      throw error;
+    }
+
+    return this.mapDatabaseTransactionToTransaction(data);
+  }
+
+  static async deleteTransaction(id: string): Promise<void> {
+    // Skip database operations entirely if disabled at configuration level
+    if (!isDatabaseEnabled()) {
+      throw new Error('Database operations are disabled. Please use Demo Mode to explore the portfolio tracker features.');
+    }
+    
+    // Check database permissions first
+    const hasAccess = await this.checkDatabasePermissions();
+    if (!hasAccess) {
+      throw new Error('Database access restricted. Please use Demo Mode to explore the portfolio tracker features.');
+    }
+    
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id);
+
+    if (error) {
+      if (error.code === '42501' || error.message?.includes('row-level security')) {
+        console.error('❌ Database permission issue: Cannot delete transactions due to row-level security policy');
+        throw new Error('Database permission issue: Cannot delete transactions. Please check your authentication or use demo mode.');
+      }
+      throw error;
+    }
+  }
+
   // Helper Methods
   static async savePortfolioSnapshot(holdings: Holding[]): Promise<void> {
     const user = await this.getCurrentUser();

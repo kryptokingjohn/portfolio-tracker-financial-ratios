@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, TrendingDown, Edit3, ExternalLink, BarChart3, Search, Filter } from 'lucide-react';
 import { Holding } from '../types/portfolio';
 import { QuickViewChart } from './QuickViewChart';
@@ -17,84 +17,90 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
 
-  const handleSort = (field: keyof Holding) => {
+  // Memoized event handlers to prevent unnecessary re-renders
+  const handleSort = useCallback((field: keyof Holding) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDirection('asc');
     }
-  };
+  }, [sortField, sortDirection]);
 
-
-  const openQuickView = (e: React.MouseEvent, holding: Holding) => {
+  const openQuickView = useCallback((e: React.MouseEvent, holding: Holding) => {
     e.preventDefault();
     e.stopPropagation();
     setQuickViewModalHolding(holding);
-  };
+  }, []);
 
-  const closeQuickView = () => {
+  const closeQuickView = useCallback(() => {
     setQuickViewModalHolding(null);
-  };
+  }, []);
 
-  const openAdvanced = (e: React.MouseEvent, holding: Holding) => {
+  const openAdvanced = useCallback((e: React.MouseEvent, holding: Holding) => {
     e.preventDefault();
     e.stopPropagation();
     setAdvancedModalHolding(holding);
-  };
+  }, []);
 
-  const closeAdvanced = () => {
+  const closeAdvanced = useCallback(() => {
     setAdvancedModalHolding(null);
-  };
+  }, []);
 
-  // First sort by total value (shares * currentPrice) in descending order by default
-  const filteredAndSortedHoldings = [...holdings]
-    .filter(holding => {
-      const matchesSearch = searchTerm === '' || 
-        holding.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        holding.company.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesSector = sectorFilter === 'all' || holding.sector === sectorFilter;
-      return matchesSearch && matchesSector;
-    })
-    .sort((a, b) => {
-    // If no specific sort is applied, sort by total value
-    if (sortField === 'currentPrice' && sortDirection === 'asc') {
-      const aValue = a.shares * a.currentPrice;
-      const bValue = b.shares * b.currentPrice;
-      return bValue - aValue; // Descending order for total value
-    }
-    
-    // Otherwise use the selected sort field
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-    
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc' 
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-    
-    return sortDirection === 'asc' 
-      ? (aValue as number) - (bValue as number)
-      : (bValue as number) - (aValue as number);
-  });
+  // Memoized expensive filtering and sorting operations
+  const filteredAndSortedHoldings = useMemo(() => {
+    return [...holdings]
+      .filter(holding => {
+        const matchesSearch = searchTerm === '' || 
+          holding.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          holding.company.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSector = sectorFilter === 'all' || holding.sector === sectorFilter;
+        return matchesSearch && matchesSector;
+      })
+      .sort((a, b) => {
+        // If no specific sort is applied, sort by total value
+        if (sortField === 'currentPrice' && sortDirection === 'asc') {
+          const aValue = a.shares * a.currentPrice;
+          const bValue = b.shares * b.currentPrice;
+          return bValue - aValue; // Descending order for total value
+        }
+        
+        // Otherwise use the selected sort field
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortDirection === 'asc' 
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+        
+        return sortDirection === 'asc' 
+          ? (aValue as number) - (bValue as number)
+          : (bValue as number) - (aValue as number);
+      });
+  }, [holdings, searchTerm, sectorFilter, sortField, sortDirection]);
 
-  const uniqueSectors = Array.from(new Set(holdings.map(h => h.sector))).sort();
+  // Memoized unique sectors calculation
+  const uniqueSectors = useMemo(() => {
+    return Array.from(new Set(holdings.map(h => h.sector))).sort();
+  }, [holdings]);
 
-  const formatNumber = (num: number, decimals: number = 2) => {
+  // Memoized formatting functions to prevent recreation on each render
+  const formatNumber = useCallback((num: number, decimals: number = 2) => {
     return num.toLocaleString('en-US', { 
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals 
     });
-  };
+  }, []);
 
-  const formatCurrency = (num: number) => {
+  const formatCurrency = useCallback((num: number) => {
     return `$${formatNumber(num)}`;
-  };
+  }, [formatNumber]);
 
-  const formatPercent = (num: number) => {
+  const formatPercent = useCallback((num: number) => {
     return `${formatNumber(num)}%`;
-  };
+  }, [formatNumber]);
 
   // Helper to show consolidated ticker information
   const getTickerAccountInfo = (ticker: string, holdings: Holding[]) => {

@@ -159,32 +159,67 @@ export default defineConfig({
   build: {
     target: 'es2015',
     sourcemap: false,
-    minify: false, // Disable minification for better error debugging
+    minify: 'terser', // Re-enable minification for production
     terserOptions: {
       compress: {
-        drop_console: false,
-        drop_debugger: false
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'], // Remove specific console calls
+        passes: 2 // Multiple passes for better compression
+      },
+      mangle: {
+        safari10: true // Better Safari compatibility
       }
     },
     assetsInlineLimit: 0, // Prevent inlining to avoid MIME issues
     rollupOptions: {
       output: {
         format: 'es', // Ensure ES modules format
-        // Simplify chunking to avoid dependency issues
+        // Optimized chunking strategy for performance
         manualChunks: (id) => {
-          // Only essential vendor chunks to avoid circular dependencies
+          // Critical vendor libraries - load first
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
+              return 'vendor-react'; // ~157KB - Critical, loads first
             }
             if (id.includes('@supabase')) {
-              return 'vendor-supabase';
+              return 'vendor-supabase'; // ~281KB - Database operations
             }
-            // Bundle everything else together to avoid dependency issues
-            return 'vendor-misc';
+            if (id.includes('@stripe')) {
+              return 'vendor-stripe'; // ~45KB - Payment processing (lazy loaded)
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons'; // ~10KB - Icons
+            }
+            return 'vendor-misc'; // Everything else
           }
-          // Don't split app code to avoid initialization issues
-          return undefined;
+          
+          // App code splitting by feature
+          if (id.includes('/components/')) {
+            // Heavy modal components - lazy loaded
+            if (id.includes('Modal') || id.includes('Checkout')) {
+              return 'chunk-modals';
+            }
+            // Tab components - lazy loaded  
+            if (id.includes('Tab') || id.includes('Performance') || id.includes('Accounts')) {
+              return 'chunk-tabs';
+            }
+            // Charts and visualization - lazy loaded
+            if (id.includes('Chart') || id.includes('Guide')) {
+              return 'chunk-charts';
+            }
+            // Core UI components - load early
+            if (id.includes('Portfolio') || id.includes('Loading')) {
+              return 'chunk-core-ui';
+            }
+          }
+          
+          // Utilities and services
+          if (id.includes('/services/') || id.includes('/utils/')) {
+            return 'chunk-utils';
+          }
+          
+          return undefined; // Default chunk
         },
         chunkFileNames: 'assets/[name]-[hash].mjs', // Use .mjs extension to force module recognition
         entryFileNames: 'assets/entry-[hash].mjs',

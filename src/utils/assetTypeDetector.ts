@@ -128,13 +128,13 @@ const BOND_NAME_PATTERNS = [
   /Long.*Term.*Bond/i
 ];
 
-// ETF ticker patterns
+// ETF ticker patterns - be more conservative
 const ETF_TICKER_PATTERNS = [
-  /^[A-Z]{2,4}$/, // Most ETFs are 2-4 letters
-  /^V[A-Z]{2}$/, // Vanguard pattern
-  /^I[A-Z]{2}$/, // iShares pattern
-  /^XL[A-Z]$/, // SPDR Sector patterns
-  /^SPY|QQQ|IWM|GLD|SLV|TLT|AGG|BND$/ // Major ETFs
+  /^V[A-Z]{2}$/, // Vanguard pattern (VTI, VEA, etc.)
+  /^I[A-Z]{2}$/, // iShares pattern (IEF, IWM, etc.)
+  /^XL[A-Z]$/, // SPDR Sector patterns (XLK, XLF, etc.)  
+  /^SPY|QQQ|IWM|GLD|SLV|TLT|AGG|BND$/ // Major known ETFs only
+  // Removed overly broad /^[A-Z]{2,4}$/ pattern that caught individual stocks
 ];
 
 /**
@@ -206,19 +206,22 @@ export function detectAssetType(
     }
   }
   
-  // 5. Ticker pattern analysis (lower confidence)
-  if (tickerUpper.length <= 4) {
-    for (const pattern of ETF_TICKER_PATTERNS) {
-      if (pattern.test(tickerUpper)) {
-        // Need additional confirmation for ticker patterns
-        if (companyName && (
-          companyName.toUpperCase().includes('FUND') ||
-          companyName.toUpperCase().includes('TRUST') ||
-          companyName.toUpperCase().includes('ETF')
-        )) {
-          return 'etfs';
-        }
+  // 5. Ticker pattern analysis (lower confidence, requires name confirmation)
+  for (const pattern of ETF_TICKER_PATTERNS) {
+    if (pattern.test(tickerUpper)) {
+      // REQUIRE additional confirmation for ticker patterns to avoid false positives
+      if (companyName && (
+        companyName.toUpperCase().includes('FUND') ||
+        companyName.toUpperCase().includes('TRUST') ||
+        companyName.toUpperCase().includes('ETF') ||
+        companyName.toUpperCase().includes('INDEX') ||
+        companyName.toUpperCase().includes('SPDR') ||
+        companyName.toUpperCase().includes('ISHARES') ||
+        companyName.toUpperCase().includes('VANGUARD')
+      )) {
+        return 'etfs';
       }
+      // If no company name confirmation, don't classify as ETF based on ticker alone
     }
   }
   

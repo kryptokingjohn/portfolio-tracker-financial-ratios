@@ -22,8 +22,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   }, [message]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-      <div className="text-center">
+    <div className="fixed inset-0 w-full h-full bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center z-50">
+      <div className="text-center px-4 max-w-md w-full">
         <div className="flex justify-center mb-6">
           <div className="relative">
             <div className="bg-blue-600 p-4 rounded-full animate-pulse">

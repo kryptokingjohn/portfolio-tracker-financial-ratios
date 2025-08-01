@@ -4,6 +4,7 @@ import { Holding } from '../types/portfolio';
 import { QuickViewChart } from './QuickViewChart';
 import { AdvancedModal } from './AdvancedModal';
 import { QuickViewModal } from './QuickViewModal';
+import { shouldShowETFMetrics, shouldShowBondMetrics, detectAssetType } from '../utils/assetTypeDetector';
 
 interface PortfolioTableProps {
   holdings: Holding[];
@@ -221,73 +222,116 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                   onClick={() => handleSort('yearLow')}>
                 52W Low
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('fcf10yr')}>
-                10-yr FCF ($B)
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('evFcf')}>
-                EV/FCF
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('intrinsicValue')}>
-                Intrinsic Value
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Upside %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('pe')}>
-                P/E
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('pb')}>
-                P/B
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('peg')}>
-                PEG
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('debtToEquity')}>
-                Debt/Equity
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('currentRatio')}>
-                Current Ratio
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('quickRatio')}>
-                Quick Ratio
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('roe')}>
-                ROE %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('roa')}>
-                ROA %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('grossMargin')}>
-                Gross Margin %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('netMargin')}>
-                Net Margin %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('operatingMargin')}>
-                Operating Margin %
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('assetTurnover')}>
-                Asset Turnover
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('revenueGrowth')}>
-                Revenue Growth %
-              </th>
+              {/* Dynamic columns based on asset type */}
+              {shouldShowETFMetrics(filteredAndSortedHoldings[0]?.type as any) ? (
+                // ETF-specific columns
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
+                      onClick={() => handleSort('expenseRatio')}>
+                    Expense Ratio %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
+                      onClick={() => handleSort('netAssets')}>
+                    AUM ($B)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
+                      onClick={() => handleSort('dividendYield')}>
+                    Yield %
+                  </th>
+                </>
+              ) : shouldShowBondMetrics(filteredAndSortedHoldings[0]?.type as any) ? (
+                // Bond-specific columns
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider cursor-pointer hover:bg-green-600/20 transition-colors"
+                      onClick={() => handleSort('yieldToMaturity')}>
+                    YTM %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider cursor-pointer hover:bg-green-600/20 transition-colors"
+                      onClick={() => handleSort('duration')}>
+                    Duration
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    Credit Rating
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    Bond Type
+                  </th>
+                </>
+              ) : (
+                // Stock-specific columns
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('fcf10yr')}>
+                    10-yr FCF ($B)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('evFcf')}>
+                    EV/FCF
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('intrinsicValue')}>
+                    Intrinsic Value
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Upside %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('pe')}>
+                    P/E
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('pb')}>
+                    P/B
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('peg')}>
+                    PEG
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('debtToEquity')}>
+                    Debt/Equity
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('currentRatio')}>
+                    Current Ratio
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('quickRatio')}>
+                    Quick Ratio
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('roe')}>
+                    ROE %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('roa')}>
+                    ROA %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('grossMargin')}>
+                    Gross Margin %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('netMargin')}>
+                    Net Margin %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('operatingMargin')}>
+                    Operating Margin %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('assetTurnover')}>
+                    Asset Turnover
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('revenueGrowth')}>
+                    Revenue Growth %
+                  </th>
+                </>
+              )}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Narrative
               </th>
@@ -300,6 +344,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
             {filteredAndSortedHoldings.map((holding, index) => {
               const { gainLoss, gainLossPercent, currentValue, totalCost } = getGainLoss(holding);
               const upsidePercent = getUpsidePercent(holding);
+              const assetType = detectAssetType(holding.ticker, holding.company);
               
               return (
                 <React.Fragment key={holding.id}>
@@ -354,59 +399,102 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                     {formatCurrency(holding.yearLow)}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.fcf10yr, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.evFcf, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatCurrency(holding.intrinsicValue)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {formatPercent(upsidePercent)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.pe, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.pb, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.peg, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.debtToEquity, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.currentRatio, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.quickRatio, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.roe)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.roa)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.grossMargin)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.netMargin)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.operatingMargin)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.assetTurnover, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.revenueGrowth)}
-                  </td>
+                  
+                  {/* Dynamic cells based on asset type */}
+                  {shouldShowETFMetrics(assetType) ? (
+                    // ETF-specific cells
+                    <>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
+                        {holding.expenseRatio ? `${formatNumber(holding.expenseRatio, 2)}%` : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
+                        {holding.netAssets ? `$${formatNumber(holding.netAssets / 1000, 1)}B` : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
+                        <div className="text-xs px-2 py-1 rounded-full bg-blue-600/20 text-blue-300 inline-block">
+                          {holding.etfCategory || 'ETF'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300 font-medium">
+                        {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
+                      </td>
+                    </>
+                  ) : shouldShowBondMetrics(assetType) ? (
+                    // Bond-specific cells
+                    <>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                        {holding.yieldToMaturity ? `${formatNumber(holding.yieldToMaturity, 2)}%` : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                        {holding.duration ? formatNumber(holding.duration, 1) : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                        <div className="text-xs px-2 py-1 rounded-full bg-green-600/20 text-green-300 inline-block">
+                          {holding.creditRating || 'NR'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                        {holding.bondType || 'Fixed Income'}
+                      </td>
+                    </>
+                  ) : (
+                    // Stock-specific cells
+                    <>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.fcf10yr, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.evFcf, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatCurrency(holding.intrinsicValue)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(upsidePercent)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.pe, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.pb, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.peg, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.debtToEquity, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.currentRatio, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.quickRatio, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.roe)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.roa)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.grossMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.netMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.operatingMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.assetTurnover, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.revenueGrowth)}
+                      </td>
+                    </>
+                  )}
                   <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
                     <div className="truncate" title={holding.narrative}>
                       {holding.narrative}
@@ -426,13 +514,16 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                       <BarChart3 className="h-3 w-3" />
                       <span>QuickView</span>
                     </button>
-                    <button
-                      onClick={(e) => openAdvanced(e, holding)}
-                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
-                    >
-                      <BarChart3 className="h-3 w-3" />
-                      <span>Advanced</span>
-                    </button>
+                    {/* Hide Advanced button for ETFs and bonds as their metrics don't apply */}
+                    {!shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) && (
+                      <button
+                        onClick={(e) => openAdvanced(e, holding)}
+                        className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
+                      >
+                        <BarChart3 className="h-3 w-3" />
+                        <span>Advanced</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
                 </React.Fragment>

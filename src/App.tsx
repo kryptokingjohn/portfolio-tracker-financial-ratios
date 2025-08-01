@@ -338,7 +338,7 @@ const AppContent: React.FC = () => {
             </div>
 
             {/* Portfolio Table */}
-            <PortfolioTable holdings={filteredHoldings} />
+            <PortfolioTable holdings={filteredHoldings} filter={portfolioFilter} />
           </>
         )}
 

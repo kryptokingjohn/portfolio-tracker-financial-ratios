@@ -14,9 +14,10 @@ import { shouldShowETFMetrics, shouldShowBondMetrics, detectAssetType } from '..
 
 interface PortfolioTableProps {
   holdings: Holding[];
+  filter?: 'stocks' | 'etfs' | 'bonds' | 'all';
 }
 
-export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => {
+export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filter = 'all' }) => {
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
@@ -93,28 +94,10 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
     return Array.from(new Set(holdings.map(h => h.sector))).sort();
   }, [holdings]);
 
-  // Determine what asset types are present in filtered holdings
-  const assetTypesPresent = useMemo(() => {
-    const types = {
-      hasETFs: false,
-      hasBonds: false,
-      hasStocks: false
-    };
-    
-    filteredAndSortedHoldings.forEach(h => {
-      // Use the type field from the holding data, fallback to detection if not set
-      const assetType = h.type || detectAssetType(h.ticker, h.company);
-      if (shouldShowETFMetrics(assetType as any)) {
-        types.hasETFs = true;
-      } else if (shouldShowBondMetrics(assetType as any)) {
-        types.hasBonds = true;
-      } else {
-        types.hasStocks = true;
-      }
-    });
-    
-    return types;
-  }, [filteredAndSortedHoldings]);
+  // Determine which columns to show based on the active filter/tab
+  const showETFColumns = filter === 'etfs';
+  const showBondColumns = filter === 'bonds';
+  const showStockColumns = filter === 'all' || filter === 'stocks';
 
   // Memoized formatting functions to prevent recreation on each render
   const formatNumber = useCallback((num: number, decimals: number = 2) => {
@@ -270,8 +253,8 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
                   onClick={() => handleSort('yearLow')}>
                 52W Low
               </th>
-              {/* Dynamic columns - show all relevant asset type columns for mixed portfolios */}
-              {assetTypesPresent.hasETFs && (
+              {/* Dynamic columns based on active filter/tab */}
+              {showETFColumns && (
                 // ETF-specific columns
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
@@ -282,9 +265,16 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
                       onClick={() => handleSort('netAssets')}>
                     AUM ($B)
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
+                      onClick={() => handleSort('dividendYield')}>
+                    Dividend Yield %
+                  </th>
                 </>
               )}
-              {assetTypesPresent.hasBonds && (
+              {showBondColumns && (
                 // Bond-specific columns
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider cursor-pointer hover:bg-green-600/20 transition-colors"
@@ -298,11 +288,29 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
                     Credit Rating
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">
+                    Bond Type
+                  </th>
                 </>
               )}
-              {assetTypesPresent.hasStocks && (
-                // Stock-specific columns (show key ones for mixed portfolios)
+              {showStockColumns && (
+                // Comprehensive stock columns (all financial ratios from Ratios Guide)
                 <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('fcf10yr')}>
+                    10-yr FCF ($B)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('evFcf')}>
+                    EV/FCF
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('intrinsicValue')}>
+                    Intrinsic Value
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Upside %
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                       onClick={() => handleSort('pe')}>
                     P/E
@@ -312,20 +320,55 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
                     P/B
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('peg')}>
+                    PEG
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('debtToEquity')}>
+                    Debt/Equity
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('currentRatio')}>
+                    Current Ratio
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('quickRatio')}>
+                    Quick Ratio
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                       onClick={() => handleSort('roe')}>
                     ROE %
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                      onClick={() => handleSort('intrinsicValue')}>
-                    Intrinsic Value
+                      onClick={() => handleSort('roa')}>
+                    ROA %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('grossMargin')}>
+                    Gross Margin %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('netMargin')}>
+                    Net Margin %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('operatingMargin')}>
+                    Operating Margin %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('assetTurnover')}>
+                    Asset Turnover
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('revenueGrowth')}>
+                    Revenue Growth %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('dividendYield')}>
+                    Dividend Yield %
                   </th>
                 </>
               )}
-              {/* Universal column for all asset types */}
-              <th className="px-4 py-3 text-left text-xs font-medium text-purple-300 uppercase tracking-wider cursor-pointer hover:bg-purple-600/20 transition-colors"
-                  onClick={() => handleSort('dividendYield')}>
-                Dividend Yield %
-              </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Description
               </th>
@@ -395,81 +438,106 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
                     {formatCurrency(holding.yearLow)}
                   </td>
                   
-                  {/* Dynamic cells - show data based on what columns are present */}
-                  {assetTypesPresent.hasETFs && (
+                  {/* Dynamic cells based on active filter/tab */}
+                  {showETFColumns && (
                     // ETF-specific cells
                     <>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
-                        {shouldShowETFMetrics(assetType) ? 
-                          (holding.expenseRatio ? `${formatNumber(holding.expenseRatio, 2)}%` : 'N/A') : 
-                          '-'
-                        }
+                        {holding.expenseRatio ? `${formatNumber(holding.expenseRatio, 2)}%` : 'N/A'}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
-                        {shouldShowETFMetrics(assetType) ? 
-                          (holding.netAssets ? `$${formatNumber(holding.netAssets / 1000, 1)}B` : 'N/A') : 
-                          '-'
-                        }
+                        {holding.netAssets ? `$${formatNumber(holding.netAssets / 1000, 1)}B` : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
+                        <div className="text-xs px-2 py-1 rounded-full bg-blue-600/20 text-blue-300 inline-block">
+                          {holding.etfCategory || 'ETF'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300 font-medium">
+                        {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
                       </td>
                     </>
                   )}
-                  {assetTypesPresent.hasBonds && (
+                  {showBondColumns && (
                     // Bond-specific cells
                     <>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
-                        {shouldShowBondMetrics(assetType) ? 
-                          (holding.yieldToMaturity ? `${formatNumber(holding.yieldToMaturity, 2)}%` : 'N/A') : 
-                          '-'
-                        }
+                        {holding.yieldToMaturity ? `${formatNumber(holding.yieldToMaturity, 2)}%` : 'N/A'}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
-                        {shouldShowBondMetrics(assetType) ? 
-                          (holding.duration ? formatNumber(holding.duration, 1) : 'N/A') : 
-                          '-'
-                        }
+                        {holding.duration ? formatNumber(holding.duration, 1) : 'N/A'}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
-                        {shouldShowBondMetrics(assetType) ? (
-                          <div className="text-xs px-2 py-1 rounded-full bg-green-600/20 text-green-300 inline-block">
-                            {holding.creditRating || 'NR'}
-                          </div>
-                        ) : '-'}
+                        <div className="text-xs px-2 py-1 rounded-full bg-green-600/20 text-green-300 inline-block">
+                          {holding.creditRating || 'NR'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                        {holding.bondType || 'Fixed Income'}
                       </td>
                     </>
                   )}
-                  {assetTypesPresent.hasStocks && (
-                    // Stock-specific cells
+                  {showStockColumns && (
+                    // Comprehensive stock cells (all financial ratios)
                     <>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                        {!shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) ? 
-                          formatNumber(holding.pe, 1) : 
-                          '-'
-                        }
+                        {formatNumber(holding.fcf10yr, 1)}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                        {!shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) ? 
-                          formatNumber(holding.pb, 1) : 
-                          '-'
-                        }
+                        {formatNumber(holding.evFcf, 1)}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                        {!shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) ? 
-                          formatPercent(holding.roe) : 
-                          '-'
-                        }
+                        {formatCurrency(holding.intrinsicValue)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(upsidePercent)}
+                        </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                        {!shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) ? 
-                          formatCurrency(holding.intrinsicValue) : 
-                          '-'
-                        }
+                        {formatNumber(holding.pe, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.pb, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.peg, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.debtToEquity, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.currentRatio, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.quickRatio, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.roe)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.roa)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.grossMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.netMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.operatingMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.assetTurnover, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.revenueGrowth)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
                       </td>
                     </>
                   )}
-                  {/* Universal dividend yield column for all asset types */}
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-purple-300 font-medium">
-                    {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
-                  </td>
                   <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
                     <div className="truncate" title={holding.description || holding.narrative}>
                       {holding.description || holding.narrative}

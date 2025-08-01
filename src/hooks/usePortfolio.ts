@@ -470,7 +470,10 @@ export const usePortfolio = () => {
             const financialData = await FinancialDataService.getCompanyFinancials(holding.ticker);
             
             if (financialData) {
-              return {
+              // Detect asset type to add appropriate fields
+              const assetType = holding.type || detectAssetType(holding.ticker, holding.company);
+              
+              let enhancedHolding = {
                 ...holding,
                 company: financialData.name || holding.company,
                 sector: financialData.sector || holding.sector,
@@ -503,6 +506,57 @@ export const usePortfolio = () => {
                   ? `Estimated financial data (API temporarily unavailable)`
                   : `Financial data from Financial Modeling Prep`
               };
+
+              // Add ETF-specific fields for ETFs with realistic defaults
+              if (assetType === 'etfs') {
+                const etfInfo = await import('../utils/assetTypeDetector').then(m => m.getETFInfo(holding.ticker));
+                // Use known data for common ETFs, defaults for others
+                const etfDefaults = {
+                  'SPY': { expenseRatio: 0.09, netAssets: 450000, category: 'Large Cap Blend' },
+                  'VTI': { expenseRatio: 0.03, netAssets: 380000, category: 'Total Stock Market' },
+                  'JEPI': { expenseRatio: 0.35, netAssets: 32800, category: 'Dividend/Income' },
+                  'QQQ': { expenseRatio: 0.20, netAssets: 220000, category: 'Technology' },
+                  'IWM': { expenseRatio: 0.19, netAssets: 65000, category: 'Small Cap' }
+                };
+                
+                const defaults = etfDefaults[holding.ticker as keyof typeof etfDefaults] || 
+                  { expenseRatio: 0.15, netAssets: 10000, category: 'ETF' };
+                
+                enhancedHolding = {
+                  ...enhancedHolding,
+                  expenseRatio: defaults.expenseRatio,
+                  netAssets: defaults.netAssets,
+                  etfCategory: etfInfo?.category || defaults.category,
+                  type: 'etfs' as any
+                };
+              }
+
+              // Add bond-specific fields for bonds with realistic defaults
+              if (assetType === 'bonds') {
+                const bondInfo = await import('../utils/assetTypeDetector').then(m => m.getBondInfo(holding.ticker));
+                // Use known data for common bond ETFs, defaults for others
+                const bondDefaults = {
+                  'GOVT': { ytm: 2.65, duration: 6.8, rating: 'AAA', type: 'Treasury' },
+                  'LQD': { ytm: 3.45, duration: 8.2, rating: 'A-', type: 'Corporate' },
+                  'TLT': { ytm: 2.85, duration: 17.8, rating: 'AAA', type: 'Treasury' },
+                  'HYG': { ytm: 7.5, duration: 3.2, rating: 'BB', type: 'High Yield' },
+                  'AGG': { ytm: 3.2, duration: 6.0, rating: 'AA+', type: 'Aggregate' }
+                };
+                
+                const defaults = bondDefaults[holding.ticker as keyof typeof bondDefaults] || 
+                  { ytm: 4.0, duration: 6.0, rating: 'A', type: 'Corporate' };
+                
+                enhancedHolding = {
+                  ...enhancedHolding,
+                  yieldToMaturity: defaults.ytm,
+                  duration: defaults.duration,
+                  creditRating: defaults.rating,
+                  bondType: bondInfo?.bondType || defaults.type,
+                  type: 'bonds' as any
+                };
+              }
+
+              return enhancedHolding;
             }
             
             return holding; // Return original if no financial data

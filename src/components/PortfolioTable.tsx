@@ -11,6 +11,7 @@ import { QuickViewChart } from './QuickViewChart';
 import { AdvancedModal } from './AdvancedModal';
 import { QuickViewModal } from './QuickViewModal';
 import { shouldShowETFMetrics, shouldShowBondMetrics, detectAssetType } from '../utils/assetTypeDetector';
+import { useSubscription } from '../hooks/useSubscription';
 
 interface PortfolioTableProps {
   holdings: Holding[];
@@ -18,6 +19,7 @@ interface PortfolioTableProps {
 }
 
 export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filter = 'all' }) => {
+  const { hasQuickViewAccess, hasAdvancedAccess } = useSubscription();
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
@@ -461,15 +463,17 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     <button className="text-gray-400 hover:text-gray-300 p-2 rounded-lg hover:bg-gray-600/20 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
                       <ExternalLink className="h-4 w-4" />
                     </button>
-                    <button
-                      onClick={(e) => openQuickView(e, holding)}
-                      className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
-                    >
-                      <BarChart3 className="h-3 w-3" />
-                      <span>QuickView</span>
-                    </button>
-                    {/* Hide Advanced button for ETFs and bonds as their metrics don't apply */}
-                    {!shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) && (
+                    {hasQuickViewAccess() && (
+                      <button
+                        onClick={(e) => openQuickView(e, holding)}
+                        className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
+                      >
+                        <BarChart3 className="h-3 w-3" />
+                        <span>QuickView</span>
+                      </button>
+                    )}
+                    {/* Hide Advanced button for ETFs and bonds as their metrics don't apply, and check subscription access */}
+                    {hasAdvancedAccess() && !shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) && (
                       <button
                         onClick={(e) => openAdvanced(e, holding)}
                         className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"

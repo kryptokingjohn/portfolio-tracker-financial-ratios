@@ -6,6 +6,7 @@ import { QuickViewPage } from './components/QuickViewPage';
 import { MobileApp } from './components/mobile/MobileApp';
 import { PortfolioTable } from './components/PortfolioTable';
 import { PortfolioSummary } from './components/PortfolioSummary';
+import { MyAccountModal } from './components/MyAccountModal';
 
 // Lazy load heavy components that aren't immediately needed
 const AddTransactionModal = lazy(() => import('./components/AddHoldingModal').then(m => ({ default: m.AddTransactionModal })));
@@ -21,6 +22,7 @@ const PricingModal = lazy(() => import('./components/PricingModal').then(m => ({
 const StripeCheckout = lazy(() => import('./components/StripeCheckout').then(m => ({ default: m.StripeCheckout })));
 import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
+import { useSubscription } from './hooks/useSubscription';
 import { Holding, Transaction } from './types/portfolio';
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
@@ -36,6 +38,7 @@ import Download from 'lucide-react/dist/esm/icons/download';
 import LogOut from 'lucide-react/dist/esm/icons/log-out';
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Crown from 'lucide-react/dist/esm/icons/crown';
+import User from 'lucide-react/dist/esm/icons/user';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
 // Improved mobile detection - checks both screen size and device type
@@ -66,6 +69,7 @@ const AppContent: React.FC = () => {
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
+  const { canAddHolding, getHoldingsLimitMessage } = useSubscription();
   
   // State hooks
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -78,6 +82,7 @@ const AppContent: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [portfolioFilter, setPortfolioFilter] = useState<'stocks' | 'etfs' | 'bonds' | 'all'>('all');
+  const [isMyAccountModalOpen, setIsMyAccountModalOpen] = useState(false);
   
   // Initialize database and API status logging
   useEffect(() => {
@@ -226,18 +231,24 @@ const AppContent: React.FC = () => {
                 <span>Export Report</span>
               </button>
               <button
-                onClick={() => setIsTransactionModalOpen(true)}
+                onClick={() => {
+                  if (canAddHolding(holdings.length)) {
+                    setIsTransactionModalOpen(true);
+                  } else {
+                    alert(getHoldingsLimitMessage(holdings.length));
+                  }
+                }}
                 className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <Plus className="h-4 w-4" />
                 <span>Add Transaction</span>
               </button>
               <button
-                onClick={() => setIsPricingModalOpen(true)}
+                onClick={() => setIsMyAccountModalOpen(true)}
                 className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <Crown className="h-4 w-4" />
-                <span>Upgrade</span>
+                <User className="h-4 w-4" />
+                <span>My Account</span>
               </button>
               <button
                 onClick={signOut}
@@ -500,6 +511,14 @@ const AppContent: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* My Account Modal */}
+      {isMyAccountModalOpen && (
+        <MyAccountModal
+          isOpen={isMyAccountModalOpen}
+          onClose={() => setIsMyAccountModalOpen(false)}
+        />
       )}
     </div>
   );

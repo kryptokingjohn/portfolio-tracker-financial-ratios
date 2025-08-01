@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Download, FileText, Table, BarChart3, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
 import { ExportService, ExportOptions, ReportData } from '../utils/exportService';
 import { Holding, Transaction } from '../types/portfolio';
+import { useSubscription } from '../hooks/useSubscription';
 
 interface ExportModalProps {
   onClose: () => void;
@@ -16,6 +17,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   transactions, 
   portfolioMetrics 
 }) => {
+  const { canExportFormat } = useSubscription();
   const [exportFormat, setExportFormat] = useState<'csv' | 'pdf' | 'excel' | 'json'>('csv');
   const [includeCharts, setIncludeCharts] = useState(false);
   const [selectedSections, setSelectedSections] = useState<string[]>([
@@ -151,20 +153,30 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 { value: 'json', label: 'JSON', icon: BarChart3, description: 'Raw data' }
               ].map((format) => {
                 const Icon = format.icon;
+                const isAccessible = canExportFormat(format.value as any);
                 return (
                   <button
                     key={format.value}
                     type="button"
-                    onClick={() => setExportFormat(format.value as any)}
-                    className={`p-3 border-2 rounded-lg text-center transition-all ${
-                      exportFormat === format.value
+                    onClick={() => isAccessible && setExportFormat(format.value as any)}
+                    disabled={!isAccessible}
+                    className={`p-3 border-2 rounded-lg text-center transition-all relative ${
+                      exportFormat === format.value && isAccessible
                         ? 'border-blue-500 bg-blue-600/20 text-white'
-                        : 'border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white bg-gray-800/50'
+                        : isAccessible
+                        ? 'border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white bg-gray-800/50'
+                        : 'border-gray-700 bg-gray-700/30 text-gray-500 cursor-not-allowed'
                     }`}
+                    title={!isAccessible ? 'Upgrade to Premium to unlock this export format' : ''}
                   >
-                    <Icon className="h-6 w-6 mx-auto mb-1 text-blue-400" />
+                    <Icon className={`h-6 w-6 mx-auto mb-1 ${isAccessible ? 'text-blue-400' : 'text-gray-500'}`} />
                     <div className="font-medium text-sm">{format.label}</div>
                     <div className="text-xs text-gray-400">{format.description}</div>
+                    {!isAccessible && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 rounded-lg">
+                        <span className="text-xs font-medium text-yellow-400">Premium</span>
+                      </div>
+                    )}
                   </button>
                 );
               })}

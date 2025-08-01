@@ -5,6 +5,7 @@ import { AttributionAnalysisComponent } from './AttributionAnalysis';
 import { RiskAnalyticsTab } from './RiskAnalyticsTab';
 import { AdvancedCharting } from './AdvancedCharting';
 import { BenchmarkComparison } from './BenchmarkComparison';
+import { useSubscription } from '../hooks/useSubscription';
 
 interface PerformanceTabProps {
   holdings: Holding[];
@@ -36,6 +37,7 @@ interface PerformanceMetrics {
 }
 
 export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
+  const { hasAdvancedChartsAccess } = useSubscription();
   const [selectedPeriod, setSelectedPeriod] = useState<'ytd' | '1y' | '3y' | '5y' | '10y'>('1y');
   const [selectedAllocationView, setSelectedAllocationView] = useState<'cap' | 'sector' | 'type'>('cap');
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'attribution' | 'risk' | 'charts' | 'benchmarks'>('overview');
@@ -339,25 +341,33 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       <div className="border-b border-gray-700/50">
         <nav className="flex space-x-2">
           {[
-            { id: 'overview', label: 'Performance Overview', icon: TrendingUp },
-            { id: 'attribution', label: 'Attribution Analysis', icon: Target },
-            { id: 'risk', label: 'Risk Analytics', icon: BarChart3 },
-            { id: 'charts', label: 'Advanced Charts', icon: Activity },
-            { id: 'benchmarks', label: 'Benchmark Comparison', icon: Award }
+            { id: 'overview', label: 'Performance Overview', icon: TrendingUp, requiresPremium: false },
+            { id: 'attribution', label: 'Attribution Analysis', icon: Target, requiresPremium: true },
+            { id: 'risk', label: 'Risk Analytics', icon: BarChart3, requiresPremium: true },
+            { id: 'charts', label: 'Advanced Charts', icon: Activity, requiresPremium: true },
+            { id: 'benchmarks', label: 'Benchmark Comparison', icon: Award, requiresPremium: true }
           ].map((tab) => {
             const Icon = tab.icon;
+            const isAccessible = !tab.requiresPremium || hasAdvancedChartsAccess();
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as any)}
-                className={`py-3 px-4 font-medium text-sm flex items-center transition-all rounded-lg backdrop-blur-sm ${
-                  activeSubTab === tab.id
+                onClick={() => isAccessible && setActiveSubTab(tab.id as any)}
+                disabled={!isAccessible}
+                className={`py-3 px-4 font-medium text-sm flex items-center transition-all rounded-lg backdrop-blur-sm relative ${
+                  activeSubTab === tab.id && isAccessible
                     ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30 shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
+                    : isAccessible
+                    ? 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
+                    : 'text-gray-500 cursor-not-allowed bg-gray-700/20 border border-gray-700'
                 }`}
+                title={!isAccessible ? 'Upgrade to Premium to access advanced analytics' : ''}
               >
-                <Icon className="h-4 w-4 mr-2" />
+                <Icon className={`h-4 w-4 mr-2 ${isAccessible ? '' : 'text-gray-500'}`} />
                 {tab.label}
+                {!isAccessible && (
+                  <span className="ml-2 text-xs bg-yellow-600 text-yellow-200 px-1.5 py-0.5 rounded">Premium</span>
+                )}
               </button>
             );
           })}

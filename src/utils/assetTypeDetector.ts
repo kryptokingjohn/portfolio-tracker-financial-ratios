@@ -9,6 +9,13 @@ interface ETFData {
   category: string;
 }
 
+interface BondData {
+  ticker: string;
+  name: string;
+  bondType: string;
+  maturityRange: string;
+}
+
 // Known ETF patterns and comprehensive list
 const KNOWN_ETFS: ETFData[] = [
   // Equity ETFs
@@ -57,6 +64,38 @@ const KNOWN_ETFS: ETFData[] = [
 
 const ETF_TICKER_MAP = new Map(KNOWN_ETFS.map(etf => [etf.ticker.toUpperCase(), etf]));
 
+// Known Bond ETFs and Treasury instruments
+const KNOWN_BONDS: BondData[] = [
+  // Treasury ETFs
+  { ticker: 'TLT', name: 'iShares 20+ Year Treasury Bond ETF', bondType: 'Treasury', maturityRange: '20+ years' },
+  { ticker: 'IEF', name: 'iShares 7-10 Year Treasury Bond ETF', bondType: 'Treasury', maturityRange: '7-10 years' },
+  { ticker: 'SHY', name: 'iShares 1-3 Year Treasury Bond ETF', bondType: 'Treasury', maturityRange: '1-3 years' },
+  { ticker: 'IEI', name: 'iShares 3-7 Year Treasury Bond ETF', bondType: 'Treasury', maturityRange: '3-7 years' },
+  { ticker: 'GOVT', name: 'iShares U.S. Treasury Bond ETF', bondType: 'Treasury', maturityRange: 'All maturities' },
+  
+  // Corporate Bonds
+  { ticker: 'LQD', name: 'iShares iBoxx $ Investment Grade Corporate Bond ETF', bondType: 'Corporate', maturityRange: 'Investment Grade' },
+  { ticker: 'HYG', name: 'iShares iBoxx $ High Yield Corporate Bond ETF', bondType: 'High Yield', maturityRange: 'High Yield' },
+  { ticker: 'JNK', name: 'SPDR Bloomberg High Yield Bond ETF', bondType: 'High Yield', maturityRange: 'High Yield' },
+  { ticker: 'VCIT', name: 'Vanguard Intermediate-Term Corporate Bond ETF', bondType: 'Corporate', maturityRange: 'Intermediate' },
+  { ticker: 'VCSH', name: 'Vanguard Short-Term Corporate Bond ETF', bondType: 'Corporate', maturityRange: 'Short-Term' },
+  
+  // Aggregate Bonds
+  { ticker: 'AGG', name: 'iShares Core US Aggregate Bond ETF', bondType: 'Aggregate', maturityRange: 'Diversified' },
+  { ticker: 'BND', name: 'Vanguard Total Bond Market ETF', bondType: 'Aggregate', maturityRange: 'Total Market' },
+  { ticker: 'BNDX', name: 'Vanguard Total International Bond ETF', bondType: 'International', maturityRange: 'International' },
+  
+  // Municipal Bonds
+  { ticker: 'MUB', name: 'iShares National Muni Bond ETF', bondType: 'Municipal', maturityRange: 'Tax-Free' },
+  { ticker: 'VTEB', name: 'Vanguard Tax-Exempt Bond ETF', bondType: 'Municipal', maturityRange: 'Tax-Free' },
+  
+  // Inflation-Protected
+  { ticker: 'TIPS', name: 'iShares TIPS Bond ETF', bondType: 'TIPS', maturityRange: 'Inflation Protected' },
+  { ticker: 'SCHP', name: 'Schwab U.S. TIPS ETF', bondType: 'TIPS', maturityRange: 'Inflation Protected' },
+];
+
+const BOND_TICKER_MAP = new Map(KNOWN_BONDS.map(bond => [bond.ticker.toUpperCase(), bond]));
+
 // Common ETF naming patterns
 const ETF_NAME_PATTERNS = [
   /ETF$/i,
@@ -69,6 +108,24 @@ const ETF_NAME_PATTERNS = [
   /Select.*Sector/i,
   /Trust$/i,
   /Fund.*ETF/i
+];
+
+// Bond naming patterns
+const BOND_NAME_PATTERNS = [
+  /Treasury.*Bond/i,
+  /Corporate.*Bond/i,
+  /Municipal.*Bond/i,
+  /Government.*Bond/i,
+  /High.*Yield.*Bond/i,
+  /Investment.*Grade.*Bond/i,
+  /Aggregate.*Bond/i,
+  /TIPS/i,
+  /Inflation.*Protected/i,
+  /Bond.*ETF/i,
+  /Fixed.*Income/i,
+  /Intermediate.*Term/i,
+  /Short.*Term.*Bond/i,
+  /Long.*Term.*Bond/i
 ];
 
 // ETF ticker patterns
@@ -96,14 +153,26 @@ export function detectAssetType(
     return 'etfs';
   }
   
-  // 2. Known ETF lookup (high confidence)
+  // 2. Known bond lookup (highest confidence for bonds)
+  if (BOND_TICKER_MAP.has(tickerUpper)) {
+    return 'bonds';
+  }
+  
+  // 3. Known ETF lookup (high confidence)
   if (ETF_TICKER_MAP.has(tickerUpper)) {
     return 'etfs';
   }
   
-  // 3. Company/fund name analysis
+  // 4. Company/fund name analysis
   if (companyName) {
     const nameUpper = companyName.toUpperCase();
+    
+    // Check for bond patterns first (higher priority)
+    for (const pattern of BOND_NAME_PATTERNS) {
+      if (pattern.test(companyName)) {
+        return 'bonds';
+      }
+    }
     
     // Check for ETF in name patterns
     for (const pattern of ETF_NAME_PATTERNS) {
@@ -112,8 +181,10 @@ export function detectAssetType(
       }
     }
     
-    // Bond fund detection
-    if (nameUpper.includes('BOND') || nameUpper.includes('TREASURY') || nameUpper.includes('FIXED INCOME')) {
+    // Additional bond indicators
+    if (nameUpper.includes('BOND') || nameUpper.includes('TREASURY') || 
+        nameUpper.includes('FIXED INCOME') || nameUpper.includes('YIELD') ||
+        nameUpper.includes('COUPON') || nameUpper.includes('MATURITY')) {
       return 'bonds';
     }
     
@@ -163,6 +234,13 @@ export function getETFInfo(ticker: string): ETFData | null {
 }
 
 /**
+ * Gets bond-specific information if available
+ */
+export function getBondInfo(ticker: string): BondData | null {
+  return BOND_TICKER_MAP.get(ticker.toUpperCase()) || null;
+}
+
+/**
  * Gets the display category for an asset
  */
 export function getAssetCategory(ticker: string, assetType: AssetType): string {
@@ -172,7 +250,8 @@ export function getAssetCategory(ticker: string, assetType: AssetType): string {
   }
   
   if (assetType === 'bonds') {
-    return 'Fixed Income';
+    const bondInfo = getBondInfo(ticker);
+    return bondInfo?.bondType || 'Fixed Income';
   }
   
   return 'Equity';

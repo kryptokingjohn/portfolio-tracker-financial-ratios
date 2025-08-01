@@ -55,6 +55,16 @@ export interface Holding {
   netAssets?: number; // AUM in millions
   inceptionDate?: string;
   etfCategory?: string; // 'Large Cap Blend', 'Dividend/Income', etc.
+  
+  // Bond-specific properties
+  maturityDate?: string;
+  couponRate?: number; // Annual coupon rate %
+  yieldToMaturity?: number; // YTM %
+  duration?: number; // Modified duration in years
+  creditRating?: string; // AAA, AA+, BBB-, etc.
+  bondType?: string; // 'Treasury', 'Corporate', 'Municipal', 'High Yield'
+  faceValue?: number; // Par value
+  callableDate?: string; // If callable bond
 }
 
 export interface Transaction {

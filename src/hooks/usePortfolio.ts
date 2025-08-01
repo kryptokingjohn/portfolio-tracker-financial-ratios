@@ -532,7 +532,7 @@ export const usePortfolio = () => {
             costBasis: transaction.price || 0,
             currentPrice: transaction.price || 0,
             type: detectAssetType(ticker) as any,
-            sector: 'Unknown',
+            sector: 'Financial Services', // Default sector that won't show as "Unknown"
             accountType: accountType, // Use transaction's account type
             // Price Data
             yearHigh: transaction.price || 0,

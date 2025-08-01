@@ -87,6 +87,28 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     return Array.from(new Set(holdings.map(h => h.sector))).sort();
   }, [holdings]);
 
+  // Determine what asset types are present in filtered holdings
+  const assetTypesPresent = useMemo(() => {
+    const types = {
+      hasETFs: false,
+      hasBonds: false,
+      hasStocks: false
+    };
+    
+    filteredAndSortedHoldings.forEach(h => {
+      const assetType = detectAssetType(h.ticker, h.company);
+      if (shouldShowETFMetrics(assetType as any)) {
+        types.hasETFs = true;
+      } else if (shouldShowBondMetrics(assetType as any)) {
+        types.hasBonds = true;
+      } else {
+        types.hasStocks = true;
+      }
+    });
+    
+    return types;
+  }, [filteredAndSortedHoldings]);
+
   // Memoized formatting functions to prevent recreation on each render
   const formatNumber = useCallback((num: number, decimals: number = 2) => {
     return num.toLocaleString('en-US', { 
@@ -223,7 +245,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                 52W Low
               </th>
               {/* Dynamic columns based on asset type */}
-              {shouldShowETFMetrics(filteredAndSortedHoldings[0]?.type as any) ? (
+              {!assetTypesPresent.hasStocks && assetTypesPresent.hasETFs && !assetTypesPresent.hasBonds ? (
                 // ETF-specific columns
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
@@ -242,7 +264,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                     Dividend Yield %
                   </th>
                 </>
-              ) : shouldShowBondMetrics(filteredAndSortedHoldings[0]?.type as any) ? (
+              ) : !assetTypesPresent.hasStocks && !assetTypesPresent.hasETFs && assetTypesPresent.hasBonds ? (
                 // Bond-specific columns
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider cursor-pointer hover:bg-green-600/20 transition-colors"
@@ -401,7 +423,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                   </td>
                   
                   {/* Dynamic cells based on asset type */}
-                  {shouldShowETFMetrics(assetType) ? (
+                  {!assetTypesPresent.hasStocks && assetTypesPresent.hasETFs && !assetTypesPresent.hasBonds ? (
                     // ETF-specific cells
                     <>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
@@ -419,7 +441,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                         {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
                       </td>
                     </>
-                  ) : shouldShowBondMetrics(assetType) ? (
+                  ) : !assetTypesPresent.hasStocks && !assetTypesPresent.hasETFs && assetTypesPresent.hasBonds ? (
                     // Bond-specific cells
                     <>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">

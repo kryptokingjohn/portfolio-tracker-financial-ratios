@@ -476,6 +476,7 @@ export const usePortfolio = () => {
               evFcf: financialData.evFcf,
               sectorMedianEvFcf: financialData.sectorMedianEvFcf,
               intrinsicValue: financialData.intrinsicValue || holding.intrinsicValue,
+              description: financialData.description, // FMP API description
               narrative: financialData.description?.includes('temporarily unavailable') 
                 ? `Estimated financial data (API temporarily unavailable)`
                 : `Financial data from Financial Modeling Prep`

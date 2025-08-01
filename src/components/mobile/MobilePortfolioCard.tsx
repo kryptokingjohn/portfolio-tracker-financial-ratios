@@ -1,5 +1,7 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import ExternalLink from 'lucide-react/dist/esm/icons/external-link';
 import { Holding } from '../../types/portfolio';
 import { hapticFeedback } from '../../utils/deviceUtils';
 

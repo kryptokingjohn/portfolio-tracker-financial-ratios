@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 
 interface LoadingScreenProps {
   message?: string;

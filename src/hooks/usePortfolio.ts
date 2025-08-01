@@ -439,57 +439,92 @@ export const usePortfolio = () => {
     }
   };
 
-  // Enrich holdings with financial data
+  // Enrich holdings with financial data using optimized batching
   const enrichHoldingsWithFinancialData = async (holdings: Holding[]): Promise<Holding[]> => {
-    const enrichedHoldings = await Promise.all(
-      holdings.map(async (holding) => {
-        try {
-          console.log(`Fetching financial data for ${holding.ticker}...`);
-          const financialData = await FinancialDataService.getCompanyFinancials(holding.ticker);
-          
-          if (financialData) {
-            return {
-              ...holding,
-              company: financialData.name || holding.company,
-              sector: financialData.sector || holding.sector,
-              pe: financialData.pe,
-              pb: financialData.pb,
-              peg: financialData.peg,
-              debtToEquity: financialData.debtToEquity,
-              currentRatio: financialData.currentRatio,
-              quickRatio: financialData.quickRatio,
-              roe: financialData.roe,
-              roa: financialData.roa,
-              grossMargin: financialData.grossMargin,
-              netMargin: financialData.netMargin,
-              operatingMargin: financialData.operatingMargin,
-              assetTurnover: financialData.assetTurnover,
-              revenueGrowth: financialData.revenueGrowth,
-              yearHigh: financialData.yearHigh || holding.yearHigh,
-              yearLow: financialData.yearLow || holding.yearLow,
-              dividend: financialData.dividend || holding.dividend,
-              dividendYield: financialData.dividendYield || holding.dividendYield,
-              fcf1yr: financialData.fcf1yr,
-              fcf2yr: financialData.fcf2yr,
-              fcf3yr: financialData.fcf3yr,
-              fcf10yr: financialData.fcf10yr,
-              evFcf: financialData.evFcf,
-              sectorMedianEvFcf: financialData.sectorMedianEvFcf,
-              intrinsicValue: financialData.intrinsicValue || holding.intrinsicValue,
-              description: financialData.description, // FMP API description
-              narrative: financialData.description?.includes('temporarily unavailable') 
-                ? `Estimated financial data (API temporarily unavailable)`
-                : `Financial data from Financial Modeling Prep`
-            };
+    if (holdings.length === 0) return holdings;
+    
+    const BATCH_SIZE = 8; // Optimize batch size to respect API rate limits
+    const batches: Holding[][] = [];
+    
+    // Split holdings into batches
+    for (let i = 0; i < holdings.length; i += BATCH_SIZE) {
+      batches.push(holdings.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`Fetching financial data for ${holdings.length} holdings in ${batches.length} batches...`);
+    
+    const enrichedHoldings: Holding[] = [];
+    
+    // Process batches with slight delay to respect rate limits
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex];
+      
+      // Add small delay between batches (except first)
+      if (batchIndex > 0) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      const batchResults = await Promise.allSettled(
+        batch.map(async (holding) => {
+          try {
+            const financialData = await FinancialDataService.getCompanyFinancials(holding.ticker);
+            
+            if (financialData) {
+              return {
+                ...holding,
+                company: financialData.name || holding.company,
+                sector: financialData.sector || holding.sector,
+                pe: financialData.pe,
+                pb: financialData.pb,
+                peg: financialData.peg,
+                debtToEquity: financialData.debtToEquity,
+                currentRatio: financialData.currentRatio,
+                quickRatio: financialData.quickRatio,
+                roe: financialData.roe,
+                roa: financialData.roa,
+                grossMargin: financialData.grossMargin,
+                netMargin: financialData.netMargin,
+                operatingMargin: financialData.operatingMargin,
+                assetTurnover: financialData.assetTurnover,
+                revenueGrowth: financialData.revenueGrowth,
+                yearHigh: financialData.yearHigh || holding.yearHigh,
+                yearLow: financialData.yearLow || holding.yearLow,
+                dividend: financialData.dividend || holding.dividend,
+                dividendYield: financialData.dividendYield || holding.dividendYield,
+                fcf1yr: financialData.fcf1yr,
+                fcf2yr: financialData.fcf2yr,
+                fcf3yr: financialData.fcf3yr,
+                fcf10yr: financialData.fcf10yr,
+                evFcf: financialData.evFcf,
+                sectorMedianEvFcf: financialData.sectorMedianEvFcf,
+                intrinsicValue: financialData.intrinsicValue || holding.intrinsicValue,
+                description: financialData.description, // FMP API description
+                narrative: financialData.description?.includes('temporarily unavailable') 
+                  ? `Estimated financial data (API temporarily unavailable)`
+                  : `Financial data from Financial Modeling Prep`
+              };
+            }
+            
+            return holding; // Return original if no financial data
+          } catch (error) {
+            console.warn(`Failed to fetch financial data for ${holding.ticker}:`, error);
+            return holding; // Return original on error
           }
-          
-          return holding; // Return original if no financial data
-        } catch (error) {
-          console.warn(`Failed to fetch financial data for ${holding.ticker}:`, error);
-          return holding; // Return original on error
+        })
+      );
+      
+      // Extract successful results and failed holdings
+      batchResults.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          enrichedHoldings.push(result.value);
+        } else {
+          // Push original holding if enrichment failed
+          enrichedHoldings.push(batch[index]);
         }
-      })
-    );
+      });
+      
+      console.log(`Processed batch ${batchIndex + 1}/${batches.length}`);
+    }
     
     return enrichedHoldings;
   };

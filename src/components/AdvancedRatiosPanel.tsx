@@ -1,7 +1,11 @@
 import React from 'react';
 import { Holding, MarketData } from '../types/portfolio';
 import { DCFCalculator } from '../utils/dcfCalculator';
-import { DollarSign, BarChart3, TrendingUp, Target, AlertTriangle } from 'lucide-react';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import Target from 'lucide-react/dist/esm/icons/target';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 
 interface AdvancedRatiosPanelProps {
   holding: Holding;

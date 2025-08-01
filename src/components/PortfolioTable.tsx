@@ -1,5 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { TrendingUp, TrendingDown, Edit3, ExternalLink, BarChart3, Search, Filter } from 'lucide-react';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import Edit3 from 'lucide-react/dist/esm/icons/edit-3';
+import ExternalLink from 'lucide-react/dist/esm/icons/external-link';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
+import Search from 'lucide-react/dist/esm/icons/search';
+import Filter from 'lucide-react/dist/esm/icons/filter';
 import { Holding } from '../types/portfolio';
 import { QuickViewChart } from './QuickViewChart';
 import { AdvancedModal } from './AdvancedModal';
@@ -10,7 +16,7 @@ interface PortfolioTableProps {
   holdings: Holding[];
 }
 
-export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
+export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => {
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
@@ -125,8 +131,40 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     return `${formatNumber(num)}%`;
   }, [formatNumber]);
 
+  // Memoize expensive calculations for all holdings
+  const holdingCalculations = useMemo(() => {
+    const calculationsMap = new Map<string, {
+      gainLoss: number;
+      gainLossPercent: number;
+      currentValue: number;
+      totalCost: number;
+      upsidePercent: number;
+      assetType: string;
+    }>();
+
+    holdings.forEach(holding => {
+      const currentValue = holding.shares * holding.currentPrice;
+      const totalCost = holding.shares * holding.costBasis;
+      const gainLoss = currentValue - totalCost;
+      const gainLossPercent = (gainLoss / totalCost) * 100;
+      const upsidePercent = ((holding.intrinsicValue - holding.currentPrice) / holding.currentPrice) * 100;
+      const assetType = detectAssetType(holding.ticker, holding.company);
+
+      calculationsMap.set(holding.id, {
+        gainLoss,
+        gainLossPercent,
+        currentValue,
+        totalCost,
+        upsidePercent,
+        assetType
+      });
+    });
+
+    return calculationsMap;
+  }, [holdings]);
+
   // Helper to show consolidated ticker information
-  const getTickerAccountInfo = (ticker: string, holdings: Holding[]) => {
+  const getTickerAccountInfo = useCallback((ticker: string, holdings: Holding[]) => {
     const tickerHoldings = holdings.filter(h => h.ticker === ticker);
     if (tickerHoldings.length > 1) {
       const accountTypes = tickerHoldings.map(h => h.accountType || 'taxable');
@@ -138,20 +176,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
       };
     }
     return { multiple: false };
-  };
-
-  const getGainLoss = (holding: Holding) => {
-    const currentValue = holding.shares * holding.currentPrice;
-    const totalCost = holding.shares * holding.costBasis;
-    const gainLoss = currentValue - totalCost;
-    const gainLossPercent = (gainLoss / totalCost) * 100;
-    
-    return { gainLoss, gainLossPercent, currentValue, totalCost };
-  };
-
-  const getUpsidePercent = (holding: Holding) => {
-    return ((holding.intrinsicValue - holding.currentPrice) / holding.currentPrice) * 100;
-  };
+  }, []);
 
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700/50 overflow-hidden">
@@ -310,9 +335,10 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
           </thead>
           <tbody className="bg-gray-800/30 divide-y divide-gray-700/50">
             {filteredAndSortedHoldings.map((holding, index) => {
-              const { gainLoss, gainLossPercent, currentValue, totalCost } = getGainLoss(holding);
-              const upsidePercent = getUpsidePercent(holding);
-              const assetType = detectAssetType(holding.ticker, holding.company);
+              const calculations = holdingCalculations.get(holding.id);
+              if (!calculations) return null;
+              
+              const { gainLoss, gainLossPercent, currentValue, totalCost, upsidePercent, assetType } = calculations;
               
               return (
                 <React.Fragment key={holding.id}>
@@ -500,4 +526,4 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
       )}
     </div>
   );
-};
+});

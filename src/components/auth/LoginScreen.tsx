@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, TrendingUp, Shield, BarChart3, DollarSign } from 'lucide-react';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import Shield from 'lucide-react/dist/esm/icons/shield';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import { useAuth } from '../../hooks/useAuthSimple';
 
 export const LoginScreen: React.FC = () => {

@@ -1,5 +1,10 @@
 import React from 'react';
-import { PieChart, TrendingUp, Building, DollarSign, History, Calculator } from 'lucide-react';
+import PieChart from 'lucide-react/dist/esm/icons/pie-chart';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import Building from 'lucide-react/dist/esm/icons/building';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import History from 'lucide-react/dist/esm/icons/history';
+import Calculator from 'lucide-react/dist/esm/icons/calculator';
 
 interface MobileNavigationProps {
   activeTab: string;

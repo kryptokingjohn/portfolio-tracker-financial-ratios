@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Calendar, DollarSign, TrendingUp, TrendingDown, Filter, Search, Edit2, Trash2 } from 'lucide-react';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import Filter from 'lucide-react/dist/esm/icons/filter';
+import Search from 'lucide-react/dist/esm/icons/search';
+import Edit2 from 'lucide-react/dist/esm/icons/edit-2';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import { Transaction } from '../types/portfolio';
 
 interface TransactionHistoryProps {

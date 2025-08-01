@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, BarChart3 } from 'lucide-react';
+import X from 'lucide-react/dist/esm/icons/x';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
 import { Holding } from '../types/portfolio';
 import { AdvancedRatiosPanel } from './AdvancedRatiosPanel';
 import { MarketDataService } from '../services/marketDataService';

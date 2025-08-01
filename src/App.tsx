@@ -22,7 +22,20 @@ const StripeCheckout = lazy(() => import('./components/StripeCheckout').then(m =
 import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
 import { Holding, Transaction } from './types/portfolio';
-import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut, RefreshCw, Crown } from 'lucide-react';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import Info from 'lucide-react/dist/esm/icons/info';
+import Plus from 'lucide-react/dist/esm/icons/plus';
+import Edit3 from 'lucide-react/dist/esm/icons/edit-3';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import PieChart from 'lucide-react/dist/esm/icons/pie-chart';
+import History from 'lucide-react/dist/esm/icons/history';
+import Building from 'lucide-react/dist/esm/icons/building';
+import Calculator from 'lucide-react/dist/esm/icons/calculator';
+import Download from 'lucide-react/dist/esm/icons/download';  
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
+import Crown from 'lucide-react/dist/esm/icons/crown';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
 // Improved mobile detection - checks both screen size and device type

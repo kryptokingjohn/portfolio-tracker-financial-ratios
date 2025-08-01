@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, DollarSign, Shield, TrendingUp, BarChart3, Percent, Calendar, Info } from 'lucide-react';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import Shield from 'lucide-react/dist/esm/icons/shield';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
+import Percent from 'lucide-react/dist/esm/icons/percent';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import Info from 'lucide-react/dist/esm/icons/info';
 import { Holding } from '../types/portfolio';
 import { mockPortfolioData } from '../data/mockData';
 

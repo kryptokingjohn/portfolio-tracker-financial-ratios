@@ -1,5 +1,7 @@
 import React from 'react';
-import { Download, X, RefreshCw } from 'lucide-react';
+import Download from 'lucide-react/dist/esm/icons/download';
+import X from 'lucide-react/dist/esm/icons/x';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import { usePWA } from '../hooks/usePWA';
 
 export const InstallPrompt: React.FC = () => {

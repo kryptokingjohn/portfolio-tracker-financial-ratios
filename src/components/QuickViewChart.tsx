@@ -1,5 +1,13 @@
 import React from 'react';
-import { ChevronDown, ChevronUp, Info, TrendingUp, Shield, BarChart3, DollarSign, Calendar, Percent } from 'lucide-react';
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down';
+import ChevronUp from 'lucide-react/dist/esm/icons/chevron-up';
+import Info from 'lucide-react/dist/esm/icons/info';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import Shield from 'lucide-react/dist/esm/icons/shield';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import Percent from 'lucide-react/dist/esm/icons/percent';
 import { Holding } from '../types/portfolio';
 import { AdvancedRatiosPanel } from './AdvancedRatiosPanel';
 

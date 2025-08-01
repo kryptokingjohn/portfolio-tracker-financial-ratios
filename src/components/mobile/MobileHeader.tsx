@@ -1,5 +1,10 @@
 import React from 'react';
-import { Bell, Settings, Plus, Menu, RefreshCw, LogOut } from 'lucide-react';
+import Bell from 'lucide-react/dist/esm/icons/bell';
+import Settings from 'lucide-react/dist/esm/icons/settings';
+import Plus from 'lucide-react/dist/esm/icons/plus';
+import Menu from 'lucide-react/dist/esm/icons/menu';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
 import { useAuth } from '../../hooks/useAuthSimple';
 
 interface MobileHeaderProps {

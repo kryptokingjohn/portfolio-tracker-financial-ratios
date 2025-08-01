@@ -1,5 +1,9 @@
-import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Percent, Clock } from 'lucide-react';
+import React, { useMemo } from 'react';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import Percent from 'lucide-react/dist/esm/icons/percent';
+import Clock from 'lucide-react/dist/esm/icons/clock';
 import { Holding } from '../types/portfolio';
 import { PortfolioCalculator } from '../utils/portfolioCalculations';
 
@@ -8,8 +12,10 @@ interface PortfolioSummaryProps {
   portfolioMetrics?: any;
 }
 
-export const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ holdings, portfolioMetrics }) => {
-  const summary = portfolioMetrics || PortfolioCalculator.calculatePortfolioMetrics(holdings);
+export const PortfolioSummary = React.memo<PortfolioSummaryProps>(({ holdings, portfolioMetrics }) => {
+  const summary = useMemo(() => {
+    return portfolioMetrics || PortfolioCalculator.calculatePortfolioMetrics(holdings);
+  }, [holdings, portfolioMetrics]);
 
   const formatCurrency = (num: number) => {
     return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -94,4 +100,4 @@ export const PortfolioSummary: React.FC<PortfolioSummaryProps> = ({ holdings, po
       </div>
     </div>
   );
-};
+});

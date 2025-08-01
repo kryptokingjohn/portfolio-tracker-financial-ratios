@@ -102,7 +102,8 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
     };
     
     filteredAndSortedHoldings.forEach(h => {
-      const assetType = detectAssetType(h.ticker, h.company);
+      // Use the type field from the holding data, fallback to detection if not set
+      const assetType = h.type || detectAssetType(h.ticker, h.company);
       if (shouldShowETFMetrics(assetType as any)) {
         types.hasETFs = true;
       } else if (shouldShowBondMetrics(assetType as any)) {
@@ -148,7 +149,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings }) => 
       const gainLoss = currentValue - totalCost;
       const gainLossPercent = (gainLoss / totalCost) * 100;
       const upsidePercent = ((holding.intrinsicValue - holding.currentPrice) / holding.currentPrice) * 100;
-      const assetType = detectAssetType(holding.ticker, holding.company);
+      const assetType = holding.type || detectAssetType(holding.ticker, holding.company);
 
       calculationsMap.set(holding.id, {
         gainLoss,

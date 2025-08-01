@@ -38,19 +38,7 @@ const isMobile = (() => {
 })();
 
 const AppContent: React.FC = () => {
-  // Initialize database and API status logging
-  useEffect(() => {
-    logDatabaseStatus();
-    logApiStatus();
-  }, []);
-
-  // Check if this is a QuickView page
-  const isQuickViewPage = window.location.pathname === '/quickview' || window.location.search.includes('ticker=');
-  
-  if (isQuickViewPage) {
-    return <QuickViewPage />;
-  }
-
+  // ALL HOOKS MUST BE CALLED CONSISTENTLY - NO EARLY RETURNS BEFORE THIS POINT
   const { user, loading, isDemoMode, signOut } = useAuth();
   const { 
     holdings, 
@@ -65,6 +53,8 @@ const AppContent: React.FC = () => {
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
+  
+  // State hooks
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -75,24 +65,18 @@ const AppContent: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [portfolioFilter, setPortfolioFilter] = useState<'stocks' | 'etfs' | 'bonds' | 'all'>('all');
+  
+  // Initialize database and API status logging
+  useEffect(() => {
+    logDatabaseStatus();
+    logApiStatus();
+  }, []);
 
-  if (loading) {
-    return <LoadingScreen message={isDemoMode ? "Loading demo data..." : "Authenticating..."} />;
-  }
-
-  if (!user && !isDemoMode) {
-    return <LoginScreen />;
-  }
-
-  if (portfolioLoading) {
-    return <LoadingScreen message="Loading your portfolio..." />;
-  }
-
-  // Memoized handler functions for transaction editing
+  // Memoized handler functions for transaction editing - STABLE DEPENDENCIES
   const handleEditTransaction = useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsEditModalOpen(true);
-  }, []);
+  }, []); // No dependencies needed
 
   const handleSaveTransaction = useCallback(async (id: string, updates: Partial<Transaction>) => {
     try {
@@ -106,7 +90,7 @@ const AppContent: React.FC = () => {
 
   const handleDeleteClick = useCallback((transactionId: string) => {
     setDeleteConfirmId(transactionId);
-  }, []);
+  }, []); // No dependencies needed
 
   const handleConfirmDelete = useCallback(async () => {
     if (deleteConfirmId) {
@@ -121,22 +105,9 @@ const AppContent: React.FC = () => {
 
   const handleCancelDelete = useCallback(() => {
     setDeleteConfirmId(null);
-  }, []);
+  }, []); // No dependencies needed
 
-  // Use mobile app for mobile devices
-  if (isMobile()) {
-    return (
-      <MobileApp 
-        holdings={holdings}
-        transactions={transactions}
-        onAddTransaction={addTransaction}
-        onRefresh={refreshData}
-        loading={portfolioLoading}
-      />
-    );
-  }
-
-  // Memoized portfolio metrics to prevent unnecessary recalculations
+  // Memoized computations
   const portfolioMetrics = useMemo(() => {
     const totalValue = holdings.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
     const totalCost = holdings.reduce((sum, h) => sum + (h.shares * h.costBasis), 0);
@@ -151,15 +122,46 @@ const AppContent: React.FC = () => {
     };
   }, [holdings]);
 
-  // Memoized filtered holdings to prevent unnecessary filtering
   const filteredHoldings = useMemo(() => {
     return portfolioFilter === 'all' 
       ? holdings 
       : holdings.filter(holding => holding.type === portfolioFilter);
   }, [holdings, portfolioFilter]);
 
-  // Memoized existing tickers
   const existingTickers = useMemo(() => holdings.map(h => h.ticker), [holdings]);
+
+  // Check if this is a QuickView page AFTER all hooks
+  const isQuickViewPage = window.location.pathname === '/quickview' || window.location.search.includes('ticker=');
+  
+  if (isQuickViewPage) {
+    return <QuickViewPage />;
+  }
+
+  if (loading) {
+    return <LoadingScreen message={isDemoMode ? "Loading demo data..." : "Authenticating..."} />;
+  }
+
+  if (!user && !isDemoMode) {
+    return <LoginScreen />;
+  }
+
+  if (portfolioLoading) {
+    return <LoadingScreen message="Loading your portfolio..." />;
+  }
+
+  // Use mobile app for mobile devices
+  if (isMobile()) {
+    return (
+      <MobileApp 
+        holdings={holdings}
+        transactions={transactions}
+        onAddTransaction={addTransaction}
+        onRefresh={refreshData}
+        loading={portfolioLoading}
+      />
+    );
+  }
+
   // Desktop version
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">

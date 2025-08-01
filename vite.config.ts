@@ -159,11 +159,11 @@ export default defineConfig({
   build: {
     target: 'es2015',
     sourcemap: false,
-    minify: 'terser',
+    minify: false, // Disable minification for better error debugging
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_console: false,
+        drop_debugger: false
       }
     },
     assetsInlineLimit: 0, // Prevent inlining to avoid MIME issues

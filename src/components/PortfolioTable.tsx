@@ -239,7 +239,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
                       onClick={() => handleSort('dividendYield')}>
-                    Yield %
+                    Dividend Yield %
                   </th>
                 </>
               ) : shouldShowBondMetrics(filteredAndSortedHoldings[0]?.type as any) ? (

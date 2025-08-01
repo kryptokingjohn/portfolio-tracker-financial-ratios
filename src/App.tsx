@@ -25,17 +25,17 @@ import { Holding, Transaction } from './types/portfolio';
 import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut, RefreshCw, Crown } from 'lucide-react';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
-// Optimized mobile detection with memoization
-const isMobile = (() => {
-  let cachedResult: boolean | null = null;
-  return () => {
-    if (cachedResult === null) {
-      cachedResult = window.innerWidth <= 768 || 
-                    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-    return cachedResult;
-  };
-})();
+// Improved mobile detection - checks both screen size and device type
+const isMobile = () => {
+  // Check for actual mobile devices first
+  const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Only use screen width for actual mobile devices or very small screens
+  const isSmallScreen = window.innerWidth <= 480; // Much smaller threshold
+  
+  // Only consider mobile if it's an actual mobile device OR a very small screen
+  return isMobileDevice || isSmallScreen;
+};
 
 const AppContent: React.FC = () => {
   // ALL HOOKS MUST BE CALLED CONSISTENTLY - NO EARLY RETURNS BEFORE THIS POINT

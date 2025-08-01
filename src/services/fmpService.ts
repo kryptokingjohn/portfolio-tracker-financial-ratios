@@ -369,13 +369,59 @@ class FMPService {
         return Number(value);
       };
       
+      // Better sector and industry mapping
+      const getSectorInfo = (profile: any, quote: any, symbol: string) => {
+        // Use profile data first
+        if (profile?.sector && profile.sector !== 'N/A') {
+          return {
+            sector: profile.sector,
+            industry: profile.industry || 'General'
+          };
+        }
+        
+        // Fallback based on common ticker patterns
+        const symbolUpper = symbol.toUpperCase();
+        if (symbolUpper.includes('ETF') || symbolUpper.endsWith('ETF')) {
+          return { sector: 'ETF', industry: 'Exchange Traded Fund' };
+        }
+        
+        // Technology sector common patterns
+        if (['AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'TSLA', 'META', 'NVDA', 'CRM', 'ORCL'].includes(symbolUpper)) {
+          return { sector: 'Technology', industry: 'Software & Technology' };
+        }
+        
+        // Financial sector patterns
+        if (['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'BRK.A', 'BRK.B'].includes(symbolUpper)) {
+          return { sector: 'Financial Services', industry: 'Banking & Investment' };
+        }
+        
+        // Healthcare patterns
+        if (['JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'CVS'].includes(symbolUpper)) {
+          return { sector: 'Healthcare', industry: 'Pharmaceuticals & Healthcare' };
+        }
+        
+        // Consumer patterns
+        if (['KO', 'PEP', 'WMT', 'PG', 'HD', 'MCD', 'NKE'].includes(symbolUpper)) {
+          return { sector: 'Consumer Goods', industry: 'Consumer Products' };
+        }
+        
+        // Default with exchange info if available
+        const exchange = quote?.exchange || profile?.exchange || 'Unknown Exchange';
+        return { 
+          sector: `${exchange} Listed`, 
+          industry: 'Market Securities' 
+        };
+      };
+      
+      const sectorInfo = getSectorInfo(profile, quote, symbol);
+      
       // Combine data from all sources
       const financials: CompanyFinancials = {
         // Basic Info
         symbol: symbol.toUpperCase(),
         name: profile?.companyName || quote?.name || symbol,
-        sector: profile?.sector || 'Unknown',
-        industry: profile?.industry || 'Unknown',
+        sector: sectorInfo.sector,
+        industry: sectorInfo.industry,
         description: profile?.description || `Financial data for ${symbol}`,
         
         // Price Data

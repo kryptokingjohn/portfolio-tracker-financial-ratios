@@ -96,6 +96,21 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
     return `${formatNumber(num)}%`;
   };
 
+  // Helper to show consolidated ticker information
+  const getTickerAccountInfo = (ticker: string, holdings: Holding[]) => {
+    const tickerHoldings = holdings.filter(h => h.ticker === ticker);
+    if (tickerHoldings.length > 1) {
+      const accountTypes = tickerHoldings.map(h => h.accountType || 'taxable');
+      const totalShares = tickerHoldings.reduce((sum, h) => sum + h.shares, 0);
+      return {
+        multiple: true,
+        accounts: accountTypes,
+        totalShares
+      };
+    }
+    return { multiple: false };
+  };
+
   const getGainLoss = (holding: Holding) => {
     const currentValue = holding.shares * holding.currentPrice;
     const totalCost = holding.shares * holding.costBasis;
@@ -139,8 +154,28 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
               ))}
             </select>
           </div>
-          <div className="text-sm text-gray-400 flex items-center">
-            {filteredAndSortedHoldings.length} of {holdings.length} holdings
+          <div className="flex flex-col space-y-2">
+            <div className="text-sm text-gray-400 flex items-center">
+              {filteredAndSortedHoldings.length} of {holdings.length} holdings
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-green-600/20 border border-green-400"></div>
+                <span className="text-gray-400">Taxable</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-orange-600/20 border border-orange-400"></div>
+                <span className="text-gray-400">401K</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-purple-600/20 border border-purple-400"></div>
+                <span className="text-gray-400">Roth IRA</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded-full bg-blue-600/20 border border-blue-400"></div>
+                <span className="text-gray-400">Traditional IRA</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -156,6 +191,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
               <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
                   onClick={() => handleSort('ticker')}>
                 Ticker
+                <div className="text-xs text-gray-400 normal-case font-normal">& Account</div>
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-blue-300 uppercase tracking-wider">
                 Position
@@ -268,8 +304,21 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                     <div className="text-sm font-medium text-white">{holding.company}</div>
                     <div className="text-sm text-gray-400">{holding.sector}</div>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-400">
-                    {holding.ticker}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-blue-400">{holding.ticker}</div>
+                    <div className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
+                      holding.accountType === 'taxable' || !holding.accountType
+                        ? 'text-green-400 bg-green-600/20'
+                        : holding.accountType === '401k'
+                        ? 'text-orange-400 bg-orange-600/20'
+                        : holding.accountType === 'roth_ira'
+                        ? 'text-purple-400 bg-purple-600/20'
+                        : holding.accountType === 'traditional_ira'
+                        ? 'text-blue-400 bg-blue-600/20'
+                        : 'text-gray-400 bg-gray-600/20'
+                    }`}>
+                      {(holding.accountType || 'taxable').replace('_', ' ').toUpperCase()}
+                    </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm text-white">{holding.shares} shares</div>

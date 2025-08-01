@@ -14,10 +14,59 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icon-192x192.png" />
     
+    <!-- Critical resource optimization -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://api.polygon.io" />
+    <link rel="dns-prefetch" href="https://financialmodelingprep.com" />
+    <link rel="dns-prefetch" href="https://cloud.supabase.com" />
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/icon-192x192.png" as="image" />
+    <link rel="modulepreload" href="/src/main.tsx" />
+    
+    <!-- Resource hints for better performance -->
+    <link rel="prefetch" href="/src/components/PortfolioTable.tsx" />
+    <link rel="prefetch" href="/src/components/PortfolioSummary.tsx" />
+    
+    <!-- Optimize font loading -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Critical CSS inlining would go here for above-fold content -->
+    <style>
+      /* Critical CSS for initial load */
+      body { 
+        margin: 0; 
+        background: linear-gradient(135deg, #1f2937 0%, #1e3a8a 50%, #1f2937 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      }
+      #root { 
+        min-height: 100vh; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #374151;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    
     <title>Portfolio Tracker with Financial Ratios</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Initial loading state with critical CSS -->
+      <div class="loading-spinner"></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- PWA Service Worker disabled for StackBlitz compatibility -->

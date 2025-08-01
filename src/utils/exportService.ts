@@ -100,21 +100,75 @@ export class ExportService {
     // Generate a formatted text report that can be saved as PDF
     const formatCurrency = (value: number) => `$${value?.toLocaleString() || '0'}`;
     const formatPercent = (value: number) => `${value?.toFixed(2) || '0'}%`;
+    const formatNumber = (value: number) => value?.toFixed(4) || '0';
     
     const reportDate = new Date().toLocaleDateString();
     const reportTime = new Date().toLocaleTimeString();
     
+    // Calculate additional portfolio metrics
+    const totalValue = data.portfolio.totalValue || 0;
+    const totalCost = data.portfolio.totalCost || 0;
+    const totalGainLoss = totalValue - totalCost;
+    const totalReturn = totalCost > 0 ? (totalGainLoss / totalCost * 100) : 0;
+    
+    // Sector allocation
+    const sectorAllocation = data.holdings.reduce((acc: any, h: any) => {
+      const sector = h.sector || 'Market Securities';
+      const value = (h.shares || 0) * (h.currentPrice || 0);
+      acc[sector] = (acc[sector] || 0) + value;
+      return acc;
+    }, {});
+    
+    // Top positions
+    const topPositions = data.holdings
+      .map((h: any) => ({
+        ...h,
+        currentValue: (h.shares || 0) * (h.currentPrice || 0),
+        weight: totalValue > 0 ? ((h.shares || 0) * (h.currentPrice || 0)) / totalValue * 100 : 0
+      }))
+      .sort((a, b) => b.currentValue - a.currentValue)
+      .slice(0, 10);
+    
     const pdfContent = `
-PORTFOLIO REPORT
+██████╗  ██████╗ ██████╗ ████████╗███████╗ ██████╗ ██╗     ██╗ ██████╗ 
+██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝██╔═══██╗██║     ██║██╔═══██╗
+██████╔╝██║   ██║██████╔╝   ██║   █████╗  ██║   ██║██║     ██║██║   ██║
+██╔═══╝ ██║   ██║██╔══██╗   ██║   ██╔══╝  ██║   ██║██║     ██║██║   ██║
+██║     ╚██████╔╝██║  ██║   ██║   ██║     ╚██████╔╝███████╗██║╚██████╔╝
+╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝ 
+                    PORTFOLIO PERFORMANCE REPORT                      
 Generated: ${reportDate} at ${reportTime}
 
 ===============================================
-PORTFOLIO SUMMARY
+EXECUTIVE SUMMARY
 ===============================================
-Total Portfolio Value: ${formatCurrency(data.portfolio.totalValue)}
-Total Cost Basis:      ${formatCurrency(data.portfolio.totalCost)}
-Total Gain/Loss:       ${formatCurrency(data.portfolio.totalGainLoss)}
-Total Return:          ${formatPercent(data.portfolio.totalGainLossPercent)}
+Portfolio Value:       ${formatCurrency(totalValue)}
+Cost Basis:           ${formatCurrency(totalCost)}
+Unrealized Gain/Loss: ${formatCurrency(totalGainLoss)}
+Total Return:         ${formatPercent(totalReturn)}
+Number of Positions:  ${data.holdings.length}
+Total Transactions:   ${data.transactions.length}
+
+===============================================
+TOP 10 POSITIONS BY VALUE
+===============================================
+${topPositions.map((h, i) => `
+${(i + 1).toString().padStart(2, '0')}. ${h.ticker} - ${h.company || 'N/A'}
+    Value: ${formatCurrency(h.currentValue)} (${formatPercent(h.weight)} of portfolio)
+    Shares: ${h.shares || 0} @ ${formatCurrency(h.currentPrice || 0)}
+    Cost Basis: ${formatCurrency(h.costBasis || 0)}
+    Gain/Loss: ${formatCurrency(h.currentValue - (h.shares || 0) * (h.costBasis || 0))}
+    Sector: ${h.sector || 'N/A'}
+`).join('')}
+
+===============================================
+SECTOR ALLOCATION
+===============================================
+${Object.entries(sectorAllocation)
+  .sort(([,a]: any, [,b]: any) => b - a)
+  .map(([sector, value]: any) => 
+    `${sector.padEnd(20)} ${formatCurrency(value)} (${formatPercent(totalValue > 0 ? value / totalValue * 100 : 0)})`
+  ).join('\n')}
 
 ===============================================
 HOLDINGS BREAKDOWN (${data.holdings.length} positions)

@@ -9,7 +9,42 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gstatic-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 300
+              }
+            }
+          }
+        ]
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
@@ -110,6 +145,7 @@ export default defineConfig({
     })
   ],
   optimizeDeps: {
+    include: ['react', 'react-dom', '@supabase/supabase-js'],
     exclude: ['lucide-react'],
   },
   server: {
@@ -122,14 +158,81 @@ export default defineConfig({
   },
   build: {
     target: 'es2015',
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['lucide-react'],
-          supabase: ['@supabase/supabase-js']
+        manualChunks: (id) => {
+          // Critical vendor libraries (loaded first)
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            // Group other vendor libraries
+            return 'vendor-misc';
+          }
+          
+          // App components by feature (lazy loaded)
+          if (id.includes('/components/')) {
+            if (id.includes('Modal') || id.includes('AddHolding') || id.includes('EditTransaction')) {
+              return 'chunk-modals';
+            }
+            if (id.includes('Tab') || id.includes('Performance') || id.includes('Accounts') || id.includes('Dividends') || id.includes('Tax')) {
+              return 'chunk-tabs';
+            }
+            if (id.includes('mobile/')) {
+              return 'chunk-mobile';
+            }
+            // Core components that load early
+            if (id.includes('LoadingScreen') || id.includes('PortfolioTable') || id.includes('PortfolioSummary')) {
+              return 'chunk-core-ui';
+            }
+            return 'chunk-components';
+          }
+          
+          // Database and hooks (critical)
+          if (id.includes('/lib/') || id.includes('/hooks/')) {
+            return 'chunk-core';
+          }
+          
+          // Utils and services (non-critical)
+          if (id.includes('/utils/') || id.includes('/services/')) {
+            return 'chunk-utils';
+          }
+        },
+        chunkFileNames: (chunkInfo) => {
+          const name = chunkInfo.name;
+          // Priority loading for critical chunks
+          if (name?.includes('vendor') || name?.includes('core')) {
+            return 'assets/[name]-[hash].js';
+          }
+          return 'assets/[name]-[hash].js';
+        },
+        entryFileNames: 'assets/entry-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.name || '';
+          if (name.endsWith('.css')) {
+            return 'assets/styles-[hash].css';
+          }
+          if (name.match(/\.(png|jpe?g|svg|gif|webp|avif)$/)) {
+            return 'assets/images/[name]-[hash].[ext]';
+          }
+          return 'assets/[name]-[hash].[ext]';
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 800
   }
 });

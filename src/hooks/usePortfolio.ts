@@ -476,7 +476,10 @@ export const usePortfolio = () => {
     // Use ticker-accountType combination as key to support same ticker in multiple accounts
     const holdingsMap = new Map<string, Holding>();
 
-    transactions.forEach(transaction => {
+    // Sort transactions by date to ensure proper chronological processing
+    const sortedTransactions = transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    sortedTransactions.forEach(transaction => {
       const ticker = transaction.ticker;
       const accountType = transaction.accountType || 'taxable';
       const holdingKey = `${ticker}-${accountType}`;
@@ -484,16 +487,18 @@ export const usePortfolio = () => {
 
       if (transaction.type === 'buy') {
         if (existing) {
-          // Update existing holding
+          // Update existing holding with proper cost basis calculation
+          const existingTotalCost = existing.shares * existing.costBasis;
+          const transactionCost = (transaction.shares || 0) * (transaction.price || 0);
           const newShares = existing.shares + (transaction.shares || 0);
-          const newTotalCost = (existing.shares * existing.costBasis) + (transaction.amount || 0);
+          const newTotalCost = existingTotalCost + transactionCost;
           const newCostBasis = newShares > 0 ? newTotalCost / newShares : existing.costBasis;
 
           holdingsMap.set(holdingKey, {
             ...existing,
             shares: newShares,
             costBasis: newCostBasis,
-            accountType: accountType // Ensure account type is preserved
+            accountType: accountType
           });
         } else {
           // Create new holding with all required fields
@@ -542,17 +547,41 @@ export const usePortfolio = () => {
           });
         }
       } else if (transaction.type === 'sell' && existing) {
-        // Reduce shares for sell transactions
-        const newShares = Math.max(0, existing.shares - (transaction.shares || 0));
+        // Reduce shares for sell transactions using FIFO (First In, First Out)
+        const sharesBeingSold = transaction.shares || 0;
+        const newShares = Math.max(0, existing.shares - sharesBeingSold);
+        
         if (newShares > 0) {
+          // Keep the same cost basis per share for remaining shares
           holdingsMap.set(holdingKey, {
             ...existing,
             shares: newShares,
-            accountType: accountType // Ensure account type is preserved
+            accountType: accountType
           });
         } else {
+          // Position completely sold out
           holdingsMap.delete(holdingKey);
         }
+      } else if (transaction.type === 'dividend' && existing) {
+        // Dividend transactions don't affect share count, but we could track them
+        // For now, dividends don't change the holding itself
+        // (dividend tracking is handled separately)
+      } else if (transaction.type === 'split' && existing) {
+        // Handle stock splits
+        const splitRatio = transaction.price || 1; // Use price field for split ratio
+        const newShares = existing.shares * splitRatio;
+        const newCostBasis = existing.costBasis / splitRatio;
+        
+        holdingsMap.set(holdingKey, {
+          ...existing,
+          shares: newShares,
+          costBasis: newCostBasis,
+          accountType: accountType
+        });
+      } else if (transaction.type === 'transfer' && existing) {
+        // Handle transfers between accounts
+        // Note: This requires more complex logic if transferring between different account types
+        // For now, treat as neutral (no change to shares in current account)
       }
     });
 

@@ -1,32 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useMemo, useCallback } from 'react';
 import { AuthProvider } from './hooks/useAuthSimple';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { LoadingScreen } from './components/LoadingScreen';
 import { QuickViewPage } from './components/QuickViewPage';
 import { MobileApp } from './components/mobile/MobileApp';
 import { PortfolioTable } from './components/PortfolioTable';
-import { AddTransactionModal } from './components/AddHoldingModal';
-import { EditTransactionModal } from './components/EditTransactionModal';
-import { TransactionHistory } from './components/TransactionHistory';
-import { RatiosGuide } from './components/RatiosGuide';
 import { PortfolioSummary } from './components/PortfolioSummary';
-import { PerformanceTab } from './components/PerformanceTab';
-import { AccountsTab } from './components/AccountsTab';
-import { DividendsTab } from './components/DividendsTab';
-import { TaxOptimizationTab } from './components/TaxOptimizationTab';
-import { ExportModal } from './components/ExportModal';
-import { PricingModal } from './components/PricingModal';
-import { StripeCheckout } from './components/StripeCheckout';
+
+// Lazy load heavy components that aren't immediately needed
+const AddTransactionModal = lazy(() => import('./components/AddHoldingModal').then(m => ({ default: m.AddTransactionModal })));
+const EditTransactionModal = lazy(() => import('./components/EditTransactionModal').then(m => ({ default: m.EditTransactionModal })));
+const TransactionHistory = lazy(() => import('./components/TransactionHistory').then(m => ({ default: m.TransactionHistory })));
+const RatiosGuide = lazy(() => import('./components/RatiosGuide').then(m => ({ default: m.RatiosGuide })));
+const PerformanceTab = lazy(() => import('./components/PerformanceTab').then(m => ({ default: m.PerformanceTab })));
+const AccountsTab = lazy(() => import('./components/AccountsTab').then(m => ({ default: m.AccountsTab })));
+const DividendsTab = lazy(() => import('./components/DividendsTab').then(m => ({ default: m.DividendsTab })));
+const TaxOptimizationTab = lazy(() => import('./components/TaxOptimizationTab').then(m => ({ default: m.TaxOptimizationTab })));
+const ExportModal = lazy(() => import('./components/ExportModal').then(m => ({ default: m.ExportModal })));
+const PricingModal = lazy(() => import('./components/PricingModal').then(m => ({ default: m.PricingModal })));
+const StripeCheckout = lazy(() => import('./components/StripeCheckout').then(m => ({ default: m.StripeCheckout })));
 import { useAuth } from './hooks/useAuthSimple';
 import { usePortfolio } from './hooks/usePortfolio';
 import { Holding, Transaction } from './types/portfolio';
 import { TrendingUp, TrendingDown, Info, Plus, Edit3, DollarSign, PieChart, History, Building, Calculator, Download, LogOut, RefreshCw, Crown } from 'lucide-react';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
-// Detect if we're on mobile
-const isMobile = () => {
-  return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
+// Optimized mobile detection with memoization
+const isMobile = (() => {
+  let cachedResult: boolean | null = null;
+  return () => {
+    if (cachedResult === null) {
+      cachedResult = window.innerWidth <= 768 || 
+                    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+    return cachedResult;
+  };
+})();
 
 const AppContent: React.FC = () => {
   // Initialize database and API status logging
@@ -79,48 +88,40 @@ const AppContent: React.FC = () => {
     return <LoadingScreen message="Loading your portfolio..." />;
   }
 
-  const filteredHoldings = portfolioFilter === 'all' 
-    ? holdings 
-    : holdings.filter(holding => holding.type === portfolioFilter);
-
-  const existingTickers = holdings.map(h => h.ticker);
-
-  // Handler functions for transaction editing
-  const handleEditTransaction = (transaction: Transaction) => {
+  // Memoized handler functions for transaction editing
+  const handleEditTransaction = useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsEditModalOpen(true);
-  };
+  }, []);
 
-  const handleSaveTransaction = async (id: string, updates: Partial<Transaction>) => {
+  const handleSaveTransaction = useCallback(async (id: string, updates: Partial<Transaction>) => {
     try {
       await updateTransaction(id, updates);
       setIsEditModalOpen(false);
       setEditingTransaction(null);
     } catch (error) {
       console.error('Failed to update transaction:', error);
-      // Error handling is already done in the usePortfolio hook
     }
-  };
+  }, [updateTransaction]);
 
-  const handleDeleteClick = (transactionId: string) => {
+  const handleDeleteClick = useCallback((transactionId: string) => {
     setDeleteConfirmId(transactionId);
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (deleteConfirmId) {
       try {
         await deleteTransaction(deleteConfirmId);
         setDeleteConfirmId(null);
       } catch (error) {
         console.error('Failed to delete transaction:', error);
-        // Error handling is already done in the usePortfolio hook
       }
     }
-  };
+  }, [deleteConfirmId, deleteTransaction]);
 
-  const handleCancelDelete = () => {
+  const handleCancelDelete = useCallback(() => {
     setDeleteConfirmId(null);
-  };
+  }, []);
 
   // Use mobile app for mobile devices
   if (isMobile()) {
@@ -135,16 +136,30 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // Calculate portfolio metrics for export modal
-  const portfolioMetrics = {
-    totalValue: holdings.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0),
-    totalCost: holdings.reduce((sum, h) => sum + (h.shares * h.costBasis), 0),
-    totalGainLoss: 0,
-    totalGainLossPercent: 0
-  };
-  portfolioMetrics.totalGainLoss = portfolioMetrics.totalValue - portfolioMetrics.totalCost;
-  portfolioMetrics.totalGainLossPercent = portfolioMetrics.totalCost > 0 ? 
-    (portfolioMetrics.totalGainLoss / portfolioMetrics.totalCost) * 100 : 0;
+  // Memoized portfolio metrics to prevent unnecessary recalculations
+  const portfolioMetrics = useMemo(() => {
+    const totalValue = holdings.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
+    const totalCost = holdings.reduce((sum, h) => sum + (h.shares * h.costBasis), 0);
+    const totalGainLoss = totalValue - totalCost;
+    const totalGainLossPercent = totalCost > 0 ? (totalGainLoss / totalCost) * 100 : 0;
+    
+    return {
+      totalValue,
+      totalCost,
+      totalGainLoss,
+      totalGainLossPercent
+    };
+  }, [holdings]);
+
+  // Memoized filtered holdings to prevent unnecessary filtering
+  const filteredHoldings = useMemo(() => {
+    return portfolioFilter === 'all' 
+      ? holdings 
+      : holdings.filter(holding => holding.type === portfolioFilter);
+  }, [holdings, portfolioFilter]);
+
+  // Memoized existing tickers
+  const existingTickers = useMemo(() => holdings.map(h => h.ticker), [holdings]);
   // Desktop version
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
@@ -313,54 +328,70 @@ const AppContent: React.FC = () => {
         )}
 
         {activeTab === 'transactions' && (
-          <TransactionHistory 
-            transactions={transactions}
-            onEdit={handleEditTransaction}
-            onDelete={handleDeleteClick}
-          />
+          <Suspense fallback={<LoadingScreen message="Loading transactions..." />}>
+            <TransactionHistory 
+              transactions={transactions}
+              onEdit={handleEditTransaction}
+              onDelete={handleDeleteClick}
+            />
+          </Suspense>
         )}
 
         {activeTab === 'performance' && (
-          <PerformanceTab holdings={holdings} />
+          <Suspense fallback={<LoadingScreen message="Loading performance data..." />}>
+            <PerformanceTab holdings={holdings} />
+          </Suspense>
         )}
 
         {activeTab === 'ratios' && (
-          <RatiosGuide />
+          <Suspense fallback={<LoadingScreen message="Loading ratios guide..." />}>
+            <RatiosGuide />
+          </Suspense>
         )}
 
         {activeTab === 'accounts' && (
-          <AccountsTab holdings={holdings} transactions={transactions} />
+          <Suspense fallback={<LoadingScreen message="Loading accounts data..." />}>
+            <AccountsTab holdings={holdings} transactions={transactions} />
+          </Suspense>
         )}
 
         {activeTab === 'dividends' && (
-          <DividendsTab holdings={holdings} dividendAnalysis={dividendAnalysis} />
+          <Suspense fallback={<LoadingScreen message="Loading dividends data..." />}>
+            <DividendsTab holdings={holdings} dividendAnalysis={dividendAnalysis} />
+          </Suspense>
         )}
 
         {activeTab === 'tax' && (
-          <TaxOptimizationTab holdings={holdings} transactions={transactions} />
+          <Suspense fallback={<LoadingScreen message="Loading tax optimization..." />}>
+            <TaxOptimizationTab holdings={holdings} transactions={transactions} />
+          </Suspense>
         )}
       </div>
 
       {/* Add Transaction Modal */}
       {isTransactionModalOpen && (
-        <AddTransactionModal
-          onClose={() => setIsTransactionModalOpen(false)}
-          onAdd={addTransaction}
-          existingTickers={existingTickers}
-        />
+        <Suspense fallback={<LoadingScreen message="Loading transaction form..." />}>
+          <AddTransactionModal
+            onClose={() => setIsTransactionModalOpen(false)}
+            onAdd={addTransaction}
+            existingTickers={existingTickers}
+          />
+        </Suspense>
       )}
 
       {/* Edit Transaction Modal */}
       {isEditModalOpen && editingTransaction && (
-        <EditTransactionModal
-          transaction={editingTransaction}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setEditingTransaction(null);
-          }}
-          onSave={handleSaveTransaction}
-          existingTickers={existingTickers}
-        />
+        <Suspense fallback={<LoadingScreen message="Loading edit form..." />}>
+          <EditTransactionModal
+            transaction={editingTransaction}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setEditingTransaction(null);
+            }}
+            onSave={handleSaveTransaction}
+            existingTickers={existingTickers}
+          />
+        </Suspense>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -391,25 +422,29 @@ const AppContent: React.FC = () => {
 
       {/* Export Modal */}
       {isExportModalOpen && (
-        <ExportModal
-          onClose={() => setIsExportModalOpen(false)}
-          holdings={holdings}
-          transactions={transactions}
-          portfolioMetrics={portfolioMetrics}
-        />
+        <Suspense fallback={<LoadingScreen message="Loading export options..." />}>
+          <ExportModal
+            onClose={() => setIsExportModalOpen(false)}
+            holdings={holdings}
+            transactions={transactions}
+            portfolioMetrics={portfolioMetrics}
+          />
+        </Suspense>
       )}
 
       {/* Pricing Modal */}
       {isPricingModalOpen && (
-        <PricingModal
-          isOpen={isPricingModalOpen}
-          onClose={() => setIsPricingModalOpen(false)}
-          onSelectPlan={(planId) => {
-            setSelectedPlan(planId);
-            setIsPricingModalOpen(false);
-            setShowCheckout(true);
-          }}
-        />
+        <Suspense fallback={<LoadingScreen message="Loading pricing options..." />}>
+          <PricingModal
+            isOpen={isPricingModalOpen}
+            onClose={() => setIsPricingModalOpen(false)}
+            onSelectPlan={(planId) => {
+              setSelectedPlan(planId);
+              setIsPricingModalOpen(false);
+              setShowCheckout(true);
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Checkout Modal */}
@@ -432,19 +467,21 @@ const AppContent: React.FC = () => {
               </button>
             </div>
             <div className="p-6">
-              <StripeCheckout
-                planId={selectedPlan}
-                onSuccess={() => {
-                  setShowCheckout(false);
-                  setSelectedPlan(null);
-                  // Handle successful subscription
-                  alert('Subscription successful! Welcome to Portfolio Pro!');
-                }}
-                onError={(error) => {
-                  console.error('Payment error:', error);
-                  alert('Payment failed. Please try again.');
-                }}
-              />
+              <Suspense fallback={<LoadingScreen message="Loading checkout..." />}>
+                <StripeCheckout
+                  planId={selectedPlan}
+                  onSuccess={() => {
+                    setShowCheckout(false);
+                    setSelectedPlan(null);
+                    // Handle successful subscription
+                    alert('Subscription successful! Welcome to Portfolio Pro!');
+                  }}
+                  onError={(error) => {
+                    console.error('Payment error:', error);
+                    alert('Payment failed. Please try again.');
+                  }}
+                />
+              </Suspense>
             </div>
           </div>
         </div>

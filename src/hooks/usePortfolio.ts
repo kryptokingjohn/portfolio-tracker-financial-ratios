@@ -6,6 +6,7 @@ import { PortfolioCalculator } from '../utils/portfolioCalculations';
 import { DividendTracker } from '../utils/dividendTracker';
 import { useAuth } from './useAuthSimple';
 import FinancialDataService from '../services/financialDataService';
+import { detectAssetType } from '../utils/assetTypeDetector';
 
 export const usePortfolio = () => {
   const { user, isDemoMode } = useAuth();
@@ -115,11 +116,21 @@ export const usePortfolio = () => {
       return holdings.map(holding => {
         const priceData = priceMap.get(holding.ticker);
         if (priceData) {
+          // Update asset type with any available API data
+          const detectedType = detectAssetType(
+            holding.ticker, 
+            priceData.name || holding.company,
+            (priceData as any).isEtf, // If available from API
+            (priceData as any).exchange // If available from API
+          );
+          
           return {
             ...holding,
             currentPrice: priceData.price,
             yearHigh: priceData.high || holding.yearHigh,
-            yearLow: priceData.low || holding.yearLow
+            yearLow: priceData.low || holding.yearLow,
+            type: detectedType,
+            company: priceData.name || holding.company, // Update company name if available
           };
         }
         return holding;
@@ -132,11 +143,22 @@ export const usePortfolio = () => {
         holdings.map(async (holding) => {
           try {
             const marketData = await MarketDataService.getQuote(holding.ticker);
+            
+            // Update asset type with any available API data
+            const detectedType = detectAssetType(
+              holding.ticker, 
+              (marketData as any).name || holding.company,
+              (marketData as any).isEtf,
+              (marketData as any).exchange
+            );
+            
             return {
               ...holding,
               currentPrice: marketData.price,
               yearHigh: marketData.high || holding.yearHigh,
-              yearLow: marketData.low || holding.yearLow
+              yearLow: marketData.low || holding.yearLow,
+              type: detectedType,
+              company: (marketData as any).name || holding.company,
             };
           } catch (error) {
             console.warn(`Failed to update price for ${holding.ticker}:`, error);
@@ -509,7 +531,7 @@ export const usePortfolio = () => {
             shares: transaction.shares || 0,
             costBasis: transaction.price || 0,
             currentPrice: transaction.price || 0,
-            type: 'stocks' as any,
+            type: detectAssetType(ticker) as any,
             sector: 'Unknown',
             accountType: accountType, // Use transaction's account type
             // Price Data

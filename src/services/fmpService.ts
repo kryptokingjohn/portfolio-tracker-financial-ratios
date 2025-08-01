@@ -381,6 +381,7 @@ class FMPService {
         
         // Fallback based on common ticker patterns
         const symbolUpper = symbol.toUpperCase();
+        // Enhanced ETF detection
         if (symbolUpper.includes('ETF') || symbolUpper.endsWith('ETF')) {
           return { sector: 'ETF', industry: 'Exchange Traded Fund' };
         }

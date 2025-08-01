@@ -49,6 +49,12 @@ export interface Holding {
   sector: string;
   dividend?: number;
   dividendYield?: number;
+  
+  // ETF-specific properties
+  expenseRatio?: number;
+  netAssets?: number; // AUM in millions
+  inceptionDate?: string;
+  etfCategory?: string; // 'Large Cap Blend', 'Dividend/Income', etc.
 }
 
 export interface Transaction {

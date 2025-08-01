@@ -143,7 +143,10 @@ export const mockPortfolioData: Holding[] = [
     narrative: 'Tracks S&P 500 index providing broad market exposure with low expense ratio',
     sector: 'Index Fund',
     dividend: 1.23,
-    dividendYield: 0.28
+    dividendYield: 0.28,
+    expenseRatio: 0.09,
+    netAssets: 450000, // $450B AUM
+    etfCategory: 'Large Cap Blend'
   },
   {
     id: '5',
@@ -179,7 +182,10 @@ export const mockPortfolioData: Holding[] = [
     narrative: 'Provides exposure to entire U.S. stock market with extremely low fees',
     sector: 'Index Fund',
     dividend: 0.89,
-    dividendYield: 0.41
+    dividendYield: 0.41,
+    expenseRatio: 0.03,
+    netAssets: 380000, // $380B AUM
+    etfCategory: 'Total Stock Market'
   },
   {
     id: '6',
@@ -215,10 +221,52 @@ export const mockPortfolioData: Holding[] = [
     narrative: 'Government bond ETF providing stable income and portfolio diversification',
     sector: 'Fixed Income',
     dividend: 0.62,
-    dividendYield: 2.51
+    dividendYield: 2.51,
+    expenseRatio: 0.09,
+    netAssets: 31500, // $31.5B AUM
+    etfCategory: 'Aggregate Bond'
   },
   {
-    id: '7',
+    id: '8',
+    company: 'JPMorgan Equity Premium Income ETF',
+    ticker: 'JEPI',
+    type: 'etfs',
+    accountType: 'taxable',
+    shares: 200,
+    costBasis: 58.25,
+    currentPrice: 57.80,
+    yearHigh: 61.78,
+    yearLow: 55.43,
+    fcf1yr: 0,
+    fcf2yr: 0,
+    fcf3yr: 0,
+    fcf10yr: 0,
+    evFcf: 0,
+    sectorMedianEvFcf: 0,
+    intrinsicValue: 58.00,
+    pe: 0,
+    pb: 0,
+    peg: 0,
+    debtToEquity: 0,
+    currentRatio: 0,
+    quickRatio: 0,
+    roe: 0,
+    roa: 0,
+    grossMargin: 0,
+    netMargin: 0,
+    operatingMargin: 0,
+    assetTurnover: 0,
+    revenueGrowth: 0,
+    narrative: 'Income-focused ETF combining equity exposure with covered call strategies for enhanced yield',
+    sector: 'Income/Dividend',
+    dividend: 0.50,
+    dividendYield: 8.67,
+    expenseRatio: 0.35,
+    netAssets: 32800, // $32.8B AUM
+    etfCategory: 'Dividend/Income'
+  },
+  {
+    id: '9',
     company: 'Netflix Inc.',
     ticker: 'NFLX',
     type: 'stocks',

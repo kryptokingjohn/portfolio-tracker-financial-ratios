@@ -16,7 +16,7 @@
       ]
     },
     {
-      "source": "/(.*\\.js)$",
+      "source": "/(.*\\.(js|mjs|jsx|ts|tsx))$",
       "headers": [
         {
           "key": "Content-Type",

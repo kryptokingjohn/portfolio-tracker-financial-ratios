@@ -1,10 +1,16 @@
 # MIME type configuration for ES modules and modern web assets
 
-# JavaScript modules
+# JavaScript modules (prioritize text/javascript for better compatibility)
 AddType text/javascript .js
 AddType text/javascript .mjs
-AddType application/javascript .js
-AddType application/javascript .mjs
+AddType text/javascript .jsx
+AddType text/javascript .ts
+AddType text/javascript .tsx
+
+# Force correct MIME type for module files
+<FilesMatch "\.(js|mjs)$">
+    ForceType text/javascript
+</FilesMatch>
 
 # CSS
 AddType text/css .css

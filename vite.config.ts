@@ -170,8 +170,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         format: 'es', // Ensure ES modules format
+        // Simplify chunking to avoid dependency issues
         manualChunks: (id) => {
-          // Critical vendor libraries (loaded first)
+          // Only essential vendor chunks to avoid circular dependencies
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
@@ -179,50 +180,14 @@ export default defineConfig({
             if (id.includes('@supabase')) {
               return 'vendor-supabase';
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            // Group other vendor libraries
+            // Bundle everything else together to avoid dependency issues
             return 'vendor-misc';
           }
-          
-          // App components by feature (lazy loaded)
-          if (id.includes('/components/')) {
-            if (id.includes('Modal') || id.includes('AddHolding') || id.includes('EditTransaction')) {
-              return 'chunk-modals';
-            }
-            if (id.includes('Tab') || id.includes('Performance') || id.includes('Accounts') || id.includes('Dividends') || id.includes('Tax')) {
-              return 'chunk-tabs';
-            }
-            if (id.includes('mobile/')) {
-              return 'chunk-mobile';
-            }
-            // Core components that load early
-            if (id.includes('LoadingScreen') || id.includes('PortfolioTable') || id.includes('PortfolioSummary')) {
-              return 'chunk-core-ui';
-            }
-            return 'chunk-components';
-          }
-          
-          // Database and hooks (critical)
-          if (id.includes('/lib/') || id.includes('/hooks/')) {
-            return 'chunk-core';
-          }
-          
-          // Utils and services (non-critical)
-          if (id.includes('/utils/') || id.includes('/services/')) {
-            return 'chunk-utils';
-          }
+          // Don't split app code to avoid initialization issues
+          return undefined;
         },
-        chunkFileNames: (chunkInfo) => {
-          const name = chunkInfo.name;
-          // Priority loading for critical chunks
-          if (name?.includes('vendor') || name?.includes('core')) {
-            return 'assets/[name]-[hash].js';
-          }
-          return 'assets/[name]-[hash].js';
-        },
-        entryFileNames: 'assets/entry-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].mjs', // Use .mjs extension to force module recognition
+        entryFileNames: 'assets/entry-[hash].mjs',
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || '';
           if (name.endsWith('.css')) {
@@ -235,6 +200,6 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 800
+    chunkSizeWarningLimit: 1000
   }
 });

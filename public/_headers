@@ -6,8 +6,20 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
-# JavaScript modules
+# JavaScript modules (ensure proper MIME types)
 /*.js
+  Content-Type: text/javascript
+
+/*.mjs
+  Content-Type: text/javascript
+
+/*.jsx
+  Content-Type: text/javascript
+
+/*.ts
+  Content-Type: text/javascript
+
+/*.tsx
   Content-Type: text/javascript
 
 # CSS files

@@ -249,7 +249,7 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Performance Returns */}
         <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 backdrop-blur-sm rounded-xl border border-green-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-green-500/50">
           <div className="flex items-center mb-4">
@@ -326,32 +326,47 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-blue-200 font-medium">Expense Ratio</span>
-              <span className="text-white font-bold text-lg">0.03%</span>
+              <span className="text-white font-bold text-lg">{holding.expenseRatio ? `${formatNumber(holding.expenseRatio, 2)}%` : '0.03%'}</span>
             </div>
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-blue-200 font-medium">Assets Under Management</span>
-              <span className="text-white font-bold text-lg">$1.3B</span>
+              <span className="text-white font-bold text-lg">{holding.netAssets ? `$${formatNumber(holding.netAssets / 1000, 1)}B` : '$1.3B'}</span>
+            </div>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Category</span>
+              <span className="text-white font-bold text-lg">{holding.etfCategory || 'ETF'}</span>
+            </div>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-blue-200 font-medium">Dividend Yield</span>
+              <span className="text-white font-bold text-lg">{holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Risk Assessment */}
-      <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 hover:shadow-xl transition-all duration-300">
-        <div className="flex items-center mb-6">
-          <div className="bg-purple-600/20 p-2 rounded-full border border-purple-500/30 mr-3">
-            <BarChart3 className="h-5 w-5 text-purple-400" />
+        {/* Additional Analysis */}
+        <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 hover:shadow-xl transition-all duration-300 hover:border-purple-500/50">
+          <div className="flex items-center mb-4">
+            <div className="bg-purple-600/20 p-2 rounded-full border border-purple-500/30 mr-3">
+              <BarChart3 className="h-5 w-5 text-purple-400" />
+            </div>
+            <h4 className="text-xl font-semibold text-purple-300">ETF Analysis</h4>
           </div>
-          <h4 className="text-xl font-semibold text-purple-300">Risk Assessment</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-gray-800/40 rounded-lg p-4">
-            <span className="text-white font-semibold text-lg">Beta: </span>
-            <span className="text-purple-200">Measures volatility relative to market. More volatile than market.</span>
-          </div>
-          <div className="bg-gray-800/40 rounded-lg p-4">
-            <span className="text-white font-semibold text-lg">Sharpe Ratio: </span>
-            <span className="text-purple-200">Risk-adjusted return measure. Good risk-adjusted returns.</span>
+          <p className="text-purple-200/80 text-sm mb-6 leading-relaxed">
+            Key characteristics and performance indicators for this exchange-traded fund.
+          </p>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Trading Volume</span>
+              <span className="text-white font-bold text-lg">High Liquidity</span>
+            </div>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Market Cap Focus</span>
+              <span className="text-white font-bold text-lg">{holding.etfCategory?.includes('Large') ? 'Large Cap' : holding.etfCategory?.includes('Small') ? 'Small Cap' : 'Diversified'}</span>
+            </div>
+            <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
+              <span className="text-purple-200 font-medium">Investment Style</span>
+              <span className="text-white font-bold text-lg">{holding.etfCategory?.includes('Growth') ? 'Growth' : holding.etfCategory?.includes('Value') ? 'Value' : 'Blend'}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -406,7 +421,7 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
             </div>
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-green-200 font-medium">Yield to Maturity</span>
-              <span className="text-white font-bold text-lg">4.2%</span>
+              <span className="text-white font-bold text-lg">{holding.yieldToMaturity ? `${formatNumber(holding.yieldToMaturity, 2)}%` : '4.2%'}</span>
             </div>
           </div>
         </div>
@@ -425,11 +440,11 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-blue-200 font-medium">Duration</span>
-              <span className="text-white font-bold text-lg">6.8 years</span>
+              <span className="text-white font-bold text-lg">{holding.duration ? `${formatNumber(holding.duration, 1)} years` : '6.8 years'}</span>
             </div>
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-blue-200 font-medium">Credit Rating</span>
-              <span className="text-white font-bold text-lg">AAA</span>
+              <span className="text-white font-bold text-lg">{holding.creditRating || 'AAA'}</span>
             </div>
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-blue-200 font-medium">Interest Rate Risk</span>
@@ -479,15 +494,15 @@ export const QuickViewChart: React.FC<QuickViewChartProps> = ({ holding, isExpan
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-orange-200 font-medium">Expense Ratio</span>
-              <span className="text-white font-bold text-lg">0.05%</span>
+              <span className="text-white font-bold text-lg">{holding.expenseRatio ? `${formatNumber(holding.expenseRatio, 2)}%` : '0.15%'}</span>
             </div>
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
-              <span className="text-orange-200 font-medium">Average Maturity</span>
-              <span className="text-white font-bold text-lg">8.5 years</span>
+              <span className="text-orange-200 font-medium">Bond Type</span>
+              <span className="text-white font-bold text-lg">{holding.bondType || 'Treasury'}</span>
             </div>
             <div className="flex justify-between items-center bg-gray-800/40 rounded-lg p-3">
               <span className="text-orange-200 font-medium">Assets Under Management</span>
-              <span className="text-white font-bold text-lg">$45.2B</span>
+              <span className="text-white font-bold text-lg">{holding.netAssets ? `$${formatNumber(holding.netAssets / 1000, 1)}B` : '$45.2B'}</span>
             </div>
           </div>
         </div>

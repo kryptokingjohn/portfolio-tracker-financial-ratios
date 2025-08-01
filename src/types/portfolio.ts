@@ -46,6 +46,7 @@ export interface Holding {
   
   // Additional Info
   narrative: string;
+  description?: string; // FMP API description - will eventually replace narrative
   sector: string;
   dividend?: number;
   dividendYield?: number;

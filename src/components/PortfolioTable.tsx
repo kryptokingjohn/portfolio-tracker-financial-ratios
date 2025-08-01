@@ -333,7 +333,7 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                 </>
               )}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Narrative
+                Description
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Actions
@@ -496,8 +496,8 @@ export const PortfolioTable: React.FC<PortfolioTableProps> = ({ holdings }) => {
                     </>
                   )}
                   <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
-                    <div className="truncate" title={holding.narrative}>
-                      {holding.narrative}
+                    <div className="truncate" title={holding.description || holding.narrative}>
+                      {holding.description || holding.narrative}
                     </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">

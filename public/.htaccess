@@ -74,7 +74,7 @@ AddType application/json .json
 # Security headers
 <IfModule mod_headers.c>
     # Content Security Policy (adjust domains as needed)
-    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.polygon.io https://financialmodelingprep.com https://cloud.supabase.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.polygon.io https://financialmodelingprep.com https://*.supabase.co wss://*.supabase.co"
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.polygon.io https://financialmodelingprep.com https://cloud.supabase.com https://js.stripe.com https://m.stripe.network; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.polygon.io https://financialmodelingprep.com https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://m.stripe.network; frame-src https://js.stripe.com https://hooks.stripe.com"
     
     # Other security headers
     Header set X-Frame-Options "SAMEORIGIN"

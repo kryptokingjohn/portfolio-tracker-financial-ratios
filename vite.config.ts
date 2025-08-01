@@ -166,8 +166,10 @@ export default defineConfig({
         drop_debugger: true
       }
     },
+    assetsInlineLimit: 0, // Prevent inlining to avoid MIME issues
     rollupOptions: {
       output: {
+        format: 'es', // Ensure ES modules format
         manualChunks: (id) => {
           // Critical vendor libraries (loaded first)
           if (id.includes('node_modules')) {

@@ -11,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   enterDemoMode: () => void;
+  updateUserProfile: (updates: { email?: string; password?: string }) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -141,6 +142,37 @@ export const useAuthState = () => {
     setSession(null);
   };
 
+  const updateUserProfile = async (updates: { email?: string; password?: string }) => {
+    try {
+      setLoading(true);
+      
+      // In demo mode, just simulate success
+      if (demoMode) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return { error: null };
+      }
+
+      // Update email if provided
+      if (updates.email) {
+        const { error: emailError } = await supabase.auth.updateUser({ email: updates.email });
+        if (emailError) return { error: emailError };
+      }
+
+      // Update password if provided
+      if (updates.password) {
+        const { error: passwordError } = await supabase.auth.updateUser({ password: updates.password });
+        if (passwordError) return { error: passwordError };
+      }
+
+      return { error: null };
+    } catch (err: any) {
+      console.warn('Profile update failed:', err.message);
+      return { error: err };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     session,
@@ -150,6 +182,7 @@ export const useAuthState = () => {
     signUp,
     signOut,
     enterDemoMode,
+    updateUserProfile,
   };
 };
 

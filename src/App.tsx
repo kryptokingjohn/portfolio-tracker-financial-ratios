@@ -91,6 +91,7 @@ const AppContent: React.FC = () => {
     logDatabaseStatus();
     logApiStatus();
     console.log('🚀 App loaded - Current plan type:', currentPlan.type);
+    console.log('Build timestamp:', new Date().toISOString());
   }, []);
 
   // Debug plan changes

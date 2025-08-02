@@ -6,6 +6,9 @@
   NODE_VERSION = "18"
   NPM_FLAGS = "--production=false"
 
+[functions]
+  directory = "netlify/functions"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

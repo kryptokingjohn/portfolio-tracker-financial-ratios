@@ -262,20 +262,6 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                   </ul>
                 </div>
 
-                {/* Production Payment Warning */}
-                {currentPlan.type === 'basic' && (
-                  <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-4 mb-4">
-                    <div className="flex items-start space-x-3">
-                      <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-yellow-300 font-medium text-sm">Payment System Notice</p>
-                        <p className="text-yellow-400 text-xs mt-1">
-                          This is a demo checkout system. Backend Stripe integration is required to process real payments.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Plan Actions */}
                 <div className="space-y-4">
@@ -285,7 +271,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                       disabled={loading}
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
                     >
-                      {loading ? 'Processing...' : 'View Demo Checkout - $9.99/month'}
+                      {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
                     </button>
                   )}
                   

@@ -78,24 +78,39 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         throw new Error('Please enter a valid CVC');
       }
 
-      // CRITICAL: This is a production system - do not process payments without real Stripe integration
-      console.warn('🚨 PRODUCTION SECURITY ISSUE: Fake payment processing detected');
-      console.log('Card Details Entered:', { 
-        name: cardDetails.name,
-        number: '**** **** **** ' + cleanCardNumber.slice(-4),
-        expiry: cardDetails.expiry,
-        cvc: '***'
+      console.log('Processing payment with Stripe...');
+      
+      // Call Netlify Function to create subscription
+      const response = await fetch('/.netlify/functions/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId,
+          paymentMethod: {
+            card: {
+              number: cleanCardNumber,
+              exp_month: parseInt(month),
+              exp_year: parseInt(`20${year}`),
+              cvc: cardDetails.cvc
+            },
+            billing_details: {
+              name: cardDetails.name
+            }
+          }
+        })
       });
 
-      // Instead of fake success, show an error that real Stripe integration is required
-      throw new Error('Production payment processing not configured. Real Stripe integration required to process payments.');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Payment failed');
+      }
 
-      // TODO: Replace with real Stripe integration:
-      // 1. Load Stripe.js and create payment method
-      // 2. Send payment method to your backend API
-      // 3. Create subscription via Stripe API on backend
-      // 4. Handle 3D Secure authentication
-      // 5. Only call onSuccess() after confirmed payment
+      const result = await response.json();
+      
+      // Success - call the success handler with payment data
+      onSuccess(result);
 
     } catch (error) {
       console.error('Payment failed:', error);
@@ -130,24 +145,13 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Production Warning */}
-      <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 flex items-center space-x-3">
-        <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />
-        <div>
-          <p className="text-red-300 font-medium">Payment Processing Not Active</p>
-          <p className="text-red-400 text-sm">
-            This is a demo payment form. Real Stripe backend integration is required to process actual payments.
-          </p>
-        </div>
-      </div>
-
       {/* Security Notice */}
       <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 flex items-center space-x-3">
         <Shield className="h-5 w-5 text-blue-400 flex-shrink-0" />
         <div>
           <p className="text-blue-300 font-medium">Secure Payment</p>
           <p className="text-blue-400 text-sm">
-            When properly configured, your payment information will be encrypted and processed securely by Stripe.
+            Your payment information is encrypted and processed securely by Stripe.
           </p>
         </div>
       </div>
@@ -245,8 +249,8 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
             </div>
           ) : (
             <div className="flex items-center justify-center space-x-2">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Demo Payment Form - Backend Required</span>
+              <CheckCircle className="h-4 w-4" />
+              <span>Subscribe to Premium - $9.99/month</span>
             </div>
           )}
         </button>

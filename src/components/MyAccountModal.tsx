@@ -37,8 +37,35 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
         throw new Error('Passwords do not match');
       }
 
-      // TODO: Implement actual profile update
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      if (profileData.newPassword && profileData.newPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      // Prepare updates object
+      const updates: { email?: string; password?: string } = {};
+      
+      // Only include email if it's different from current
+      if (profileData.email !== user?.email) {
+        updates.email = profileData.email;
+      }
+      
+      // Only include password if provided
+      if (profileData.newPassword) {
+        updates.password = profileData.newPassword;
+      }
+
+      // If no updates, show message
+      if (Object.keys(updates).length === 0) {
+        setMessage({ type: 'success', text: 'No changes to update' });
+        return;
+      }
+
+      // Call the updateUserProfile function
+      const { error } = await updateUserProfile(updates);
+      
+      if (error) {
+        throw error;
+      }
       
       setMessage({ type: 'success', text: 'Profile updated successfully' });
       setProfileData(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));

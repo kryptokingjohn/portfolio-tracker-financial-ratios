@@ -15,7 +15,7 @@ export const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
   const [passwordError, setPasswordError] = useState('');
 
   const { signIn, signUp } = useAuth();
@@ -34,7 +34,7 @@ export const LoginScreen: React.FC = () => {
     e.preventDefault();
     
     setLoading(true);
-    setError('');
+    setMessage(null);
     setPasswordError('');
 
     // Validate password for sign up
@@ -49,20 +49,82 @@ export const LoginScreen: React.FC = () => {
         : await signUp(email, password);
 
       if (error) {
+        // Comprehensive error handling with specific user-friendly messages
         if (error.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password. Please check your credentials and try again.');
+          setMessage({ 
+            type: 'error', 
+            text: '❌ Invalid email or password. Please double-check your credentials and try again.' 
+          });
         } else if (error.message.includes('Email not confirmed')) {
-          setError('Please check your email and click the confirmation link before signing in.');
+          setMessage({ 
+            type: 'info', 
+            text: '📧 Please check your email and click the confirmation link before signing in.' 
+          });
         } else if (error.message.includes('User already registered')) {
-          setError('An account with this email already exists. Please sign in instead.');
+          setMessage({ 
+            type: 'error', 
+            text: '⚠️ An account with this email already exists. Please sign in instead.' 
+          });
+        } else if (error.message.includes('Signup not allowed')) {
+          setMessage({ 
+            type: 'error', 
+            text: '🚫 Account registration is currently disabled. Please contact support.' 
+          });
+        } else if (error.message.includes('Password should be at least')) {
+          setMessage({ 
+            type: 'error', 
+            text: '🔒 Password must be at least 6 characters long.' 
+          });
+        } else if (error.message.includes('Unable to validate email address')) {
+          setMessage({ 
+            type: 'error', 
+            text: '📧 Please enter a valid email address.' 
+          });
+        } else if (error.message.includes('Email rate limit exceeded')) {
+          setMessage({ 
+            type: 'error', 
+            text: '⏳ Too many attempts. Please wait a few minutes before trying again.' 
+          });
+        } else if (error.message.includes('signups disabled')) {
+          setMessage({ 
+            type: 'error', 
+            text: '🚫 New account registration is currently disabled.' 
+          });
         } else {
-          setError(error.message);
+          setMessage({ 
+            type: 'error', 
+            text: `❌ ${error.message}` 
+          });
         }
-      } else if (!isLogin) {
-        setError('Account created successfully! Please check your email for a confirmation link.');
+      } else {
+        // Success messages
+        if (isLogin) {
+          setMessage({ 
+            type: 'success', 
+            text: '✅ Login successful! Redirecting to your portfolio...' 
+          });
+          
+          // Clear form on successful login
+          setTimeout(() => {
+            setEmail('');
+            setPassword('');
+          }, 1000);
+        } else {
+          setMessage({ 
+            type: 'success', 
+            text: '🎉 Account created successfully! Please check your email for a confirmation link to complete registration.' 
+          });
+          
+          // Clear form on successful signup
+          setEmail('');
+          setPassword('');
+        }
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setMessage({ 
+        type: 'error', 
+        text: '❌ An unexpected error occurred. Please try again or contact support if the problem persists.' 
+      });
     } finally {
       setLoading(false);
     }
@@ -161,9 +223,15 @@ export const LoginScreen: React.FC = () => {
               </div>
             )}
 
-            {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
-                <p className="text-red-200 text-sm">{error}</p>
+            {message && (
+              <div className={`rounded-lg p-4 border ${
+                message.type === 'error' 
+                  ? 'bg-red-500/20 border-red-500/50 text-red-200' 
+                  : message.type === 'success'
+                  ? 'bg-green-500/20 border-green-500/50 text-green-200'
+                  : 'bg-blue-500/20 border-blue-500/50 text-blue-200'
+              }`}>
+                <p className="text-sm font-medium">{message.text}</p>
               </div>
             )}
 
@@ -182,7 +250,13 @@ export const LoginScreen: React.FC = () => {
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setMessage(null);
+                  setPasswordError('');
+                  setEmail('');
+                  setPassword('');
+                }}
                 className="text-blue-400 hover:text-blue-300 text-sm"
               >
                 {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}

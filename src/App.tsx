@@ -280,7 +280,7 @@ const AppContent: React.FC = () => {
                     <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
                   </div>
                 ) : (
-                  <Shield className="h-4 w-4" />
+                  <Shield className="h-4 w-4 fill-slate-400 text-slate-400" />
                 )}
                 <span className="font-medium">{currentPlan.name}</span>
                 {currentPlan.type === 'premium' && (

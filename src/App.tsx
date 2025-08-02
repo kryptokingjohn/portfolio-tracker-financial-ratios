@@ -90,7 +90,13 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     logDatabaseStatus();
     logApiStatus();
+    console.log('🚀 App loaded - Current plan type:', currentPlan.type);
   }, []);
+
+  // Debug plan changes
+  useEffect(() => {
+    console.log('📊 Plan changed in App component:', currentPlan.type);
+  }, [currentPlan.type]);
 
   // Memoized handler functions for transaction editing - STABLE DEPENDENCIES
   const handleEditTransaction = useCallback((transaction: Transaction) => {
@@ -255,13 +261,12 @@ const AppContent: React.FC = () => {
               
               {/* Plan Status Indicator */}
               <div 
-                onClick={() => {
-                  console.log('Toggling plan from', currentPlan.type);
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🖱️ Plan indicator clicked!');
+                  console.log('📊 Current plan before toggle:', currentPlan.type);
                   togglePremiumForTesting();
-                  // Force a refresh after a short delay to see changes
-                  setTimeout(() => {
-                    console.log('New plan type:', currentPlan.type);
-                  }, 100);
                 }}
                 className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border cursor-pointer ${
                   currentPlan.type === 'premium'

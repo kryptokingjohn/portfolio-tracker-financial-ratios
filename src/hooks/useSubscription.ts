@@ -211,18 +211,41 @@ export const useSubscription = () => {
 
   // Temporary function to test Premium features (for development/demonstration)
   const togglePremiumForTesting = () => {
+    console.log('🔄 Toggle function called!');
+    console.log('Current subscription:', subscription);
+    console.log('Current user:', user?.id);
+    
     if (subscription && user) {
+      const oldPlanType = subscription.planType;
       const newPlanType = subscription.planType === 'basic' ? 'premium' : 'basic';
+      
+      console.log(`🔀 Changing plan: ${oldPlanType} → ${newPlanType}`);
+      
       const updatedSubscription: UserSubscription = {
         ...subscription,
         planType: newPlanType,
         updatedAt: new Date().toISOString()
       };
       
+      console.log('📝 Saving to localStorage:', `subscription_${user.id}`);
       localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
+      
+      console.log('🔄 Setting new subscription state');
       setSubscription(updatedSubscription);
       
-      console.log(`Toggled to ${newPlanType} plan for testing`);
+      console.log(`✅ Successfully toggled to ${newPlanType} plan`);
+      
+      // Verify the change
+      setTimeout(() => {
+        const currentPlan = getCurrentPlan();
+        console.log('🔍 Verification - Current plan:', currentPlan.type);
+        console.log('🔍 QuickView access:', currentPlan.hasQuickView);
+        console.log('🔍 Advanced access:', currentPlan.hasAdvanced);
+      }, 100);
+    } else {
+      console.log('❌ Cannot toggle - missing subscription or user');
+      console.log('Subscription:', subscription);
+      console.log('User:', user);
     }
   };
 

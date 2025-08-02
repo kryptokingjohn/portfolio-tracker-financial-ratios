@@ -251,15 +251,23 @@ const AppContent: React.FC = () => {
                 <span>My Account</span>
               </button>
               
-              {/* Temporary Premium Testing Button */}
-              <button
+              {/* Plan Status Indicator */}
+              <div 
                 onClick={togglePremiumForTesting}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-orange-200 bg-orange-600/30 rounded-lg hover:bg-orange-600/40 transition-all backdrop-blur-sm border border-orange-500/30"
-                title="Toggle Premium features for testing"
+                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border cursor-pointer ${
+                  currentPlan.type === 'premium'
+                    ? 'text-yellow-200 bg-yellow-600/20 border-yellow-500/30 hover:bg-yellow-600/30'
+                    : 'text-gray-300 bg-gray-600/20 border-gray-500/30 hover:bg-gray-600/30'
+                }`}
+                title={`Current plan: ${currentPlan.name} - Click to toggle for testing`}
               >
-                <Crown className="h-4 w-4" />
-                <span>Test: {currentPlan.type}</span>
-              </button>
+                {currentPlan.type === 'premium' ? (
+                  <Crown className="h-4 w-4" />
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
+                <span>{currentPlan.name}</span>
+              </div>
               <button
                 onClick={signOut}
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-200 bg-red-600/30 rounded-lg hover:bg-red-600/40 transition-all backdrop-blur-sm border border-red-500/30"

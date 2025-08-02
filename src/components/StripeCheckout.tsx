@@ -47,22 +47,56 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         throw new Error('Please fill in all card details');
       }
 
-      // Simulate payment processing for demo
-      console.log('Processing payment with Stripe...');
-      console.log('Plan ID:', planId);
-      console.log('Card Details:', { ...cardDetails, number: '**** **** **** ' + cardDetails.number.slice(-4) });
+      // Basic card number validation
+      const cleanCardNumber = cardDetails.number.replace(/\s/g, '');
+      if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19) {
+        throw new Error('Please enter a valid card number');
+      }
 
-      // In a real implementation, you would:
-      // 1. Create payment method with Stripe Elements
-      // 2. Create subscription via your backend API
-      // 3. Handle 3D Secure authentication if required
-      // 4. Update user's subscription status
+      // Basic expiry validation
+      const [month, year] = cardDetails.expiry.split('/');
+      if (!month || !year || month.length !== 2 || year.length !== 2) {
+        throw new Error('Please enter a valid expiry date (MM/YY)');
+      }
+      
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear() % 100;
+      const currentMonth = currentDate.getMonth() + 1;
+      const cardYear = parseInt(year);
+      const cardMonth = parseInt(month);
+      
+      if (cardYear < currentYear || (cardYear === currentYear && cardMonth < currentMonth)) {
+        throw new Error('Card has expired');
+      }
+      
+      if (cardMonth < 1 || cardMonth > 12) {
+        throw new Error('Please enter a valid month (01-12)');
+      }
 
-      // For demo purposes, simulate successful payment after 2 seconds
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // CVC validation
+      if (cardDetails.cvc.length < 3 || cardDetails.cvc.length > 4) {
+        throw new Error('Please enter a valid CVC');
+      }
 
-      // Simulate success
-      onSuccess();
+      // CRITICAL: This is a production system - do not process payments without real Stripe integration
+      console.warn('🚨 PRODUCTION SECURITY ISSUE: Fake payment processing detected');
+      console.log('Card Details Entered:', { 
+        name: cardDetails.name,
+        number: '**** **** **** ' + cleanCardNumber.slice(-4),
+        expiry: cardDetails.expiry,
+        cvc: '***'
+      });
+
+      // Instead of fake success, show an error that real Stripe integration is required
+      throw new Error('Production payment processing not configured. Real Stripe integration required to process payments.');
+
+      // TODO: Replace with real Stripe integration:
+      // 1. Load Stripe.js and create payment method
+      // 2. Send payment method to your backend API
+      // 3. Create subscription via Stripe API on backend
+      // 4. Handle 3D Secure authentication
+      // 5. Only call onSuccess() after confirmed payment
+
     } catch (error) {
       console.error('Payment failed:', error);
       onError(error instanceof Error ? error.message : 'Payment failed');
@@ -96,13 +130,24 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Production Warning */}
+      <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 flex items-center space-x-3">
+        <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />
+        <div>
+          <p className="text-red-300 font-medium">Payment Processing Not Active</p>
+          <p className="text-red-400 text-sm">
+            This is a demo payment form. Real Stripe backend integration is required to process actual payments.
+          </p>
+        </div>
+      </div>
+
       {/* Security Notice */}
       <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 flex items-center space-x-3">
         <Shield className="h-5 w-5 text-blue-400 flex-shrink-0" />
         <div>
           <p className="text-blue-300 font-medium">Secure Payment</p>
           <p className="text-blue-400 text-sm">
-            Your payment information is encrypted and processed securely by Stripe.
+            When properly configured, your payment information will be encrypted and processed securely by Stripe.
           </p>
         </div>
       </div>
@@ -200,8 +245,8 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
             </div>
           ) : (
             <div className="flex items-center justify-center space-x-2">
-              <CheckCircle className="h-4 w-4" />
-              <span>Subscribe to Premium - $9.99/month</span>
+              <AlertTriangle className="h-4 w-4" />
+              <span>Demo Payment Form - Backend Required</span>
             </div>
           )}
         </button>

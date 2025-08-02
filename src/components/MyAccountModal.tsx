@@ -349,7 +349,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                       <p className="text-gray-300 text-sm">
                         No payment method required for Basic plan
                       </p>
-                    ) : (
+                    ) : subscription?.stripeCustomerId ? (
                       <div>
                         <p className="text-gray-300 text-sm mb-3">
                           Payment methods are securely managed through Stripe
@@ -359,6 +359,18 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
                           Manage Payment Methods
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-gray-400 text-sm mb-3">
+                          No payment method on file. Payment method will be added when you upgrade to Premium.
+                        </p>
+                        <button
+                          onClick={() => setActiveTab('subscription')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        >
+                          Upgrade to Premium
                         </button>
                       </div>
                     )}
@@ -378,16 +390,22 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
 
                   <div className="bg-gray-700/30 rounded-lg p-4">
                     <h4 className="text-white font-medium mb-2">Billing Portal</h4>
-                    <p className="text-gray-300 text-sm mb-3">
-                      Access your complete billing history, download invoices, and manage your subscription
-                    </p>
-                    {currentPlan.type === 'premium' && (
-                      <button 
-                        onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                      >
-                        Open Billing Portal
-                      </button>
+                    {currentPlan.type === 'premium' && subscription?.stripeCustomerId ? (
+                      <div>
+                        <p className="text-gray-300 text-sm mb-3">
+                          Access your complete billing history, download invoices, and manage your subscription
+                        </p>
+                        <button 
+                          onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        >
+                          Open Billing Portal
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-sm">
+                        Billing portal will be available after you upgrade to Premium and complete your first payment.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -397,43 +415,28 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
             {activeTab === 'payment-history' && (
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Payment History</h3>
-                {currentPlan.type === 'basic' ? (
-                  <div className="bg-gray-700/30 rounded-lg p-6 text-center">
-                    <p className="text-gray-400 mb-2">No payment history for Basic plan</p>
-                    <p className="text-gray-500 text-sm">Upgrade to Premium to see your billing history</p>
+                <div className="bg-gray-700/30 rounded-lg p-8 text-center">
+                  <div className="mb-4">
+                    <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="bg-gray-700/30 rounded-lg p-6 text-center">
-                      <h4 className="text-white font-medium mb-2">Complete Payment History</h4>
-                      <p className="text-gray-300 text-sm mb-4">
-                        All your payment history, invoices, and receipts are securely managed through Stripe
-                      </p>
-                      <button 
-                        onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-                      >
-                        View Payment History
-                      </button>
-                    </div>
-                    
-                    <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="text-blue-400 mt-1">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h5 className="text-blue-200 font-medium text-sm">Stripe Billing Portal</h5>
-                          <p className="text-blue-300 text-xs mt-1">
-                            Download invoices, update payment methods, and view detailed transaction history
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  <h4 className="text-white font-medium mb-2">No Payment History</h4>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {currentPlan.type === 'basic' 
+                      ? 'You are currently on the free Basic plan. No payments required.'
+                      : 'No payment records found. Payment history will appear here after your first transaction.'
+                    }
+                  </p>
+                  {currentPlan.type === 'basic' && (
+                    <button
+                      onClick={() => setActiveTab('subscription')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      Upgrade to Premium
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

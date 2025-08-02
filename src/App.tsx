@@ -94,8 +94,12 @@ const AppContent: React.FC = () => {
     logApiStatus();
     
     // Test Stripe configuration
+    console.log('🚀 Starting Stripe configuration test...');
     fetch('/.netlify/functions/test-stripe-config')
-      .then(response => response.json())
+      .then(response => {
+        console.log('📡 Function response received:', response.status, response.statusText);
+        return response.json();
+      })
       .then(data => {
         console.log('💳 Stripe Configuration Test:', data);
         if (data.stripeConfigured) {

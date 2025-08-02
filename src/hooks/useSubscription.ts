@@ -82,12 +82,16 @@ export const useSubscription = () => {
 
   // Check if user has access to QuickView
   const hasQuickViewAccess = () => {
-    return getCurrentPlan().hasQuickView;
+    const access = getCurrentPlan().hasQuickView;
+    console.log('QuickView access check:', { planType: subscription?.planType, hasAccess: access });
+    return access;
   };
 
   // Check if user has access to Advanced features
   const hasAdvancedAccess = () => {
-    return getCurrentPlan().hasAdvanced;
+    const access = getCurrentPlan().hasAdvanced;
+    console.log('Advanced access check:', { planType: subscription?.planType, hasAccess: access });
+    return access;
   };
 
   // Check if user has access to real-time data

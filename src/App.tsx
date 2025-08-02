@@ -39,6 +39,8 @@ import LogOut from 'lucide-react/dist/esm/icons/log-out';
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Crown from 'lucide-react/dist/esm/icons/crown';
 import User from 'lucide-react/dist/esm/icons/user';
+import Star from 'lucide-react/dist/esm/icons/star';
+import Shield from 'lucide-react/dist/esm/icons/shield';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
 // Improved mobile detection - checks both screen size and device type
@@ -253,20 +255,33 @@ const AppContent: React.FC = () => {
               
               {/* Plan Status Indicator */}
               <div 
-                onClick={togglePremiumForTesting}
+                onClick={() => {
+                  console.log('Toggling plan from', currentPlan.type);
+                  togglePremiumForTesting();
+                  // Force a refresh after a short delay to see changes
+                  setTimeout(() => {
+                    console.log('New plan type:', currentPlan.type);
+                  }, 100);
+                }}
                 className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border cursor-pointer ${
                   currentPlan.type === 'premium'
-                    ? 'text-yellow-200 bg-yellow-600/20 border-yellow-500/30 hover:bg-yellow-600/30'
-                    : 'text-gray-300 bg-gray-600/20 border-gray-500/30 hover:bg-gray-600/30'
+                    ? 'text-amber-200 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border-amber-500/30 hover:from-amber-600/30 hover:to-orange-600/30 shadow-lg'
+                    : 'text-slate-300 bg-gradient-to-r from-slate-600/20 to-gray-600/20 border-slate-500/30 hover:from-slate-600/30 hover:to-gray-600/30'
                 }`}
-                title={`Current plan: ${currentPlan.name} - Click to toggle for testing`}
+                title={`${currentPlan.name} Plan - Click to toggle for testing features`}
               >
                 {currentPlan.type === 'premium' ? (
-                  <Crown className="h-4 w-4" />
+                  <div className="relative">
+                    <Star className="h-4 w-4 fill-amber-300 text-amber-300" />
+                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  </div>
                 ) : (
-                  <User className="h-4 w-4" />
+                  <Shield className="h-4 w-4" />
                 )}
-                <span>{currentPlan.name}</span>
+                <span className="font-medium">{currentPlan.name}</span>
+                {currentPlan.type === 'premium' && (
+                  <span className="text-xs bg-amber-500/20 px-1.5 py-0.5 rounded-full">PRO</span>
+                )}
               </div>
               <button
                 onClick={signOut}

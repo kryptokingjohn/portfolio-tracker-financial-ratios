@@ -6,11 +6,9 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  isDemoMode: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  enterDemoMode: () => void;
   updateUserProfile: (updates: { email?: string; password?: string }) => Promise<{ error: any }>;
 }
 
@@ -27,8 +25,7 @@ export const useAuth = () => {
 export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(false); // Always show login screen first
-  const [demoMode, setDemoMode] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading to check for existing session
   const [sessionTimeoutId, setSessionTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   // Function to handle session timeout (5 minutes)
@@ -52,6 +49,52 @@ export const useAuthState = () => {
       setSessionTimeoutId(null);
     }
   };
+
+  // Initialize auth state on mount
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (session) {
+          setSession(session);
+          setUser(session.user);
+          startSessionTimeout();
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, !!session);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+
+        if (session) {
+          startSessionTimeout();
+        } else {
+          clearSessionTimeout();
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+      clearSessionTimeout();
+    };
+  }, []);
 
   useEffect(() => {
     console.log('Auth initialization - login screen shows immediately');
@@ -131,26 +174,12 @@ export const useAuthState = () => {
 
   const signOut = async () => {
     clearSessionTimeout();
-    setDemoMode(false);
     await supabase.auth.signOut();
-  };
-
-  const enterDemoMode = () => {
-    console.log('Entering demo mode');
-    setDemoMode(true);
-    setUser(null);
-    setSession(null);
   };
 
   const updateUserProfile = async (updates: { email?: string; password?: string }) => {
     try {
       setLoading(true);
-      
-      // In demo mode, just simulate success
-      if (demoMode) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return { error: null };
-      }
 
       // Update email if provided
       if (updates.email) {
@@ -177,11 +206,9 @@ export const useAuthState = () => {
     user,
     session,
     loading,
-    isDemoMode: demoMode,
     signIn,
     signUp,
     signOut,
-    enterDemoMode,
     updateUserProfile,
   };
 };

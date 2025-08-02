@@ -55,7 +55,7 @@ const isMobile = () => {
 
 const AppContent: React.FC = () => {
   // ALL HOOKS MUST BE CALLED CONSISTENTLY - NO EARLY RETURNS BEFORE THIS POINT
-  const { user, loading, isDemoMode, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { 
     holdings, 
     transactions, 
@@ -156,10 +156,10 @@ const AppContent: React.FC = () => {
   }
 
   if (loading) {
-    return <LoadingScreen message={isDemoMode ? "Loading demo data..." : "Authenticating..."} />;
+    return <LoadingScreen message="Authenticating..." />;
   }
 
-  if (!user && !isDemoMode) {
+  if (!user) {
     return <LoginScreen />;
   }
 

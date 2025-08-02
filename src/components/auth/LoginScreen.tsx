@@ -18,18 +18,8 @@ export const LoginScreen: React.FC = () => {
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const { signIn, signUp, enterDemoMode, isDemoMode } = useAuth();
+  const { signIn, signUp } = useAuth();
 
-  // Check if we're in demo mode
-  const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && 
-    import.meta.env.VITE_SUPABASE_ANON_KEY &&
-    !import.meta.env.VITE_SUPABASE_URL.includes('demo') &&
-    !import.meta.env.VITE_SUPABASE_ANON_KEY.includes('demo') &&
-    import.meta.env.VITE_SUPABASE_URL !== 'https://demo.supabase.co' &&
-    import.meta.env.VITE_SUPABASE_ANON_KEY !== 'demo_key' &&
-    // Disable Supabase in StackBlitz environment
-    !window.location.hostname.includes('stackblitz') &&
-    !window.location.hostname.includes('webcontainer');
 
   const validatePassword = (password: string): boolean => {
     if (password.length < 6) {
@@ -200,21 +190,6 @@ export const LoginScreen: React.FC = () => {
             </div>
           </form>
           
-          {/* Demo Mode Option */}
-          <div className="mt-6 pt-6 border-t border-gray-600">
-            <div className="text-center">
-              <p className="text-gray-300 text-sm mb-3">Want to explore first?</p>
-              <button
-                onClick={enterDemoMode}
-                className="w-full bg-yellow-600/80 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-              >
-                Try Demo Mode
-              </button>
-              <p className="text-gray-400 text-xs mt-2">
-                Explore the app with sample portfolio data
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}

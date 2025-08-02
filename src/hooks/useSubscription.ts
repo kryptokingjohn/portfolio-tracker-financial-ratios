@@ -3,53 +3,27 @@ import { UserSubscription, PlanType, SUBSCRIPTION_PLANS } from '../types/subscri
 import { useAuth } from './useAuthSimple';
 
 export const useSubscription = () => {
-  const { user, isDemoMode } = useAuth();
+  const { user } = useAuth();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load subscription data
   useEffect(() => {
-    if (user || isDemoMode) {
+    if (user) {
       loadSubscriptionData();
+    } else {
+      setLoading(false);
     }
-  }, [user, isDemoMode]);
+  }, [user]);
 
   const loadSubscriptionData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // In demo mode, default to premium plan
-      if (isDemoMode) {
-        const demoSubscription: UserSubscription = {
-          id: 'demo-subscription',
-          userId: 'demo-user',
-          planType: 'premium',
-          status: 'active',
-          startDate: new Date().toISOString(),
-          cancelAtPeriodEnd: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setSubscription(demoSubscription);
-        setLoading(false);
-        return;
-      }
-
-      // For new users or no subscription found, default to basic plan
+      // For authenticated users, check for existing subscription or default to basic
       if (!user) {
-        const basicSubscription: UserSubscription = {
-          id: 'basic-default',
-          userId: user?.id || 'guest',
-          planType: 'basic',
-          status: 'active',
-          startDate: new Date().toISOString(),
-          cancelAtPeriodEnd: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        setSubscription(basicSubscription);
         setLoading(false);
         return;
       }

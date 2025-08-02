@@ -9,7 +9,7 @@ import FinancialDataService from '../services/financialDataService';
 import { detectAssetType } from '../utils/assetTypeDetector';
 
 export const usePortfolio = () => {
-  const { user, isDemoMode } = useAuth();
+  const { user } = useAuth();
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [portfolioMetrics, setPortfolioMetrics] = useState<any>(null);
@@ -20,10 +20,10 @@ export const usePortfolio = () => {
 
   // Load initial data
   useEffect(() => {
-    if (user || isDemoMode) {
+    if (user) {
       loadPortfolioData();
     }
-  }, [user, isDemoMode]);
+  }, [user]);
   
   // Remove auto-refresh functionality - now using manual refresh only
 
@@ -33,21 +33,10 @@ export const usePortfolio = () => {
       setLoading(true);
       setError(null);
 
-      // If in demo mode, use mock data
-      if (isDemoMode) {
-        console.log('Loading demo data...');
-        const { mockPortfolioData } = await import('../data/mockData');
-        setHoldings(mockPortfolioData);
-        setTransactions([]);
-        
-        // Calculate metrics for mock data
-        const metrics = PortfolioCalculator.calculatePortfolioMetrics(mockPortfolioData);
-        setPortfolioMetrics(metrics);
-        setDividendAnalysis(null);
-        
-        setLastUpdated(new Date());
+      // Load real portfolio data from database only
+      if (!user) {
+        console.log('No authenticated user, cannot load portfolio data');
         setLoading(false);
-        console.log('Demo data loaded successfully');
         return;
       }
 
@@ -337,9 +326,9 @@ export const usePortfolio = () => {
       // Update prices for all holdings
       const updatedHoldings = await updateHoldingPrices(holdings);
       
-      // Re-enrich with latest financial data if not in demo mode
+      // Re-enrich with latest financial data
       let finalHoldings = updatedHoldings;
-      if (!isDemoMode && updatedHoldings.length > 0) {
+      if (updatedHoldings.length > 0) {
         console.log('📊 Refreshing financial ratios and company data...');
         finalHoldings = await enrichHoldingsWithFinancialData(updatedHoldings);
       }

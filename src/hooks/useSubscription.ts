@@ -105,25 +105,18 @@ export const useSubscription = () => {
     return null;
   };
 
-  // Upgrade to premium
-  const upgradeToPremium = async () => {
+  // Upgrade to premium - returns true if should open Stripe checkout
+  const upgradeToPremium = async (): Promise<boolean> => {
     try {
       setError(null);
-      // TODO: Implement Stripe integration for premium upgrade
-      console.log('Starting premium upgrade process...');
+      console.log('Initiating premium upgrade - opening Stripe checkout...');
       
-      // For now, just update the subscription locally (in real app, this would be handled by Stripe webhook)
-      if (subscription) {
-        const updatedSubscription: UserSubscription = {
-          ...subscription,
-          planType: 'premium',
-          updatedAt: new Date().toISOString()
-        };
-        setSubscription(updatedSubscription);
-      }
+      // Return true to indicate that Stripe checkout should be opened
+      return true;
     } catch (err) {
-      console.error('Error upgrading to premium:', err);
-      setError(err instanceof Error ? err.message : 'Failed to upgrade to premium');
+      console.error('Error starting premium upgrade:', err);
+      setError(err instanceof Error ? err.message : 'Failed to start premium upgrade');
+      return false;
     }
   };
 
@@ -167,6 +160,31 @@ export const useSubscription = () => {
     }
   };
 
+  // Handle successful payment from Stripe
+  const handleSuccessfulPayment = async (paymentData: any) => {
+    try {
+      console.log('Processing successful payment:', paymentData);
+      
+      if (subscription) {
+        const updatedSubscription: UserSubscription = {
+          ...subscription,
+          planType: 'premium',
+          status: 'active',
+          updatedAt: new Date().toISOString(),
+          stripeSubscriptionId: paymentData.subscriptionId,
+          stripeCustomerId: paymentData.customerId
+        };
+        setSubscription(updatedSubscription);
+        
+        // TODO: Save to database
+        // await saveSubscriptionToDatabase(updatedSubscription);
+      }
+    } catch (err) {
+      console.error('Error processing successful payment:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process payment');
+    }
+  };
+
   return {
     subscription,
     currentPlan: getCurrentPlan(),
@@ -182,6 +200,7 @@ export const useSubscription = () => {
     upgradeToPremium,
     cancelSubscription,
     reactivateSubscription,
+    handleSuccessfulPayment,
     reload: loadSubscriptionData
   };
 };

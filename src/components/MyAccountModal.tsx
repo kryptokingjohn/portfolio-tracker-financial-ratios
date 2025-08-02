@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { User, Settings, CreditCard, Receipt, X, Check, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuthSimple';
 import { useSubscription } from '../hooks/useSubscription';
 import { SUBSCRIPTION_PLANS } from '../types/subscription';
+
+// Lazy load Stripe checkout
+const StripeCheckout = React.lazy(() => import('./StripeCheckout'));
 
 interface MyAccountModalProps {
   isOpen: boolean;
@@ -13,10 +16,11 @@ type TabType = 'profile' | 'subscription' | 'billing' | 'payment-history';
 
 export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose }) => {
   const { user, updateUserProfile } = useAuth();
-  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription } = useSubscription();
+  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment } = useSubscription();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showStripeCheckout, setShowStripeCheckout] = useState(false);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -86,8 +90,11 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
     try {
       switch (action) {
         case 'upgrade':
-          await upgradeToPremium();
-          setMessage({ type: 'success', text: 'Successfully upgraded to Premium!' });
+          const shouldOpenCheckout = await upgradeToPremium();
+          if (shouldOpenCheckout) {
+            setShowStripeCheckout(true);
+            setMessage({ type: 'success', text: 'Opening Stripe checkout...' });
+          }
           break;
         case 'cancel':
           await cancelSubscription();
@@ -108,6 +115,17 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
     }
   };
 
+  const handleStripeSuccess = (paymentData: any) => {
+    setShowStripeCheckout(false);
+    handleSuccessfulPayment(paymentData);
+    setMessage({ type: 'success', text: '🎉 Successfully upgraded to Premium! Welcome to Portfolio Pro!' });
+  };
+
+  const handleStripeError = (error: any) => {
+    setShowStripeCheckout(false);
+    setMessage({ type: 'error', text: `Payment failed: ${error.message}` });
+  };
+
   const tabs = [
     { id: 'profile' as TabType, label: 'Profile', icon: User },
     { id: 'subscription' as TabType, label: 'Subscription', icon: Settings },
@@ -115,11 +133,6 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
     { id: 'payment-history' as TabType, label: 'Payment History', icon: Receipt }
   ];
 
-  const mockPaymentHistory = [
-    { id: '1', date: '2024-01-01', amount: 9.99, status: 'succeeded' as const, description: 'Premium Plan - Monthly' },
-    { id: '2', date: '2023-12-01', amount: 9.99, status: 'succeeded' as const, description: 'Premium Plan - Monthly' },
-    { id: '3', date: '2023-11-01', amount: 9.99, status: 'succeeded' as const, description: 'Premium Plan - Monthly' }
-  ];
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -329,19 +342,54 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
             {activeTab === 'billing' && (
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Billing Information</h3>
-                <div className="bg-gray-700/30 rounded-lg p-4">
-                  <p className="text-gray-300 mb-2">Payment Method</p>
-                  <p className="text-gray-400 text-sm">
-                    {currentPlan.type === 'basic' 
-                      ? 'No payment method required for Basic plan'
-                      : '•••• •••• •••• 4242 (Visa) - Expires 12/25'
-                    }
-                  </p>
-                  {currentPlan.type === 'premium' && (
-                    <button className="mt-3 text-blue-400 hover:text-blue-300 text-sm">
-                      Update Payment Method
-                    </button>
-                  )}
+                <div className="space-y-4">
+                  <div className="bg-gray-700/30 rounded-lg p-4">
+                    <h4 className="text-white font-medium mb-2">Payment Method</h4>
+                    {currentPlan.type === 'basic' ? (
+                      <p className="text-gray-300 text-sm">
+                        No payment method required for Basic plan
+                      </p>
+                    ) : (
+                      <div>
+                        <p className="text-gray-300 text-sm mb-3">
+                          Payment methods are securely managed through Stripe
+                        </p>
+                        <button 
+                          onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        >
+                          Manage Payment Methods
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-700/30 rounded-lg p-4">
+                    <h4 className="text-white font-medium mb-2">Next Billing Date</h4>
+                    <p className="text-gray-300 text-sm">
+                      {currentPlan.type === 'basic' 
+                        ? 'No billing for Basic plan'
+                        : subscription?.cancelAtPeriodEnd 
+                          ? 'Subscription will end at current period'
+                          : 'Next billing date: Managed through Stripe'
+                      }
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-700/30 rounded-lg p-4">
+                    <h4 className="text-white font-medium mb-2">Billing Portal</h4>
+                    <p className="text-gray-300 text-sm mb-3">
+                      Access your complete billing history, download invoices, and manage your subscription
+                    </p>
+                    {currentPlan.type === 'premium' && (
+                      <button 
+                        onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                      >
+                        Open Billing Portal
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -350,25 +398,40 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Payment History</h3>
                 {currentPlan.type === 'basic' ? (
-                  <p className="text-gray-400">No payment history for Basic plan</p>
+                  <div className="bg-gray-700/30 rounded-lg p-6 text-center">
+                    <p className="text-gray-400 mb-2">No payment history for Basic plan</p>
+                    <p className="text-gray-500 text-sm">Upgrade to Premium to see your billing history</p>
+                  </div>
                 ) : (
-                  <div className="space-y-3">
-                    {mockPaymentHistory.map((payment) => (
-                      <div key={payment.id} className="bg-gray-700/30 rounded-lg p-4 flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-medium">{payment.description}</p>
-                          <p className="text-gray-400 text-sm">{payment.date}</p>
+                  <div className="space-y-4">
+                    <div className="bg-gray-700/30 rounded-lg p-6 text-center">
+                      <h4 className="text-white font-medium mb-2">Complete Payment History</h4>
+                      <p className="text-gray-300 text-sm mb-4">
+                        All your payment history, invoices, and receipts are securely managed through Stripe
+                      </p>
+                      <button 
+                        onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                      >
+                        View Payment History
+                      </button>
+                    </div>
+                    
+                    <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="text-blue-400 mt-1">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
                         </div>
-                        <div className="text-right">
-                          <p className="text-white">${payment.amount}</p>
-                          <p className={`text-xs ${
-                            payment.status === 'succeeded' ? 'text-green-400' : 'text-red-400'
-                          }`}>
-                            {payment.status === 'succeeded' ? 'Paid' : 'Failed'}
+                        <div>
+                          <h5 className="text-blue-200 font-medium text-sm">Stripe Billing Portal</h5>
+                          <p className="text-blue-300 text-xs mt-1">
+                            Download invoices, update payment methods, and view detailed transaction history
                           </p>
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -376,6 +439,37 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
           </div>
         </div>
       </div>
+
+      {/* Stripe Checkout Modal */}
+      {showStripeCheckout && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-gray-900/95 backdrop-blur-md border border-gray-600/30 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-600/30 p-6 flex items-center justify-between rounded-t-2xl">
+              <h2 className="text-2xl font-bold text-white">Upgrade to Premium</h2>
+              <button
+                onClick={() => setShowStripeCheckout(false)}
+                className="px-4 py-2 bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 text-white rounded-xl transition-all shadow-lg hover:shadow-xl border border-red-500/30 text-sm font-medium backdrop-blur-sm"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6">
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  <span className="ml-3 text-gray-300">Loading checkout...</span>
+                </div>
+              }>
+                <StripeCheckout
+                  planId="premium"
+                  onSuccess={handleStripeSuccess}
+                  onError={handleStripeError}
+                />
+              </Suspense>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

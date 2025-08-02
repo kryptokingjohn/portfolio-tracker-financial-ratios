@@ -69,7 +69,7 @@ const AppContent: React.FC = () => {
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
-  const { canAddHolding, getHoldingsLimitMessage } = useSubscription();
+  const { canAddHolding, getHoldingsLimitMessage, togglePremiumForTesting, currentPlan } = useSubscription();
   
   // State hooks
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -249,6 +249,16 @@ const AppContent: React.FC = () => {
               >
                 <User className="h-4 w-4" />
                 <span>My Account</span>
+              </button>
+              
+              {/* Temporary Premium Testing Button */}
+              <button
+                onClick={togglePremiumForTesting}
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-orange-200 bg-orange-600/30 rounded-lg hover:bg-orange-600/40 transition-all backdrop-blur-sm border border-orange-500/30"
+                title="Toggle Premium features for testing"
+              >
+                <Crown className="h-4 w-4" />
+                <span>Test: {currentPlan.type}</span>
               </button>
               <button
                 onClick={signOut}

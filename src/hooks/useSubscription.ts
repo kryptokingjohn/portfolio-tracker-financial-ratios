@@ -31,6 +31,19 @@ export const useSubscription = () => {
       // TODO: Replace with actual database call
       // const subscriptionData = await DatabaseService.getUserSubscription(user.id);
       
+      // Temporary: Check localStorage for subscription state (for testing Premium features)
+      const storedSubscription = localStorage.getItem(`subscription_${user.id}`);
+      if (storedSubscription) {
+        try {
+          const parsedSubscription = JSON.parse(storedSubscription);
+          setSubscription(parsedSubscription);
+          console.log('Loaded subscription from localStorage:', parsedSubscription.planType);
+          return;
+        } catch (error) {
+          console.warn('Failed to parse stored subscription, using default');
+        }
+      }
+      
       // For now, default new users to basic plan
       const defaultSubscription: UserSubscription = {
         id: `sub-${user.id}`,
@@ -43,6 +56,8 @@ export const useSubscription = () => {
         updatedAt: new Date().toISOString()
       };
       
+      // Save to localStorage for persistence
+      localStorage.setItem(`subscription_${user.id}`, JSON.stringify(defaultSubscription));
       setSubscription(defaultSubscription);
     } catch (err) {
       console.error('Error loading subscription data:', err);
@@ -165,7 +180,7 @@ export const useSubscription = () => {
     try {
       console.log('Processing successful payment:', paymentData);
       
-      if (subscription) {
+      if (subscription && user) {
         const updatedSubscription: UserSubscription = {
           ...subscription,
           planType: 'premium',
@@ -174,7 +189,12 @@ export const useSubscription = () => {
           stripeSubscriptionId: paymentData.subscriptionId,
           stripeCustomerId: paymentData.customerId
         };
+        
+        // Save to localStorage for persistence (temporary solution)
+        localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
         setSubscription(updatedSubscription);
+        
+        console.log('User upgraded to Premium plan');
         
         // TODO: Save to database
         // await saveSubscriptionToDatabase(updatedSubscription);
@@ -182,6 +202,23 @@ export const useSubscription = () => {
     } catch (err) {
       console.error('Error processing successful payment:', err);
       setError(err instanceof Error ? err.message : 'Failed to process payment');
+    }
+  };
+
+  // Temporary function to test Premium features (for development/demonstration)
+  const togglePremiumForTesting = () => {
+    if (subscription && user) {
+      const newPlanType = subscription.planType === 'basic' ? 'premium' : 'basic';
+      const updatedSubscription: UserSubscription = {
+        ...subscription,
+        planType: newPlanType,
+        updatedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
+      setSubscription(updatedSubscription);
+      
+      console.log(`Toggled to ${newPlanType} plan for testing`);
     }
   };
 
@@ -201,6 +238,7 @@ export const useSubscription = () => {
     cancelSubscription,
     reactivateSubscription,
     handleSuccessfulPayment,
+    togglePremiumForTesting,
     reload: loadSubscriptionData
   };
 };

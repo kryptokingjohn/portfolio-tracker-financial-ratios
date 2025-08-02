@@ -13,6 +13,7 @@
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
 
 # Environment variables for build
 # Note: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Netlify dashboard

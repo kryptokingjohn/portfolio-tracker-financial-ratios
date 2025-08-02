@@ -41,6 +41,8 @@ import Crown from 'lucide-react/dist/esm/icons/crown';
 import User from 'lucide-react/dist/esm/icons/user';
 import Star from 'lucide-react/dist/esm/icons/star';
 import Shield from 'lucide-react/dist/esm/icons/shield';
+import Award from 'lucide-react/dist/esm/icons/award';
+import Medal from 'lucide-react/dist/esm/icons/medal';
 import { logDatabaseStatus, logApiStatus } from './config/database';
 
 // Improved mobile detection - checks both screen size and device type
@@ -263,9 +265,19 @@ const AppContent: React.FC = () => {
                 title={`Current Plan: ${currentPlan.name}`}
               >
                 {currentPlan.type === 'premium' ? (
-                  <div className="relative">
-                    <Star className="h-4 w-4 fill-amber-300 text-amber-300" />
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                  <div className="relative flex items-center">
+                    {/* Option 1: First Place Award/Ribbon */}
+                    <Award className="h-4 w-4 fill-amber-300 text-amber-300" />
+                    
+                    {/* Option 2: Multiple Stars (uncomment to use instead)
+                    <div className="flex items-center -space-x-0.5">
+                      <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
+                      <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
+                      <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
+                    </div>
+                    */}
+                    
+                    <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></div>
                   </div>
                 ) : (
                   <Shield className="h-4 w-4" />

@@ -71,7 +71,7 @@ const AppContent: React.FC = () => {
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
-  const { canAddHolding, getHoldingsLimitMessage, togglePremiumForTesting, currentPlan } = useSubscription();
+  const { canAddHolding, getHoldingsLimitMessage, currentPlan } = useSubscription();
   
   // State hooks
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -90,14 +90,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     logDatabaseStatus();
     logApiStatus();
-    console.log('🚀 App loaded - Current plan type:', currentPlan.type);
-    console.log('Build timestamp:', new Date().toISOString());
   }, []);
-
-  // Debug plan changes
-  useEffect(() => {
-    console.log('📊 Plan changed in App component:', currentPlan.type);
-  }, [currentPlan.type]);
 
   // Memoized handler functions for transaction editing - STABLE DEPENDENCIES
   const handleEditTransaction = useCallback((transaction: Transaction) => {
@@ -262,23 +255,12 @@ const AppContent: React.FC = () => {
               
               {/* Plan Status Indicator */}
               <div 
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('🖱️ Plan indicator clicked!');
-                  console.log('📊 Current plan before toggle:', currentPlan.type);
-                  togglePremiumForTesting();
-                  // Force page refresh to ensure all components update
-                  setTimeout(() => {
-                    window.location.reload();
-                  }, 100);
-                }}
-                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border cursor-pointer ${
+                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border ${
                   currentPlan.type === 'premium'
-                    ? 'text-amber-200 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border-amber-500/30 hover:from-amber-600/30 hover:to-orange-600/30 shadow-lg'
-                    : 'text-slate-300 bg-gradient-to-r from-slate-600/20 to-gray-600/20 border-slate-500/30 hover:from-slate-600/30 hover:to-gray-600/30'
+                    ? 'text-amber-200 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border-amber-500/30 shadow-lg'
+                    : 'text-slate-300 bg-gradient-to-r from-slate-600/20 to-gray-600/20 border-slate-500/30'
                 }`}
-                title={`${currentPlan.name} Plan - Click to toggle for testing features`}
+                title={`Current Plan: ${currentPlan.name}`}
               >
                 {currentPlan.type === 'premium' ? (
                   <div className="relative">
@@ -293,6 +275,18 @@ const AppContent: React.FC = () => {
                   <span className="text-xs bg-amber-500/20 px-1.5 py-0.5 rounded-full">PRO</span>
                 )}
               </div>
+              
+              {/* Upgrade Call-to-Action for Basic Users */}
+              {currentPlan.type === 'basic' && (
+                <button
+                  onClick={() => setIsMyAccountModalOpen(true)}
+                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-200 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-lg hover:from-blue-600/40 hover:to-purple-600/40 transition-all backdrop-blur-sm border border-blue-500/30 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  title="Upgrade to Premium for unlimited features"
+                >
+                  <Crown className="h-4 w-4" />
+                  <span>Upgrade</span>
+                </button>
+              )}
               <button
                 onClick={signOut}
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-200 bg-red-600/30 rounded-lg hover:bg-red-600/40 transition-all backdrop-blur-sm border border-red-500/30"

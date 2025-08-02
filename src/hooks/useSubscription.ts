@@ -82,16 +82,12 @@ export const useSubscription = () => {
 
   // Check if user has access to QuickView
   const hasQuickViewAccess = () => {
-    const access = getCurrentPlan().hasQuickView;
-    console.log('QuickView access check:', { planType: subscription?.planType, hasAccess: access });
-    return access;
+    return getCurrentPlan().hasQuickView;
   };
 
   // Check if user has access to Advanced features
   const hasAdvancedAccess = () => {
-    const access = getCurrentPlan().hasAdvanced;
-    console.log('Advanced access check:', { planType: subscription?.planType, hasAccess: access });
-    return access;
+    return getCurrentPlan().hasAdvanced;
   };
 
   // Check if user has access to real-time data
@@ -209,45 +205,6 @@ export const useSubscription = () => {
     }
   };
 
-  // Temporary function to test Premium features (for development/demonstration)
-  const togglePremiumForTesting = () => {
-    console.log('🔄 Toggle function called!');
-    console.log('Current subscription:', subscription);
-    console.log('Current user:', user?.id);
-    
-    if (subscription && user) {
-      const oldPlanType = subscription.planType;
-      const newPlanType = subscription.planType === 'basic' ? 'premium' : 'basic';
-      
-      console.log(`🔀 Changing plan: ${oldPlanType} → ${newPlanType}`);
-      
-      const updatedSubscription: UserSubscription = {
-        ...subscription,
-        planType: newPlanType,
-        updatedAt: new Date().toISOString()
-      };
-      
-      console.log('📝 Saving to localStorage:', `subscription_${user.id}`);
-      localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
-      
-      console.log('🔄 Setting new subscription state');
-      setSubscription(updatedSubscription);
-      
-      console.log(`✅ Successfully toggled to ${newPlanType} plan`);
-      
-      // Verify the change
-      setTimeout(() => {
-        const currentPlan = getCurrentPlan();
-        console.log('🔍 Verification - Current plan:', currentPlan.type);
-        console.log('🔍 QuickView access:', currentPlan.hasQuickView);
-        console.log('🔍 Advanced access:', currentPlan.hasAdvanced);
-      }, 100);
-    } else {
-      console.log('❌ Cannot toggle - missing subscription or user');
-      console.log('Subscription:', subscription);
-      console.log('User:', user);
-    }
-  };
 
   return {
     subscription,
@@ -265,7 +222,6 @@ export const useSubscription = () => {
     cancelSubscription,
     reactivateSubscription,
     handleSuccessfulPayment,
-    togglePremiumForTesting,
     reload: loadSubscriptionData
   };
 };

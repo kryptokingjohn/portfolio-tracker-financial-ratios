@@ -92,6 +92,23 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     logDatabaseStatus();
     logApiStatus();
+    
+    // Test Stripe configuration
+    fetch('/.netlify/functions/test-stripe-config')
+      .then(response => response.json())
+      .then(data => {
+        console.log('💳 Stripe Configuration Test:', data);
+        if (data.stripeConfigured) {
+          console.log('✅ Stripe Secret Key is configured');
+          console.log('🔑 Key prefix:', data.keyPrefix);
+        } else {
+          console.log('❌ Stripe Secret Key is NOT configured');
+        }
+      })
+      .catch(error => {
+        console.log('⚠️ Could not test Stripe configuration:', error);
+        console.log('ℹ️ This might mean Netlify Functions are not deployed yet');
+      });
   }, []);
 
   // Memoized handler functions for transaction editing - STABLE DEPENDENCIES

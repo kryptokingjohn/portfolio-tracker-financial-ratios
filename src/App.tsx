@@ -264,14 +264,13 @@ const AppContent: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  alert(`Clicked! Current plan: ${currentPlan.type}`);
                   console.log('🖱️ Plan indicator clicked!');
                   console.log('📊 Current plan before toggle:', currentPlan.type);
                   togglePremiumForTesting();
-                  // Check if it changed
+                  // Force page refresh to ensure all components update
                   setTimeout(() => {
-                    alert(`After toggle: ${currentPlan.type}`);
-                  }, 500);
+                    window.location.reload();
+                  }, 100);
                 }}
                 className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border cursor-pointer ${
                   currentPlan.type === 'premium'

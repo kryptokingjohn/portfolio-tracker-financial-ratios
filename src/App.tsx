@@ -288,17 +288,6 @@ const AppContent: React.FC = () => {
                 )}
               </div>
               
-              {/* Upgrade Call-to-Action for Basic Users */}
-              {currentPlan.type === 'basic' && (
-                <button
-                  onClick={() => setIsMyAccountModalOpen(true)}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-200 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-lg hover:from-blue-600/40 hover:to-purple-600/40 transition-all backdrop-blur-sm border border-blue-500/30 shadow-lg hover:shadow-xl transform hover:scale-105"
-                  title="Upgrade to Premium for unlimited features"
-                >
-                  <Crown className="h-4 w-4" />
-                  <span>Upgrade</span>
-                </button>
-              )}
               <button
                 onClick={signOut}
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-200 bg-red-600/30 rounded-lg hover:bg-red-600/40 transition-all backdrop-blur-sm border border-red-500/30"

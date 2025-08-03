@@ -30,6 +30,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
   const [sectorFilter, setSectorFilter] = useState<string>('all');
   const [etfData, setEtfData] = useState<Map<string, any>>(new Map());
   const [bondData, setBondData] = useState<Map<string, any>>(new Map());
+  const [assetDataLoading, setAssetDataLoading] = useState(false);
 
   // Memoized event handlers to prevent unnecessary re-renders
   const handleSort = useCallback((field: keyof Holding) => {
@@ -153,46 +154,76 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
     return calculationsMap;
   }, [holdings]);
 
-  // Load ETF and Bond data for relevant holdings
+  // Load ETF and Bond data for relevant holdings (optimized)
   useEffect(() => {
     const loadAssetData = async () => {
-      const newEtfData = new Map();
-      const newBondData = new Map();
-      
-      for (const holding of holdings) {
-        const assetType = holding.type || detectAssetType(holding.ticker, holding.company);
-        
-        if (assetType === 'etfs' && (filter === 'etfs' || filter === 'all')) {
-          try {
-            const etfInfo = await getCachedETFInfo(holding.ticker);
-            if (etfInfo) {
-              newEtfData.set(holding.ticker, processETFMetrics(etfInfo, isPremium()));
-            }
-          } catch (error) {
-            console.warn(`Failed to load ETF data for ${holding.ticker}:`, error);
-          }
-        }
-        
-        if (assetType === 'bonds' && (filter === 'bonds' || filter === 'all')) {
-          try {
-            const bondInfo = await getCachedBondInfo(holding.ticker);
-            if (bondInfo) {
-              newBondData.set(holding.ticker, processBondMetrics(bondInfo, isPremium()));
-            }
-          } catch (error) {
-            console.warn(`Failed to load bond data for ${holding.ticker}:`, error);
-          }
-        }
+      // Only load data if we're showing ETF or Bond views
+      if (filter !== 'etfs' && filter !== 'bonds' && filter !== 'all') {
+        setAssetDataLoading(false);
+        return;
       }
+
+      setAssetDataLoading(true);
       
-      setEtfData(newEtfData);
-      setBondData(newBondData);
+      try {
+        const newEtfData = new Map();
+        const newBondData = new Map();
+        
+        // Process holdings in smaller batches to prevent UI blocking
+        const BATCH_SIZE = 5;
+        const holdingBatches = [];
+        for (let i = 0; i < holdings.length; i += BATCH_SIZE) {
+          holdingBatches.push(holdings.slice(i, i + BATCH_SIZE));
+        }
+        
+        for (const batch of holdingBatches) {
+          await Promise.all(batch.map(async (holding) => {
+            const assetType = holding.type || detectAssetType(holding.ticker, holding.company);
+            
+            // Only load ETF data if we need it
+            if (assetType === 'etfs' && (filter === 'etfs' || filter === 'all')) {
+              try {
+                const etfInfo = await getCachedETFInfo(holding.ticker);
+                if (etfInfo) {
+                  newEtfData.set(holding.ticker, processETFMetrics(etfInfo, isPremium()));
+                }
+              } catch (error) {
+                console.warn(`Failed to load ETF data for ${holding.ticker}:`, error);
+              }
+            }
+            
+            // Only load Bond data if we need it
+            if (assetType === 'bonds' && (filter === 'bonds' || filter === 'all')) {
+              try {
+                const bondInfo = await getCachedBondInfo(holding.ticker);
+                if (bondInfo) {
+                  newBondData.set(holding.ticker, processBondMetrics(bondInfo, isPremium()));
+                }
+              } catch (error) {
+                console.warn(`Failed to load bond data for ${holding.ticker}:`, error);
+              }
+            }
+          }));
+          
+          // Small delay between batches to keep UI responsive
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        
+        setEtfData(newEtfData);
+        setBondData(newBondData);
+      } catch (error) {
+        console.error('Error loading asset data:', error);
+      } finally {
+        setAssetDataLoading(false);
+      }
     };
     
     if (holdings.length > 0) {
       loadAssetData();
+    } else {
+      setAssetDataLoading(false);
     }
-  }, [holdings, filter, isPremium]);
+  }, [holdings, filter]); // Removed isPremium to prevent excessive re-renders
 
   // Helper to show consolidated ticker information
   const getTickerAccountInfo = useCallback((ticker: string, holdings: Holding[]) => {
@@ -242,6 +273,11 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
           <div className="flex flex-col space-y-2">
             <div className="text-sm text-gray-400 flex items-center">
               {filteredAndSortedHoldings.length} of {holdings.length} holdings
+              {assetDataLoading && (
+                <span className="ml-2 text-blue-400 animate-pulse">
+                  Loading asset data...
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
               <div className="flex items-center space-x-1">

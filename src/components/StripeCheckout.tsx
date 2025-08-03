@@ -57,6 +57,10 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
       return;
     }
 
+    // Check if card element is complete before submitting
+    const cardState = cardElement._complete;
+    alert(`Card state: complete=${cardState}, empty=${cardElement._empty}`);
+    
     alert('About to call stripe.createPaymentMethod...');
     setLoading(true);
 

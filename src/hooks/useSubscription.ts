@@ -205,6 +205,58 @@ export const useSubscription = () => {
     }
   };
 
+  // Open Stripe Customer Portal
+  const openBillingPortal = async () => {
+    try {
+      if (!subscription?.stripeCustomerId) {
+        throw new Error('No customer ID found. Please contact support.');
+      }
+
+      const response = await fetch('/.netlify/functions/create-customer-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerId: subscription.stripeCustomerId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to open billing portal');
+      }
+
+      const { url } = await response.json();
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Error opening billing portal:', err);
+      setError(err instanceof Error ? err.message : 'Failed to open billing portal');
+    }
+  };
+
+  // Get detailed subscription information from Stripe
+  const getSubscriptionDetails = async () => {
+    try {
+      if (!subscription?.stripeCustomerId) {
+        return null;
+      }
+
+      const response = await fetch(`/.netlify/functions/get-subscription-details?customerId=${subscription.stripeCustomerId}`);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to get subscription details');
+      }
+
+      return await response.json();
+    } catch (err) {
+      console.error('Error getting subscription details:', err);
+      setError(err instanceof Error ? err.message : 'Failed to get subscription details');
+      return null;
+    }
+  };
+
 
   return {
     subscription,
@@ -222,6 +274,8 @@ export const useSubscription = () => {
     cancelSubscription,
     reactivateSubscription,
     handleSuccessfulPayment,
+    openBillingPortal,
+    getSubscriptionDetails,
     reload: loadSubscriptionData
   };
 };

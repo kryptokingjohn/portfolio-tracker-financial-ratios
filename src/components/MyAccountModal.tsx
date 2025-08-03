@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { User, Settings, CreditCard, Receipt, X, Check, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuthSimple';
 import { useSubscription } from '../hooks/useSubscription';
@@ -16,11 +16,12 @@ type TabType = 'profile' | 'subscription' | 'billing' | 'payment-history';
 
 export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose }) => {
   const { user, updateUserProfile } = useAuth();
-  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment } = useSubscription();
+  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment, openBillingPortal, getSubscriptionDetails } = useSubscription();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showStripeCheckout, setShowStripeCheckout] = useState(false);
+  const [subscriptionDetails, setSubscriptionDetails] = useState<any>(null);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -28,6 +29,22 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Load subscription details when billing tab is active
+  useEffect(() => {
+    if (activeTab === 'billing' || activeTab === 'payment-history') {
+      loadSubscriptionDetails();
+    }
+  }, [activeTab]);
+
+  const loadSubscriptionDetails = async () => {
+    try {
+      const details = await getSubscriptionDetails();
+      setSubscriptionDetails(details);
+    } catch (error) {
+      console.error('Failed to load subscription details:', error);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -296,7 +313,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                           disabled={loading}
                           className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
                         >
-                          {loading ? 'Processing...' : 'Cancel Subscription'}
+                          {loading ? 'Processing...' : 'Cancel Premium Subscription'}
                         </button>
                       )}
                     </div>
@@ -356,7 +373,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                           Payment methods are securely managed through Stripe
                         </p>
                         <button 
-                          onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
+                          onClick={openBillingPortal}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
                           Manage Payment Methods
@@ -384,7 +401,9 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                         ? 'No billing for Basic plan'
                         : subscription?.cancelAtPeriodEnd 
                           ? 'Subscription will end at current period'
-                          : 'Next billing date: Managed through Stripe'
+                          : subscriptionDetails?.subscription?.currentPeriodEnd 
+                            ? `Next billing date: ${new Date(subscriptionDetails.subscription.currentPeriodEnd * 1000).toLocaleDateString()}`
+                            : 'Next billing date: Loading...'
                       }
                     </p>
                   </div>
@@ -397,7 +416,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                           Access your complete billing history, download invoices, and manage your subscription
                         </p>
                         <button 
-                          onClick={() => window.open('https://billing.stripe.com/p/login/', '_blank')}
+                          onClick={openBillingPortal}
                           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
                           Open Billing Portal
@@ -416,28 +435,70 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
             {activeTab === 'payment-history' && (
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Payment History</h3>
-                <div className="bg-gray-700/30 rounded-lg p-8 text-center">
-                  <div className="mb-4">
-                    <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                {subscriptionDetails?.invoices?.length > 0 ? (
+                  <div className="space-y-3">
+                    {subscriptionDetails.invoices.map((invoice: any) => (
+                      <div key={invoice.id} className="bg-gray-700/30 rounded-lg p-4 flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-3 h-3 rounded-full ${
+                              invoice.status === 'paid' ? 'bg-green-500' : 
+                              invoice.status === 'open' ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}></div>
+                            <span className="text-white font-medium">
+                              ${(invoice.amount / 100).toFixed(2)} {invoice.currency.toUpperCase()}
+                            </span>
+                            <span className="text-gray-400 text-sm capitalize">{invoice.status}</span>
+                          </div>
+                          <p className="text-gray-400 text-sm mt-1">
+                            {new Date(invoice.created * 1000).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          {invoice.hostedInvoiceUrl && (
+                            <button
+                              onClick={() => window.open(invoice.hostedInvoiceUrl, '_blank')}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            >
+                              View
+                            </button>
+                          )}
+                          {invoice.invoicePdf && (
+                            <button
+                              onClick={() => window.open(invoice.invoicePdf, '_blank')}
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            >
+                              Download PDF
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <h4 className="text-white font-medium mb-2">No Payment History</h4>
-                  <p className="text-gray-400 text-sm mb-4">
-                    {currentPlan.type === 'basic' 
-                      ? 'You are currently on the free Basic plan. No payments required.'
-                      : 'No payment records found. Payment history will appear here after your first transaction.'
-                    }
-                  </p>
-                  {currentPlan.type === 'basic' && (
-                    <button
-                      onClick={() => setActiveTab('subscription')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                    >
-                      Upgrade to Premium
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <div className="bg-gray-700/30 rounded-lg p-8 text-center">
+                    <div className="mb-4">
+                      <svg className="w-12 h-12 text-gray-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-white font-medium mb-2">No Payment History</h4>
+                    <p className="text-gray-400 text-sm mb-4">
+                      {currentPlan.type === 'basic' 
+                        ? 'You are currently on the free Basic plan. No payments required.'
+                        : 'No payment records found. Payment history will appear here after your first transaction.'
+                      }
+                    </p>
+                    {currentPlan.type === 'basic' && (
+                      <button
+                        onClick={() => setActiveTab('subscription')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                      >
+                        Upgrade to Premium
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

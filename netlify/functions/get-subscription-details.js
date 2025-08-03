@@ -48,6 +48,8 @@ exports.handler = async (event, context) => {
       limit: 10,
     });
 
+    console.log('Raw invoices from Stripe:', JSON.stringify(invoices.data, null, 2));
+
     const subscriptionData = subscriptions.data[0];
     
     return {
@@ -79,12 +81,14 @@ exports.handler = async (event, context) => {
         })),
         invoices: invoices.data.map(invoice => ({
           id: invoice.id,
-          amount: invoice.amount_paid,
+          amount: invoice.total || invoice.amount_due || invoice.amount_paid,
+          amountPaid: invoice.amount_paid,
           currency: invoice.currency,
           status: invoice.status,
           created: invoice.created,
           hostedInvoiceUrl: invoice.hosted_invoice_url,
           invoicePdf: invoice.invoice_pdf,
+          paymentIntent: invoice.payment_intent,
         })),
       }),
     };

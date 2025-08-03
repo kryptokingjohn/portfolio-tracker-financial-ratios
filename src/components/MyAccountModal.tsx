@@ -443,12 +443,23 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                           <div className="flex items-center space-x-3">
                             <div className={`w-3 h-3 rounded-full ${
                               invoice.status === 'paid' ? 'bg-green-500' : 
-                              invoice.status === 'open' ? 'bg-yellow-500' : 'bg-red-500'
+                              invoice.status === 'open' ? 'bg-yellow-500' : 
+                              invoice.status === 'draft' ? 'bg-gray-500' :
+                              'bg-red-500'
                             }`}></div>
                             <span className="text-white font-medium">
-                              ${(invoice.amount / 100).toFixed(2)} {invoice.currency.toUpperCase()}
+                              ${(invoice.amount / 100).toFixed(2)} {invoice.currency?.toUpperCase() || 'USD'}
                             </span>
-                            <span className="text-gray-400 text-sm capitalize">{invoice.status}</span>
+                            <span className="text-gray-400 text-sm capitalize">
+                              {invoice.status === 'paid' ? 'Paid' : 
+                               invoice.status === 'open' ? 'Pending' : 
+                               invoice.status}
+                            </span>
+                            {invoice.amountPaid > 0 && invoice.amountPaid !== invoice.amount && (
+                              <span className="text-green-400 text-xs">
+                                (Paid: ${(invoice.amountPaid / 100).toFixed(2)})
+                              </span>
+                            )}
                           </div>
                           <p className="text-gray-400 text-sm mt-1">
                             {new Date(invoice.created * 1000).toLocaleDateString()}

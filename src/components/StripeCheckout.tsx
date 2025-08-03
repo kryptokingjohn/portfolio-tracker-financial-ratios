@@ -25,19 +25,32 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('=== PAYMENT FORM SUBMISSION ===');
+    console.log('Stripe loaded:', !!stripe);
+    console.log('Elements loaded:', !!elements);
+    console.log('Customer name:', customerName);
+    
     if (!stripe || !elements) {
-      onError('Stripe has not loaded yet. Please try again.');
+      const error = 'Stripe has not loaded yet. Please try again.';
+      console.error(error);
+      onError(error);
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
+    console.log('Card element found:', !!cardElement);
+    
     if (!cardElement) {
-      onError('Card element not found. Please refresh and try again.');
+      const error = 'Card element not found. Please refresh and try again.';
+      console.error(error);
+      onError(error);
       return;
     }
 
     if (!customerName.trim()) {
-      onError('Please enter your name.');
+      const error = 'Please enter your name.';
+      console.error(error);
+      onError(error);
       return;
     }
 
@@ -103,7 +116,19 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
     } catch (error) {
       console.error('Payment failed:', error);
-      onError(error instanceof Error ? error.message : 'Payment failed');
+      console.error('Error type:', typeof error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      
+      let errorMessage = 'Payment failed';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = error.message;
+      }
+      
+      onError(errorMessage || 'Unknown payment error');
     } finally {
       setLoading(false);
     }

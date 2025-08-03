@@ -2,7 +2,7 @@
 export const DATABASE_CONFIG = {
   // Disable all database operations in production environments where RLS blocks access
   // This prevents 403/406 errors and allows the app to run in API-only mode
-  ENABLE_DATABASE_OPERATIONS: true, // Set to true only if database access is confirmed
+  ENABLE_DATABASE_OPERATIONS: false, // Set to true only if database access is confirmed
   
   // Environment detection
   IS_PRODUCTION: import.meta.env.PROD,

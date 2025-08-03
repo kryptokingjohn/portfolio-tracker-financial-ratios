@@ -99,6 +99,11 @@ export const useSubscription = () => {
     return getCurrentPlan().hasAdvancedCharts;
   };
 
+  // Check if user is on premium plan
+  const isPremium = () => {
+    return subscription?.planType === 'premium';
+  };
+
   // Check if user can export in specific format
   const canExportFormat = (format: 'csv' | 'pdf' | 'excel' | 'json') => {
     return getCurrentPlan().exportFormats.includes(format);
@@ -246,6 +251,7 @@ export const useSubscription = () => {
     hasAdvancedAccess,
     hasRealTimeAccess,
     hasAdvancedChartsAccess,
+    isPremium,
     canExportFormat,
     getHoldingsLimitMessage,
     upgradeToPremium,

@@ -2,7 +2,7 @@
 export const DATABASE_CONFIG = {
   // Disable all database operations in production environments where RLS blocks access
   // This prevents 403/406 errors and allows the app to run in API-only mode
-  ENABLE_DATABASE_OPERATIONS: false, // Set to true only if database access is confirmed
+  ENABLE_DATABASE_OPERATIONS: true, // Set to true only if database access is confirmed
   
   // Environment detection
   IS_PRODUCTION: import.meta.env.PROD,
@@ -33,7 +33,7 @@ export const API_CONFIG = {
   EXTENDED_CACHE_DURATION: 1800000, // 30 minutes (vs 15 minutes default)
   PRICE_CACHE_DURATION: 600000,     // 10 minutes (vs 1 minute default)
   DISABLE_AUTO_REFRESH: false,      // Set to true to disable automatic updates
-  MANUAL_REFRESH_ONLY: true,        // Set to true for manual-only updates (RECOMMENDED for API limits)
+  MANUAL_REFRESH_ONLY: false,       // Set to false to enable auto-refresh
 };
 
 export const isDatabaseEnabled = () => {

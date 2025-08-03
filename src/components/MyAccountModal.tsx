@@ -295,8 +295,17 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                       {/* Temporary: Restore Premium Status */}
                       <button
                         onClick={() => {
-                          activatePremium();
-                          setMessage({ type: 'success', text: 'Premium status restored!' });
+                          console.log('🔧 Restore Premium button clicked');
+                          const success = activatePremium();
+                          if (success) {
+                            setMessage({ type: 'success', text: 'Premium status restored! Refreshing...' });
+                            // Force page reload to ensure UI updates
+                            setTimeout(() => {
+                              window.location.reload();
+                            }, 1500);
+                          } else {
+                            setMessage({ type: 'error', text: 'Failed to restore premium status' });
+                          }
                           setTimeout(() => setMessage(null), 3000);
                         }}
                         className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"

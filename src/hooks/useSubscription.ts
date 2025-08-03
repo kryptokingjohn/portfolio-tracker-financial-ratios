@@ -215,6 +215,8 @@ export const useSubscription = () => {
   // Manual premium activation (temporary debugging function)
   const activatePremium = () => {
     if (user) {
+      console.log('🔧 Activating premium for user:', user.id);
+      
       const premiumSubscription: UserSubscription = {
         id: `sub-${user.id}`,
         userId: user.id,
@@ -226,11 +228,28 @@ export const useSubscription = () => {
         updatedAt: new Date().toISOString()
       };
       
+      // Clear any existing subscription first
+      localStorage.removeItem(`subscription_${user.id}`);
+      
+      // Set the new premium subscription
       localStorage.setItem(`subscription_${user.id}`, JSON.stringify(premiumSubscription));
       localStorage.setItem('premium_activated', 'true');
+      localStorage.setItem('stripe_payment_success', 'true');
+      
+      // Force update the subscription state
       setSubscription(premiumSubscription);
-      console.log('Premium activated manually');
+      
+      console.log('✅ Premium activated! Subscription:', premiumSubscription);
+      console.log('📱 LocalStorage updated with premium status');
+      
+      // Force a reload of subscription data to make sure it sticks
+      setTimeout(() => {
+        loadSubscriptionData();
+      }, 100);
+      
+      return true;
     }
+    return false;
   };
 
   // Open Stripe Customer Portal

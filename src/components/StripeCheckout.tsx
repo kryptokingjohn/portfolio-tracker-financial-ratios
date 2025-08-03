@@ -11,7 +11,7 @@ const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : 
 
 interface StripeCheckoutProps {
   planId: string;
-  onSuccess: () => void;
+  onSuccess: (paymentResult?: any) => void;
   onError: (error: string) => void;
 }
 
@@ -25,49 +25,26 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const debugInfo = `
-    Stripe loaded: ${!!stripe}
-    Elements loaded: ${!!elements}
-    Customer name: ${customerName}
-    Card element found: ${!!elements?.getElement(CardElement)}
-    `;
-    
-    alert(`Debug Info: ${debugInfo}`);
-    
     if (!stripe || !elements) {
-      const error = 'Stripe has not loaded yet. Please try again.';
-      alert(`ERROR: ${error}`);
-      onError(error);
+      onError('Stripe has not loaded yet. Please try again.');
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
     
     if (!cardElement) {
-      const error = 'Card element not found. Please refresh and try again.';
-      alert(`ERROR: ${error}`);
-      onError(error);
+      onError('Card element not found. Please refresh and try again.');
       return;
     }
 
     if (!customerName.trim()) {
-      const error = 'Please enter your name.';
-      alert(`ERROR: ${error}`);
-      onError(error);
+      onError('Please enter your name.');
       return;
     }
 
-    // Check if card element is complete before submitting
-    const cardState = cardElement._complete;
-    alert(`Card state: complete=${cardState}, empty=${cardElement._empty}`);
-    
-    alert('About to call stripe.createPaymentMethod...');
     setLoading(true);
 
     try {
-      console.log('Creating payment method with Stripe Elements...');
-      console.log('Customer name:', customerName.trim());
-      console.log('Card element:', cardElement);
       
       // Create payment method using Stripe Elements (secure, PCI-compliant)
       const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
@@ -80,7 +57,6 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
       if (paymentMethodError) {
         console.error('Stripe payment method error:', paymentMethodError);
-        alert(`Stripe Error: ${paymentMethodError.message}\nType: ${paymentMethodError.type}\nCode: ${paymentMethodError.code}`);
         throw new Error(paymentMethodError.message || 'Failed to create payment method');
       }
 
@@ -89,7 +65,6 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
         throw new Error('Failed to create payment method');
       }
 
-      console.log('Payment method created successfully:', paymentMethod.id);
       
       // Send only the secure payment method ID to our server
       const response = await fetch('/.netlify/functions/create-subscription', {
@@ -106,7 +81,6 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
       if (!response.ok) {
         const error = await response.json();
-        alert(`Server Error: ${error.error}\nDetails: ${error.details}\nType: ${error.type}`);
         throw new Error(error.error || 'Payment failed');
       }
 
@@ -121,8 +95,7 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
         }
       }
       
-      console.log('Subscription created successfully');
-      onSuccess();
+      onSuccess(result);
 
     } catch (error) {
       console.error('Payment failed:', error);
@@ -224,7 +197,6 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
           type="submit"
           disabled={loading || !stripe || !elements}
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-          onClick={() => console.log('BUTTON CLICKED - Form submission starting...')}
         >
           {loading ? (
             <div className="flex items-center justify-center space-x-2">
@@ -261,11 +233,7 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
 // Main wrapper component with Stripe Elements provider
 export const StripeCheckout: React.FC<StripeCheckoutProps> = (props) => {
-  console.log('Stripe publishable key configured:', !!stripePublishableKey);
-  console.log('Stripe promise:', !!stripePromise);
-  
   if (!stripePromise) {
-    console.error('Stripe publishable key missing:', stripePublishableKey);
     return (
       <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 flex items-center space-x-3">
         <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />

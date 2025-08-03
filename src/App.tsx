@@ -73,7 +73,7 @@ const AppContent: React.FC = () => {
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
-  const { canAddHolding, getHoldingsLimitMessage, currentPlan } = useSubscription();
+  const { canAddHolding, getHoldingsLimitMessage, currentPlan, handleSuccessfulPayment } = useSubscription();
   
   // State hooks
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -555,7 +555,9 @@ const AppContent: React.FC = () => {
               <Suspense fallback={<LoadingScreen message="Loading checkout..." />}>
                 <StripeCheckout
                   planId={selectedPlan}
-                  onSuccess={() => {
+                  onSuccess={(paymentResult) => {
+                    // Update subscription status
+                    handleSuccessfulPayment(paymentResult);
                     setShowCheckout(false);
                     setSelectedPlan(null);
                     // Handle successful subscription

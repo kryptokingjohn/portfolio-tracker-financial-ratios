@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { CreditCard, Shield, CheckCircle, AlertTriangle } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Shield, CheckCircle, AlertTriangle } from 'lucide-react';
+
+// Get Stripe publishable key from environment
+const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
+// Initialize Stripe
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 interface StripeCheckoutProps {
   planId: string;
@@ -7,80 +15,57 @@ interface StripeCheckoutProps {
   onError: (error: string) => void;
 }
 
-export const StripeCheckout: React.FC<StripeCheckoutProps> = ({ 
-  planId, 
-  onSuccess, 
-  onError 
-}) => {
+// Secure checkout form component using Stripe Elements
+const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onError }) => {
+  const stripe = useStripe();
+  const elements = useElements();
   const [loading, setLoading] = useState(false);
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    expiry: '',
-    cvc: '',
-    name: ''
-  });
-
-  // Get Stripe publishable key from environment
-  const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-
-  if (!stripePublishableKey) {
-    return (
-      <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 flex items-center space-x-3">
-        <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />
-        <div>
-          <p className="text-red-300 font-medium">Configuration Error</p>
-          <p className="text-red-400 text-sm">
-            Stripe publishable key not configured. Please add VITE_STRIPE_PUBLISHABLE_KEY to your environment variables.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const [customerName, setCustomerName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!stripe || !elements) {
+      onError('Stripe has not loaded yet. Please try again.');
+      return;
+    }
+
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      onError('Card element not found. Please refresh and try again.');
+      return;
+    }
+
+    if (!customerName.trim()) {
+      onError('Please enter your name.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Validate card details
-      if (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvc || !cardDetails.name) {
-        throw new Error('Please fill in all card details');
+      console.log('Creating payment method with Stripe Elements...');
+      
+      // Create payment method using Stripe Elements (secure, PCI-compliant)
+      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+        billing_details: {
+          name: customerName.trim()
+        }
+      });
+
+      if (paymentMethodError) {
+        throw new Error(paymentMethodError.message || 'Failed to create payment method');
       }
 
-      // Basic card number validation
-      const cleanCardNumber = cardDetails.number.replace(/\s/g, '');
-      if (cleanCardNumber.length < 13 || cleanCardNumber.length > 19) {
-        throw new Error('Please enter a valid card number');
+      if (!paymentMethod) {
+        throw new Error('Failed to create payment method');
       }
 
-      // Basic expiry validation
-      const [month, year] = cardDetails.expiry.split('/');
-      if (!month || !year || month.length !== 2 || year.length !== 2) {
-        throw new Error('Please enter a valid expiry date (MM/YY)');
-      }
+      console.log('Payment method created successfully:', paymentMethod.id);
       
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear() % 100;
-      const currentMonth = currentDate.getMonth() + 1;
-      const cardYear = parseInt(year);
-      const cardMonth = parseInt(month);
-      
-      if (cardYear < currentYear || (cardYear === currentYear && cardMonth < currentMonth)) {
-        throw new Error('Card has expired');
-      }
-      
-      if (cardMonth < 1 || cardMonth > 12) {
-        throw new Error('Please enter a valid month (01-12)');
-      }
-
-      // CVC validation
-      if (cardDetails.cvc.length < 3 || cardDetails.cvc.length > 4) {
-        throw new Error('Please enter a valid CVC');
-      }
-
-      console.log('Processing payment with Stripe...');
-      
-      // Call Netlify Function to create subscription
+      // Send only the secure payment method ID to our server
       const response = await fetch('/.netlify/functions/create-subscription', {
         method: 'POST',
         headers: {
@@ -88,17 +73,8 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         },
         body: JSON.stringify({
           planId,
-          paymentMethod: {
-            card: {
-              number: cleanCardNumber,
-              exp_month: parseInt(month),
-              exp_year: parseInt(`20${year}`),
-              cvc: cardDetails.cvc
-            },
-            billing_details: {
-              name: cardDetails.name
-            }
-          }
+          paymentMethodId: paymentMethod.id,
+          customerName: customerName.trim()
         })
       });
 
@@ -109,8 +85,17 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
 
       const result = await response.json();
       
-      // Success - call the success handler with payment data
-      onSuccess(result);
+      // Handle 3D Secure or other required actions
+      if (result.requiresAction && result.paymentIntentClientSecret) {
+        const { error: confirmError } = await stripe.confirmCardPayment(result.paymentIntentClientSecret);
+        
+        if (confirmError) {
+          throw new Error(confirmError.message || 'Payment confirmation failed');
+        }
+      }
+      
+      console.log('Subscription created successfully');
+      onSuccess();
 
     } catch (error) {
       console.error('Payment failed:', error);
@@ -118,29 +103,6 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
-
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (v.length >= 2) {
-      return v.substring(0, 2) + '/' + v.substring(2, 4);
-    }
-    return v;
   };
 
   return (
@@ -151,7 +113,7 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         <div>
           <p className="text-blue-300 font-medium">Secure Payment</p>
           <p className="text-blue-400 text-sm">
-            Your payment information is encrypted and processed securely by Stripe.
+            Your payment information is encrypted and processed securely by Stripe. Card details never touch our servers.
           </p>
         </div>
       </div>
@@ -179,8 +141,8 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
           </label>
           <input
             type="text"
-            value={cardDetails.name}
-            onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value }))}
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
             className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="John Doe"
             required
@@ -189,49 +151,25 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-200 mb-2">
-            Card Number
+            Card Information
           </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={cardDetails.number}
-              onChange={(e) => setCardDetails(prev => ({ ...prev, number: formatCardNumber(e.target.value) }))}
-              className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10"
-              placeholder="1234 5678 9012 3456"
-              maxLength={19}
-              required
-            />
-            <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">
-              Expiry Date
-            </label>
-            <input
-              type="text"
-              value={cardDetails.expiry}
-              onChange={(e) => setCardDetails(prev => ({ ...prev, expiry: formatExpiry(e.target.value) }))}
-              className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="MM/YY"
-              maxLength={5}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">
-              CVC
-            </label>
-            <input
-              type="text"
-              value={cardDetails.cvc}
-              onChange={(e) => setCardDetails(prev => ({ ...prev, cvc: e.target.value.replace(/\D/g, '') }))}
-              className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="123"
-              maxLength={4}
-              required
+          <div className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+            <CardElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#ffffff',
+                    '::placeholder': {
+                      color: '#9ca3af',
+                    },
+                  },
+                  invalid: {
+                    color: '#ef4444',
+                  },
+                },
+                hidePostalCode: true,
+              }}
             />
           </div>
         </div>
@@ -239,7 +177,7 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !stripe || !elements}
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
         >
           {loading ? (
@@ -272,6 +210,29 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
         You can cancel anytime from your account settings.
       </p>
     </div>
+  );
+};
+
+// Main wrapper component with Stripe Elements provider
+export const StripeCheckout: React.FC<StripeCheckoutProps> = (props) => {
+  if (!stripePromise) {
+    return (
+      <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 flex items-center space-x-3">
+        <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />
+        <div>
+          <p className="text-red-300 font-medium">Configuration Error</p>
+          <p className="text-red-400 text-sm">
+            Stripe publishable key not configured. Please add VITE_STRIPE_PUBLISHABLE_KEY to your environment variables.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm {...props} />
+    </Elements>
   );
 };
 

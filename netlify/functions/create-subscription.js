@@ -26,32 +26,35 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { planId, paymentMethod } = JSON.parse(event.body);
+    const { planId, paymentMethodId, customerName } = JSON.parse(event.body);
+
+    // Validate required fields
+    if (!paymentMethodId || !customerName) {
+      throw new Error('Missing required fields: paymentMethodId and customerName');
+    }
 
     // Validate required environment variables
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error('Stripe secret key not configured');
     }
 
-    // Create a payment method
-    const stripePaymentMethod = await stripe.paymentMethods.create({
-      type: 'card',
-      card: {
-        number: paymentMethod.card.number,
-        exp_month: paymentMethod.card.exp_month,
-        exp_year: paymentMethod.card.exp_year,
-        cvc: paymentMethod.card.cvc,
-      },
-      billing_details: paymentMethod.billing_details,
-    });
+    console.log('Creating subscription for customer:', customerName);
+    console.log('Using payment method ID:', paymentMethodId);
 
     // Create a customer
     const customer = await stripe.customers.create({
-      name: paymentMethod.billing_details.name,
-      payment_method: stripePaymentMethod.id,
+      name: customerName,
+      payment_method: paymentMethodId,
       invoice_settings: {
-        default_payment_method: stripePaymentMethod.id,
+        default_payment_method: paymentMethodId,
       },
+    });
+
+    console.log('Customer created:', customer.id);
+
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customer.id,
     });
 
     // Create the subscription
@@ -72,9 +75,28 @@ exports.handler = async (event, context) => {
           },
         },
       ],
-      default_payment_method: stripePaymentMethod.id,
+      default_payment_method: paymentMethodId,
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
     });
+
+    console.log('Subscription created:', subscription.id);
+
+    const paymentIntent = subscription.latest_invoice.payment_intent;
+    
+    // Check if payment requires additional action (3D Secure, etc.)
+    if (paymentIntent.status === 'requires_action') {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          requiresAction: true,
+          paymentIntentClientSecret: paymentIntent.client_secret,
+          subscriptionId: subscription.id,
+        }),
+      };
+    }
 
     return {
       statusCode: 200,
@@ -83,7 +105,7 @@ exports.handler = async (event, context) => {
         success: true,
         subscriptionId: subscription.id,
         customerId: customer.id,
-        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+        status: subscription.status,
       }),
     };
   } catch (error) {

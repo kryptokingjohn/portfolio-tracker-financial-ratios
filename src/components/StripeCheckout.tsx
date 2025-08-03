@@ -45,6 +45,8 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
     try {
       console.log('Creating payment method with Stripe Elements...');
+      console.log('Customer name:', customerName.trim());
+      console.log('Card element:', cardElement);
       
       // Create payment method using Stripe Elements (secure, PCI-compliant)
       const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
@@ -56,10 +58,12 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
       });
 
       if (paymentMethodError) {
+        console.error('Stripe payment method error:', paymentMethodError);
         throw new Error(paymentMethodError.message || 'Failed to create payment method');
       }
 
       if (!paymentMethod) {
+        console.error('No payment method returned from Stripe');
         throw new Error('Failed to create payment method');
       }
 
@@ -160,6 +164,8 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
                   base: {
                     fontSize: '16px',
                     color: '#ffffff',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
                     '::placeholder': {
                       color: '#9ca3af',
                     },
@@ -167,8 +173,12 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
                   invalid: {
                     color: '#ef4444',
                   },
+                  complete: {
+                    color: '#10b981',
+                  },
                 },
                 hidePostalCode: true,
+                disabled: false,
               }}
             />
           </div>
@@ -215,7 +225,11 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
 // Main wrapper component with Stripe Elements provider
 export const StripeCheckout: React.FC<StripeCheckoutProps> = (props) => {
+  console.log('Stripe publishable key configured:', !!stripePublishableKey);
+  console.log('Stripe promise:', !!stripePromise);
+  
   if (!stripePromise) {
+    console.error('Stripe publishable key missing:', stripePublishableKey);
     return (
       <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-4 flex items-center space-x-3">
         <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0" />

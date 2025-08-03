@@ -106,7 +106,8 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Payment failed');
+        alert(`Server Error: ${error.error}\nDetails: ${error.details}\nType: ${error.type}`);
+        throw new Error(error.error || 'Payment failed');
       }
 
       const result = await response.json();

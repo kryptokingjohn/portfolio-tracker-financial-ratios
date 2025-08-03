@@ -110,12 +110,15 @@ exports.handler = async (event, context) => {
     };
   } catch (error) {
     console.error('Stripe error:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     
     return {
       statusCode: 400,
       headers,
       body: JSON.stringify({
         error: error.message || 'Payment processing failed',
+        details: error.code || 'Unknown error',
+        type: error.type || 'server_error'
       }),
     };
   }

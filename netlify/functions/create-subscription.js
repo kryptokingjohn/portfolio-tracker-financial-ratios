@@ -57,22 +57,28 @@ exports.handler = async (event, context) => {
       customer: customer.id,
     });
 
+    // Create a product first
+    const product = await stripe.products.create({
+      name: 'Portfolio Tracker Premium',
+      description: 'Unlimited holdings, advanced features, and priority support',
+    });
+
+    // Create a price for the product
+    const price = await stripe.prices.create({
+      product: product.id,
+      unit_amount: 999, // $9.99 in cents
+      currency: 'usd',
+      recurring: {
+        interval: 'month',
+      },
+    });
+
     // Create the subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Portfolio Tracker Premium',
-              description: 'Unlimited holdings, advanced features, and priority support',
-            },
-            unit_amount: 999, // $9.99 in cents
-            recurring: {
-              interval: 'month',
-            },
-          },
+          price: price.id,
         },
       ],
       default_payment_method: paymentMethodId,

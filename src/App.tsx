@@ -241,10 +241,11 @@ const AppContent: React.FC = () => {
               )}
               <button
                 onClick={refreshData}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-200 bg-blue-600/30 rounded-lg hover:bg-blue-600/40 transition-all backdrop-blur-sm border border-blue-500/30"
+                disabled={portfolioLoading}
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-200 bg-blue-600/30 rounded-lg hover:bg-blue-600/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all backdrop-blur-sm border border-blue-500/30"
               >
-                <RefreshCw className="h-4 w-4" />
-                <span>Refresh Data</span>
+                <RefreshCw className={`h-4 w-4 ${portfolioLoading ? 'animate-spin' : ''}`} />
+                <span>{portfolioLoading ? 'Refreshing...' : 'Refresh Data'}</span>
               </button>
               <button
                 onClick={() => setIsExportModalOpen(true)}

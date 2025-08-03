@@ -204,47 +204,11 @@ export const useSubscription = () => {
   // Open Stripe Customer Portal
   const openBillingPortal = async () => {
     try {
-      console.log('Opening billing portal...');
-      console.log('Subscription:', subscription);
-      console.log('Customer ID:', subscription?.stripeCustomerId);
-
-      if (!subscription?.stripeCustomerId) {
-        alert('No customer ID found. Please contact support.');
-        throw new Error('No customer ID found. Please contact support.');
-      }
-
-      console.log('Calling create-customer-portal function...');
-      const response = await fetch('/.netlify/functions/create-customer-portal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerId: subscription.stripeCustomerId,
-        }),
-      });
-
-      console.log('Portal response:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('Portal error:', error);
-        alert(`Portal Error: ${error.error || 'Failed to open billing portal'}`);
-        throw new Error(error.error || 'Failed to open billing portal');
-      }
-
-      const result = await response.json();
-      console.log('Portal result:', result);
-      
-      if (result.url) {
-        console.log('Opening portal URL:', result.url);
-        window.open(result.url, '_blank');
-      } else {
-        alert('No portal URL received from Stripe');
-      }
+      // Use direct Stripe Customer Portal link
+      const portalUrl = 'https://billing.stripe.com/p/login/aFafZj5F20DhcOYdHZ0VO00';
+      window.open(portalUrl, '_blank');
     } catch (err) {
       console.error('Error opening billing portal:', err);
-      alert(`Error: ${err instanceof Error ? err.message : 'Failed to open billing portal'}`);
       setError(err instanceof Error ? err.message : 'Failed to open billing portal');
     }
   };

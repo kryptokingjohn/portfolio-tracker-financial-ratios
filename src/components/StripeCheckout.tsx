@@ -26,6 +26,7 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
     e.preventDefault();
     
     console.log('=== PAYMENT FORM SUBMISSION ===');
+    alert('Form submitted! Check console for details.');
     console.log('Stripe loaded:', !!stripe);
     console.log('Elements loaded:', !!elements);
     console.log('Customer name:', customerName);
@@ -214,6 +215,7 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
           type="submit"
           disabled={loading || !stripe || !elements}
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+          onClick={() => console.log('BUTTON CLICKED - Form submission starting...')}
         >
           {loading ? (
             <div className="flex items-center justify-center space-x-2">

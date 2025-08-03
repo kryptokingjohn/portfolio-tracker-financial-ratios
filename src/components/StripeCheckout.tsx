@@ -25,36 +25,39 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('=== PAYMENT FORM SUBMISSION ===');
-    alert('Form submitted! Check console for details.');
-    console.log('Stripe loaded:', !!stripe);
-    console.log('Elements loaded:', !!elements);
-    console.log('Customer name:', customerName);
+    const debugInfo = `
+    Stripe loaded: ${!!stripe}
+    Elements loaded: ${!!elements}
+    Customer name: ${customerName}
+    Card element found: ${!!elements?.getElement(CardElement)}
+    `;
+    
+    alert(`Debug Info: ${debugInfo}`);
     
     if (!stripe || !elements) {
       const error = 'Stripe has not loaded yet. Please try again.';
-      console.error(error);
+      alert(`ERROR: ${error}`);
       onError(error);
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
-    console.log('Card element found:', !!cardElement);
     
     if (!cardElement) {
       const error = 'Card element not found. Please refresh and try again.';
-      console.error(error);
+      alert(`ERROR: ${error}`);
       onError(error);
       return;
     }
 
     if (!customerName.trim()) {
       const error = 'Please enter your name.';
-      console.error(error);
+      alert(`ERROR: ${error}`);
       onError(error);
       return;
     }
 
+    alert('About to call stripe.createPaymentMethod...');
     setLoading(true);
 
     try {

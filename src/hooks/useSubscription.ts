@@ -37,7 +37,6 @@ export const useSubscription = () => {
         try {
           const parsedSubscription = JSON.parse(storedSubscription);
           setSubscription(parsedSubscription);
-          console.log('Loaded subscription from localStorage:', parsedSubscription.planType);
           return;
         } catch (error) {
           console.warn('Failed to parse stored subscription, using default');
@@ -124,7 +123,6 @@ export const useSubscription = () => {
   const upgradeToPremium = async (): Promise<boolean> => {
     try {
       setError(null);
-      console.log('Initiating premium upgrade - opening Stripe checkout...');
       
       // Return true to indicate that Stripe checkout should be opened
       return true;
@@ -178,7 +176,6 @@ export const useSubscription = () => {
   // Handle successful payment from Stripe
   const handleSuccessfulPayment = async (paymentData: any) => {
     try {
-      console.log('Processing successful payment:', paymentData);
       
       if (subscription && user) {
         const updatedSubscription: UserSubscription = {
@@ -194,7 +191,6 @@ export const useSubscription = () => {
         localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
         setSubscription(updatedSubscription);
         
-        console.log('User upgraded to Premium plan');
         
         // TODO: Save to database
         // await saveSubscriptionToDatabase(updatedSubscription);

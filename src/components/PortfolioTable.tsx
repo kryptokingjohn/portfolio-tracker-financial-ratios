@@ -21,7 +21,15 @@ interface PortfolioTableProps {
 }
 
 export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filter = 'all' }) => {
-  const { hasQuickViewAccess, hasAdvancedAccess, isPremium } = useSubscription();
+  const { hasQuickViewAccess, hasAdvancedAccess, isPremium, currentPlan } = useSubscription();
+  
+  // Debug premium status
+  const isPremiumUser = isPremiumUser;
+  console.log('🔍 PortfolioTable Premium Status:', {
+    isPremiumUser,
+    currentPlan: currentPlan?.type,
+    filter
+  });
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
@@ -185,7 +193,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
               try {
                 const etfInfo = await getCachedETFInfo(holding.ticker);
                 if (etfInfo) {
-                  newEtfData.set(holding.ticker, processETFMetrics(etfInfo, isPremium()));
+                  newEtfData.set(holding.ticker, processETFMetrics(etfInfo, isPremiumUser));
                 }
               } catch (error) {
                 console.warn(`Failed to load ETF data for ${holding.ticker}:`, error);
@@ -197,7 +205,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
               try {
                 const bondInfo = await getCachedBondInfo(holding.ticker);
                 if (bondInfo) {
-                  newBondData.set(holding.ticker, processBondMetrics(bondInfo, isPremium()));
+                  newBondData.set(holding.ticker, processBondMetrics(bondInfo, isPremiumUser));
                 }
               } catch (error) {
                 console.warn(`Failed to load bond data for ${holding.ticker}:`, error);
@@ -223,7 +231,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
     } else {
       setAssetDataLoading(false);
     }
-  }, [holdings, filter]); // Removed isPremium to prevent excessive re-renders
+  }, [holdings, filter, isPremiumUser]); // Re-added isPremium to reload data when premium status changes
 
   // Helper to show consolidated ticker information
   const getTickerAccountInfo = useCallback((ticker: string, holdings: Holding[]) => {
@@ -342,17 +350,17 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
                     Expense Ratio
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Annual fee charged by ETF</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">Annual fee charged by ETF</div>}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
                     AUM
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Assets under management</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">Assets under management</div>}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
                     Holdings Count
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Number of holdings in ETF</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">Number of holdings in ETF</div>}
                   </th>
-                  {isPremium() && (
+                  {isPremiumUser && (
                     <>
                       <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
                         Top Sectors
@@ -371,21 +379,21 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
                     Duration
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Price sensitivity to rates</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">Price sensitivity to rates</div>}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
                     Yield
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Yield to maturity</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">Yield to maturity</div>}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
                     Credit Rating
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Default risk assessment</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">Default risk assessment</div>}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
                     Maturity
-                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">When principal is repaid</div>}
+                    {isPremiumUser && <div className="text-xs text-gray-400 normal-case font-normal">When principal is repaid</div>}
                   </th>
-                  {isPremium() && (
+                  {isPremiumUser && (
                     <>
                       <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
                         Convexity
@@ -560,7 +568,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
                           {etfMetrics?.basic?.holdingsCount ? etfMetrics.basic.holdingsCount.toLocaleString() : 'N/A'}
                         </td>
-                        {isPremium() && (
+                        {isPremiumUser && (
                           <>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
                               <div className="max-w-32 truncate">
@@ -592,7 +600,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
                           {bondMetrics?.basic?.maturityDate || 'N/A'}
                         </td>
-                        {isPremium() && (
+                        {isPremiumUser && (
                           <>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
                               {bondMetrics?.advanced?.convexity ? bondMetrics.advanced.convexity.toFixed(1) : 'N/A'}

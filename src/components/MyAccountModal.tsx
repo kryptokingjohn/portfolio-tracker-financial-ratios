@@ -295,7 +295,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                       {/* Temporary: Restore Premium Status */}
                       <button
                         onClick={() => {
-                          console.log('🔧 Restore Premium button clicked');
+                          console.log('🔧 Advanced button clicked');
                           const success = activatePremium();
                           if (success) {
                             setMessage({ type: 'success', text: 'Premium status restored! Refreshing...' });
@@ -310,7 +310,7 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                         }}
                         className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                       >
-                        🔧 Restore Premium (Debug)
+                        Advanced
                       </button>
                     </div>
                   )}

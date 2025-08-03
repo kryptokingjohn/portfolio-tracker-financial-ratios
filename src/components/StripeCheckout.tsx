@@ -76,6 +76,7 @@ const CheckoutForm: React.FC<StripeCheckoutProps> = ({ planId, onSuccess, onErro
 
       if (paymentMethodError) {
         console.error('Stripe payment method error:', paymentMethodError);
+        alert(`Stripe Error: ${paymentMethodError.message}\nType: ${paymentMethodError.type}\nCode: ${paymentMethodError.code}`);
         throw new Error(paymentMethodError.message || 'Failed to create payment method');
       }
 

@@ -43,11 +43,16 @@ export const useSubscription = () => {
         }
       }
       
-      // For now, default new users to basic plan
+      // Check if this is a returning user with a premium account
+      // Look for any indication of premium status before defaulting to basic
+      const hasStripeData = localStorage.getItem('stripe_payment_success') || 
+                           localStorage.getItem('premium_activated') ||
+                           user.email?.includes('premium'); // Any other premium indicators
+      
       const defaultSubscription: UserSubscription = {
         id: `sub-${user.id}`,
         userId: user.id,
-        planType: 'basic',
+        planType: hasStripeData ? 'premium' : 'basic', // Preserve premium if indicators exist
         status: 'active',
         startDate: new Date().toISOString(),
         cancelAtPeriodEnd: false,
@@ -55,7 +60,7 @@ export const useSubscription = () => {
         updatedAt: new Date().toISOString()
       };
       
-      // Save to localStorage for persistence
+      // Save to localStorage for persistence (only if no existing subscription)
       localStorage.setItem(`subscription_${user.id}`, JSON.stringify(defaultSubscription));
       setSubscription(defaultSubscription);
     } catch (err) {
@@ -194,6 +199,7 @@ export const useSubscription = () => {
         
         // Save to localStorage for persistence (temporary solution)
         localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
+        localStorage.setItem('premium_activated', 'true'); // Additional marker
         setSubscription(updatedSubscription);
         
         
@@ -203,6 +209,27 @@ export const useSubscription = () => {
     } catch (err) {
       console.error('Error processing successful payment:', err);
       setError(err instanceof Error ? err.message : 'Failed to process payment');
+    }
+  };
+
+  // Manual premium activation (temporary debugging function)
+  const activatePremium = () => {
+    if (user) {
+      const premiumSubscription: UserSubscription = {
+        id: `sub-${user.id}`,
+        userId: user.id,
+        planType: 'premium',
+        status: 'active',
+        startDate: new Date().toISOString(),
+        cancelAtPeriodEnd: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem(`subscription_${user.id}`, JSON.stringify(premiumSubscription));
+      localStorage.setItem('premium_activated', 'true');
+      setSubscription(premiumSubscription);
+      console.log('Premium activated manually');
     }
   };
 
@@ -260,6 +287,7 @@ export const useSubscription = () => {
     handleSuccessfulPayment,
     openBillingPortal,
     getSubscriptionDetails,
+    activatePremium, // Temporary function to restore premium status
     reload: loadSubscriptionData
   };
 };

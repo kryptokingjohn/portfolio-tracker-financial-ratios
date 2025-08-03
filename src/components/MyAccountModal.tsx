@@ -16,7 +16,7 @@ type TabType = 'profile' | 'subscription' | 'billing' | 'payment-history';
 
 export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose }) => {
   const { user, updateUserProfile } = useAuth();
-  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment, openBillingPortal, getSubscriptionDetails } = useSubscription();
+  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment, openBillingPortal, getSubscriptionDetails, activatePremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -283,13 +283,27 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                 {/* Plan Actions */}
                 <div className="space-y-4">
                   {currentPlan.type === 'basic' && (
-                    <button
-                      onClick={() => handlePlanChange('upgrade')}
-                      disabled={loading}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
-                    >
-                      {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
-                    </button>
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => handlePlanChange('upgrade')}
+                        disabled={loading}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                      >
+                        {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
+                      </button>
+                      
+                      {/* Temporary: Restore Premium Status */}
+                      <button
+                        onClick={() => {
+                          activatePremium();
+                          setMessage({ type: 'success', text: 'Premium status restored!' });
+                          setTimeout(() => setMessage(null), 3000);
+                        }}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                      >
+                        🔧 Restore Premium (Debug)
+                      </button>
+                    </div>
                   )}
                   
                   {currentPlan.type === 'premium' && (

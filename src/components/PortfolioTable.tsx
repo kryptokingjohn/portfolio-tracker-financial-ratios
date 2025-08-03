@@ -552,7 +552,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     return (
                       <>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
-                          {etfMetrics?.basic?.expenseRatio ? `${(etfMetrics.basic.expenseRatio * 100).toFixed(2)}%` : 'N/A'}
+                          {etfMetrics?.basic?.expenseRatio ? `${etfMetrics.basic.expenseRatio.toFixed(2)}%` : 'N/A'}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
                           {etfMetrics?.basic?.aum ? formatAUM(etfMetrics.basic.aum) : 'N/A'}

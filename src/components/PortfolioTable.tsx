@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
 import Edit3 from 'lucide-react/dist/esm/icons/edit-3';
@@ -12,6 +12,8 @@ import { AdvancedModal } from './AdvancedModal';
 import { QuickViewModal } from './QuickViewModal';
 import { shouldShowETFMetrics, shouldShowBondMetrics, detectAssetType } from '../utils/assetTypeDetector';
 import { useSubscription } from '../hooks/useSubscription';
+import { getCachedETFInfo, processETFMetrics, formatAUM } from '../services/etfDataService';
+import { getCachedBondInfo, processBondMetrics, formatDuration, formatYield, getBondMetricExplanation } from '../services/bondDataService';
 
 interface PortfolioTableProps {
   holdings: Holding[];
@@ -19,13 +21,15 @@ interface PortfolioTableProps {
 }
 
 export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filter = 'all' }) => {
-  const { hasQuickViewAccess, hasAdvancedAccess } = useSubscription();
+  const { hasQuickViewAccess, hasAdvancedAccess, isPremium } = useSubscription();
   const [sortField, setSortField] = useState<keyof Holding>('currentPrice');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [quickViewModalHolding, setQuickViewModalHolding] = useState<Holding | null>(null);
   const [advancedModalHolding, setAdvancedModalHolding] = useState<Holding | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
+  const [etfData, setEtfData] = useState<Map<string, any>>(new Map());
+  const [bondData, setBondData] = useState<Map<string, any>>(new Map());
 
   // Memoized event handlers to prevent unnecessary re-renders
   const handleSort = useCallback((field: keyof Holding) => {
@@ -96,8 +100,10 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
     return Array.from(new Set(holdings.map(h => h.sector))).sort();
   }, [holdings]);
 
-  // Show stock columns for all tabs - simplified approach
-  const showStockColumns = true;
+  // Determine which columns to show based on filter
+  const showETFColumns = filter === 'etfs' || filter === 'all';
+  const showBondColumns = filter === 'bonds' || filter === 'all';
+  const showStockColumns = filter === 'stocks' || filter === 'all';
 
   // Memoized formatting functions to prevent recreation on each render
   const formatNumber = useCallback((num: number, decimals: number = 2) => {
@@ -146,6 +152,47 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
 
     return calculationsMap;
   }, [holdings]);
+
+  // Load ETF and Bond data for relevant holdings
+  useEffect(() => {
+    const loadAssetData = async () => {
+      const newEtfData = new Map();
+      const newBondData = new Map();
+      
+      for (const holding of holdings) {
+        const assetType = holding.type || detectAssetType(holding.ticker, holding.company);
+        
+        if (assetType === 'etfs' && (filter === 'etfs' || filter === 'all')) {
+          try {
+            const etfInfo = await getCachedETFInfo(holding.ticker);
+            if (etfInfo) {
+              newEtfData.set(holding.ticker, processETFMetrics(etfInfo, isPremium()));
+            }
+          } catch (error) {
+            console.warn(`Failed to load ETF data for ${holding.ticker}:`, error);
+          }
+        }
+        
+        if (assetType === 'bonds' && (filter === 'bonds' || filter === 'all')) {
+          try {
+            const bondInfo = await getCachedBondInfo(holding.ticker);
+            if (bondInfo) {
+              newBondData.set(holding.ticker, processBondMetrics(bondInfo, isPremium()));
+            }
+          } catch (error) {
+            console.warn(`Failed to load bond data for ${holding.ticker}:`, error);
+          }
+        }
+      }
+      
+      setEtfData(newEtfData);
+      setBondData(newBondData);
+    };
+    
+    if (holdings.length > 0) {
+      loadAssetData();
+    }
+  }, [holdings, filter, isPremium]);
 
   // Helper to show consolidated ticker information
   const getTickerAccountInfo = useCallback((ticker: string, holdings: Holding[]) => {
@@ -253,7 +300,73 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                   onClick={() => handleSort('yearLow')}>
                 52W Low
               </th>
-              {/* Stock columns for all tabs - comprehensive financial ratios */}
+              
+              {/* Asset-specific columns based on filter */}
+              {showETFColumns && (
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
+                    Expense Ratio
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Annual fee charged by ETF</div>}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
+                    AUM
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Assets under management</div>}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
+                    Holdings Count
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Number of holdings in ETF</div>}
+                  </th>
+                  {isPremium() && (
+                    <>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
+                        Top Sectors
+                        <div className="text-xs text-gray-400 normal-case font-normal">Largest sector allocations</div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
+                        NAV
+                        <div className="text-xs text-gray-400 normal-case font-normal">Net Asset Value per share</div>
+                      </th>
+                    </>
+                  )}
+                </>
+              )}
+              
+              {showBondColumns && (
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
+                    Duration
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Price sensitivity to rates</div>}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
+                    Yield
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Yield to maturity</div>}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
+                    Credit Rating
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">Default risk assessment</div>}
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
+                    Maturity
+                    {isPremium() && <div className="text-xs text-gray-400 normal-case font-normal">When principal is repaid</div>}
+                  </th>
+                  {isPremium() && (
+                    <>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
+                        Convexity
+                        <div className="text-xs text-gray-400 normal-case font-normal">Duration change sensitivity</div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
+                        Credit Spread
+                        <div className="text-xs text-gray-400 normal-case font-normal">Risk premium over treasuries</div>
+                      </th>
+                    </>
+                  )}
+                </>
+              )}
+              
+              {/* Stock columns - show only when stocks filter is active */}
+              {showStockColumns && (
+                <>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('fcf10yr')}>
                 10-yr FCF ($B)
@@ -321,10 +434,13 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                   onClick={() => handleSort('revenueGrowth')}>
                 Revenue Growth %
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
-                  onClick={() => handleSort('dividendYield')}>
-                Dividend Yield %
-              </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
+                      onClick={() => handleSort('dividendYield')}>
+                    Dividend Yield %
+                  </th>
+                </>
+              )}
+              
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Description
               </th>
@@ -394,63 +510,127 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     {formatCurrency(holding.yearLow)}
                   </td>
                   
-                  {/* Stock columns for all holdings - comprehensive financial ratios */}
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.fcf10yr, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.evFcf, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatCurrency(holding.intrinsicValue)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {formatPercent(upsidePercent)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.pe, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.pb, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.peg, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.debtToEquity, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.currentRatio, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.quickRatio, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.roe)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.roa)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.grossMargin)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.netMargin)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.operatingMargin)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatNumber(holding.assetTurnover, 1)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {formatPercent(holding.revenueGrowth)}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
-                  </td>
+                  {/* Asset-specific columns */}
+                  {showETFColumns && (() => {
+                    const etfMetrics = etfData.get(holding.ticker);
+                    return (
+                      <>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                          {etfMetrics?.basic?.expenseRatio ? `${(etfMetrics.basic.expenseRatio * 100).toFixed(2)}%` : 'N/A'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                          {etfMetrics?.basic?.aum ? formatAUM(etfMetrics.basic.aum) : 'N/A'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                          {etfMetrics?.basic?.holdingsCount ? etfMetrics.basic.holdingsCount.toLocaleString() : 'N/A'}
+                        </td>
+                        {isPremium() && (
+                          <>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                              <div className="max-w-32 truncate">
+                                {etfMetrics?.advanced?.topSectors?.slice(0, 2).map(s => s.sector).join(', ') || 'N/A'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">
+                              {etfMetrics?.advanced?.nav ? formatCurrency(etfMetrics.advanced.nav) : 'N/A'}
+                            </td>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                  
+                  {showBondColumns && (() => {
+                    const bondMetrics = bondData.get(holding.ticker);
+                    return (
+                      <>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
+                          {bondMetrics?.basic?.duration ? formatDuration(bondMetrics.basic.duration) : 'N/A'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
+                          {bondMetrics?.basic?.yield ? formatYield(bondMetrics.basic.yield) : 'N/A'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
+                          {bondMetrics?.basic?.creditRating || 'N/A'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
+                          {bondMetrics?.basic?.maturityDate || 'N/A'}
+                        </td>
+                        {isPremium() && (
+                          <>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
+                              {bondMetrics?.advanced?.convexity ? bondMetrics.advanced.convexity.toFixed(1) : 'N/A'}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-orange-300">
+                              {bondMetrics?.advanced?.creditSpread ? `${bondMetrics.advanced.creditSpread.toFixed(1)}%` : 'N/A'}
+                            </td>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                  
+                  {/* Stock columns - only show when appropriate */}
+                  {showStockColumns && assetType === 'stocks' && (
+                    <>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.fcf10yr, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.evFcf, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatCurrency(holding.intrinsicValue)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(upsidePercent)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.pe, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.pb, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.peg, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.debtToEquity, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.currentRatio, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.quickRatio, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.roe)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.roa)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.grossMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.netMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.operatingMargin)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatNumber(holding.assetTurnover, 1)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {formatPercent(holding.revenueGrowth)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
+                        {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
+                      </td>
+                    </>
+                  )}
                   <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
                     <div className="truncate" title={holding.description || holding.narrative}>
                       {holding.description || holding.narrative}
@@ -463,7 +643,8 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     <button className="text-gray-400 hover:text-gray-300 p-2 rounded-lg hover:bg-gray-600/20 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
                       <ExternalLink className="h-4 w-4" />
                     </button>
-                    {hasQuickViewAccess() && (
+                    {/* QuickView and Advanced buttons - show for stocks only */}
+                    {hasQuickViewAccess() && assetType === 'stocks' && (
                       <button
                         onClick={(e) => openQuickView(e, holding)}
                         className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
@@ -472,8 +653,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                         <span>QuickView</span>
                       </button>
                     )}
-                    {/* Hide Advanced button for ETFs and bonds as their metrics don't apply, and check subscription access */}
-                    {hasAdvancedAccess() && !shouldShowETFMetrics(assetType) && !shouldShowBondMetrics(assetType) && (
+                    {hasAdvancedAccess() && assetType === 'stocks' && (
                       <button
                         onClick={(e) => openAdvanced(e, holding)}
                         className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
@@ -481,6 +661,18 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                         <BarChart3 className="h-3 w-3" />
                         <span>Advanced</span>
                       </button>
+                    )}
+                    
+                    {/* Asset-specific buttons for ETFs and Bonds */}
+                    {assetType === 'etfs' && etfData.get(holding.ticker) && (
+                      <div className="ml-2 text-xs text-green-400 px-2 py-1 bg-green-600/20 rounded-lg border border-green-500/30">
+                        ETF Data Available
+                      </div>
+                    )}
+                    {assetType === 'bonds' && bondData.get(holding.ticker) && (
+                      <div className="ml-2 text-xs text-orange-400 px-2 py-1 bg-orange-600/20 rounded-lg border border-orange-500/30">
+                        Bond Data Available
+                      </div>
                     )}
                   </td>
                 </tr>

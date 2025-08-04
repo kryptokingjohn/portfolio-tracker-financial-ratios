@@ -57,10 +57,10 @@ export async function fetchETFInfo(symbol: string): Promise<ETFInfo | null> {
     const etfData = Array.isArray(data) ? data[0] : data;
     
     return {
-      symbol: etfData.symbol || symbol,
+      symbol: etfData.symbol || symbol,  
       name: etfData.name || '',
       expenseRatio: parseFloat(etfData.expenseRatio) || 0,
-      aum: parseFloat(etfData.aum) || 0,
+      aum: parseFloat(etfData.assetsUnderManagement) || 0,
       dividendYield: etfData.dividendYield ? parseFloat(etfData.dividendYield) : undefined,
       holdingsCount: parseInt(etfData.holdingsCount) || 0,
       inceptionDate: etfData.inceptionDate || '',

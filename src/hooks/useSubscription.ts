@@ -312,10 +312,7 @@ export const useSubscription = () => {
     try {
       console.log('🔧 Activating premium in database for user:', user.id);
       
-      // Update subscription in database - try subscriptions table first
-      let updatedSubscription;
-      let error;
-      
+      // Update subscription in database
       const subscriptionUpdate = {
         user_id: user.id,
         plan_type: 'premium',

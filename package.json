@@ -21,7 +21,8 @@
     "populate:sp500-simple": "node scripts/populate-sp500-simple.js",
     "populate:companies": "node scripts/populate-companies-basic.js",
     "add-missing:sp500": "node scripts/add-missing-sp500.js",
-    "secure:database": "node scripts/re-enable-rls.js"
+    "secure:database": "node scripts/re-enable-rls.js",
+    "setup:subscriptions": "node scripts/setup-subscriptions-table.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",

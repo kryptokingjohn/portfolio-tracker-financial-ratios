@@ -30,12 +30,31 @@ export const useSubscription = () => {
 
       console.log('🔄 Loading subscription from database for user:', user.id);
 
-      // Load subscription from database
-      const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('user_subscriptions')
+      // Load subscription from database - try subscriptions table first
+      let subscriptionData;
+      let subscriptionError;
+      
+      // Try subscriptions table first (since our script found it exists)
+      const { data: subsData, error: subsError } = await supabase
+        .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
         .single();
+      
+      if (!subsError && subsData) {
+        subscriptionData = subsData;
+        subscriptionError = null;
+      } else {
+        // Fallback to user_subscriptions table
+        const { data: userSubsData, error: userSubsError } = await supabase
+          .from('user_subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        subscriptionData = userSubsData;
+        subscriptionError = userSubsError;
+      }
 
       if (subscriptionError && subscriptionError.code !== 'PGRST116') {
         // PGRST116 is "not found" - we'll handle that below
@@ -77,11 +96,31 @@ export const useSubscription = () => {
         updated_at: new Date().toISOString()
       };
 
-      const { data: createdSubscription, error: createError } = await supabase
-        .from('user_subscriptions')
+      // Try to insert into subscriptions table first, then fallback to user_subscriptions
+      let createdSubscription;
+      let createError;
+      
+      // Try subscriptions table first
+      const { data: subsCreate, error: subsCreateError } = await supabase
+        .from('subscriptions')
         .insert(newSubscription)
         .select()
         .single();
+      
+      if (!subsCreateError && subsCreate) {
+        createdSubscription = subsCreate;
+        createError = null;
+      } else {
+        // Fallback to user_subscriptions table
+        const { data: userSubsCreate, error: userSubsCreateError } = await supabase
+          .from('user_subscriptions')
+          .insert(newSubscription)
+          .select()
+          .single();
+        
+        createdSubscription = userSubsCreate;
+        createError = userSubsCreateError;
+      }
 
       if (createError) {
         console.error('Failed to create subscription:', createError);
@@ -239,26 +278,64 @@ export const useSubscription = () => {
   // Handle successful payment from Stripe
   const handleSuccessfulPayment = async (paymentData: any) => {
     try {
-      
-      if (subscription && user) {
-        const updatedSubscription: UserSubscription = {
-          ...subscription,
-          planType: 'premium',
-          status: 'active',
-          updatedAt: new Date().toISOString(),
-          stripeSubscriptionId: paymentData.subscriptionId,
-          stripeCustomerId: paymentData.customerId
-        };
-        
-        // Save to localStorage for persistence (temporary solution)
-        localStorage.setItem(`subscription_${user.id}`, JSON.stringify(updatedSubscription));
-        localStorage.setItem('premium_activated', 'true'); // Additional marker
-        setSubscription(updatedSubscription);
-        
-        
-        // TODO: Save to database
-        // await saveSubscriptionToDatabase(updatedSubscription);
+      if (!user) {
+        console.error('❌ No user found for payment processing');
+        return;
       }
+
+      console.log('💳 Processing successful payment for user:', user.id);
+      
+      // Update subscription in database with Stripe payment data
+      const subscriptionUpdate = {
+        user_id: user.id,
+        plan_type: 'premium',
+        status: 'active',
+        start_date: new Date().toISOString(),
+        cancel_at_period_end: false,
+        stripe_subscription_id: paymentData.subscriptionId,
+        stripe_customer_id: paymentData.customerId,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Try subscriptions table first
+      let updatedSubscription;
+      let error;
+      
+      const { data: subsUpdate, error: subsUpdateError } = await supabase
+        .from('subscriptions')
+        .upsert(subscriptionUpdate, {
+          onConflict: 'user_id'
+        })
+        .select()
+        .single();
+      
+      if (!subsUpdateError && subsUpdate) {
+        updatedSubscription = subsUpdate;
+        error = null;
+      } else {
+        // Fallback to user_subscriptions table
+        const { data: userSubsUpdate, error: userSubsUpdateError } = await supabase
+          .from('user_subscriptions')
+          .upsert(subscriptionUpdate, {
+            onConflict: 'user_id'
+          })
+          .select()
+          .single();
+        
+        updatedSubscription = userSubsUpdate;
+        error = userSubsUpdateError;
+      }
+
+      if (error) {
+        console.error('❌ Failed to save payment to database:', error);
+        throw error;
+      }
+
+      console.log('✅ Payment saved to database successfully');
+      
+      // Reload subscription data from database to ensure UI is in sync
+      await loadSubscriptionData();
+      
     } catch (err) {
       console.error('Error processing successful payment:', err);
       setError(err instanceof Error ? err.message : 'Failed to process payment');
@@ -275,21 +352,44 @@ export const useSubscription = () => {
     try {
       console.log('🔧 Activating premium in database for user:', user.id);
       
-      // Update subscription in database
-      const { data: updatedSubscription, error } = await supabase
-        .from('user_subscriptions')
-        .upsert({
-          user_id: user.id,
-          plan_type: 'premium',
-          status: 'active',
-          start_date: new Date().toISOString(),
-          cancel_at_period_end: false,
-          updated_at: new Date().toISOString()
-        }, {
+      // Update subscription in database - try subscriptions table first
+      let updatedSubscription;
+      let error;
+      
+      const subscriptionUpdate = {
+        user_id: user.id,
+        plan_type: 'premium',
+        status: 'active',
+        start_date: new Date().toISOString(),
+        cancel_at_period_end: false,
+        updated_at: new Date().toISOString()
+      };
+      
+      // Try subscriptions table first
+      const { data: subsUpdate, error: subsUpdateError } = await supabase
+        .from('subscriptions')
+        .upsert(subscriptionUpdate, {
           onConflict: 'user_id'
         })
         .select()
         .single();
+      
+      if (!subsUpdateError && subsUpdate) {
+        updatedSubscription = subsUpdate;
+        error = null;
+      } else {
+        // Fallback to user_subscriptions table
+        const { data: userSubsUpdate, error: userSubsUpdateError } = await supabase
+          .from('user_subscriptions')
+          .upsert(subscriptionUpdate, {
+            onConflict: 'user_id'
+          })
+          .select()
+          .single();
+        
+        updatedSubscription = userSubsUpdate;
+        error = userSubsUpdateError;
+      }
 
       if (error) {
         console.error('❌ Failed to activate premium in database:', error);

@@ -91,42 +91,15 @@ const AppContent: React.FC = () => {
     logDatabaseStatus();
     logApiStatus();
     
-    // Global debug function for premium activation
+    // Global debug function for premium activation (now uses database)
     (window as any).activatePremiumDebug = () => {
-      const userId = user?.id;
-      if (!userId) {
-        console.error('❌ No user logged in');
-        return false;
-      }
-      
-      console.log('🔧 Manually activating premium for user:', userId);
-      
-      const premiumSubscription = {
-        id: `sub-${userId}`,
-        userId: userId,
-        planType: 'premium',
-        status: 'active',
-        startDate: new Date().toISOString(),
-        cancelAtPeriodEnd: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      // Clear any existing data
-      localStorage.removeItem(`subscription_${userId}`);
-      
-      // Set premium subscription
-      localStorage.setItem(`subscription_${userId}`, JSON.stringify(premiumSubscription));
-      localStorage.setItem('premium_activated', 'true');
-      localStorage.setItem('stripe_payment_success', 'true');
-      
-      console.log('✅ Premium activated! Please refresh the page.');
-      console.log('📱 Run: window.location.reload()');
-      
-      return true;
+      console.log('🔧 Legacy debug function - use the "Advanced" button in My Account instead');
+      console.log('📝 The app now uses database storage for premium subscriptions');
+      console.log('🎯 Steps: Open My Account → Subscription tab → Click "Advanced" button');
+      return false;
     };
     
-    console.log('🔧 Debug function available: activatePremiumDebug()');
+    console.log('🔧 Debug function available: activatePremiumDebug() (redirects to proper method)');
     console.log('💡 Run activatePremiumDebug() in console to restore premium');
     
     // Test Stripe configuration

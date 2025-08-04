@@ -7,6 +7,7 @@ import { MobileApp } from './components/mobile/MobileApp';
 import { PortfolioTable } from './components/PortfolioTable';
 import { PortfolioSummary } from './components/PortfolioSummary';
 import { MyAccountModal } from './components/MyAccountModal';
+import { PortfolioSummarySkeleton, PortfolioTableSkeleton, TransactionHistorySkeleton } from './components/skeletons';
 
 // Lazy load heavy components that aren't immediately needed
 const AddTransactionModal = lazy(() => import('./components/AddHoldingModal').then(m => ({ default: m.AddTransactionModal })));
@@ -63,6 +64,9 @@ const AppContent: React.FC = () => {
     transactions, 
     loading: portfolioLoading, 
     error: portfolioError,
+    summaryLoading,
+    holdingsLoading,
+    marketDataLoading,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -375,10 +379,14 @@ const AppContent: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'portfolio' && (
           <>
-            {/* Portfolio Summary */}
-            <PortfolioSummary holdings={holdings} />
+            {/* Portfolio Summary - Progressive Loading */}
+            {summaryLoading ? (
+              <PortfolioSummarySkeleton />
+            ) : (
+              <PortfolioSummary holdings={holdings} />
+            )}
 
-            {/* Portfolio Filter */}
+            {/* Portfolio Filter - Always show immediately */}
             <div className="mb-6">
               <div className="flex space-x-2">
                 {(['all', 'stocks', 'etfs', 'bonds'] as const).map((filter) => (
@@ -390,26 +398,64 @@ const AppContent: React.FC = () => {
                         ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30'
                         : 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
                     }`}
+                    disabled={holdingsLoading}
                   >
                     {filter === 'all' ? 'All Holdings' : filter.toUpperCase()}
                   </button>
                 ))}
               </div>
+              
+              {/* Loading indicator for filters */}
+              {holdingsLoading && (
+                <div className="mt-2 text-sm text-gray-400 flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <span>Loading holdings...</span>
+                </div>
+              )}
             </div>
 
-            {/* Portfolio Table */}
-            <PortfolioTable holdings={filteredHoldings} filter={portfolioFilter} />
+            {/* Portfolio Table - Progressive Loading */}
+            {holdingsLoading ? (
+              <PortfolioTableSkeleton 
+                rows={8}
+                showETFColumns={portfolioFilter === 'etfs' || portfolioFilter === 'all'}
+                showBondColumns={portfolioFilter === 'bonds' || portfolioFilter === 'all'}
+              />
+            ) : (
+              <>
+                <PortfolioTable holdings={filteredHoldings} filter={portfolioFilter} />
+                
+                {/* Market data loading indicator */}
+                {marketDataLoading && (
+                  <div className="mt-4 p-4 bg-blue-600/10 border border-blue-500/20 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                      <div className="text-blue-300">
+                        <div className="font-medium">Updating market prices...</div>
+                        <div className="text-sm text-blue-400">Real-time data loading in progress</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </>
         )}
 
         {activeTab === 'transactions' && (
-          <Suspense fallback={<LoadingScreen message="Loading transactions..." />}>
-            <TransactionHistory 
-              transactions={transactions}
-              onEdit={handleEditTransaction}
-              onDelete={handleDeleteClick}
-            />
-          </Suspense>
+          <>
+            {holdingsLoading ? (
+              <TransactionHistorySkeleton rows={10} />
+            ) : (
+              <Suspense fallback={<LoadingScreen message="Loading transactions..." />}>
+                <TransactionHistory 
+                  transactions={transactions}
+                  onEdit={handleEditTransaction}
+                  onDelete={handleDeleteClick}
+                />
+              </Suspense>
+            )}
+          </>
         )}
 
         {activeTab === 'performance' && (

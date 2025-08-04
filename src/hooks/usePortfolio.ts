@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Holding, Transaction } from '../types/portfolio';
 import { DatabaseService } from '../lib/database';
+import { OptimizedDatabaseService } from '../lib/optimizedDatabase';
 import { MarketDataService } from '../services/marketDataService';
 import { PortfolioCalculator } from '../utils/portfolioCalculations';
 import { DividendTracker } from '../utils/dividendTracker';
@@ -17,6 +18,11 @@ export const usePortfolio = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  
+  // Progressive loading states
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [holdingsLoading, setHoldingsLoading] = useState(true);
+  const [marketDataLoading, setMarketDataLoading] = useState(true);
 
   // Load initial data
   useEffect(() => {
@@ -29,38 +35,68 @@ export const usePortfolio = () => {
 
   const loadPortfolioData = async () => {
     try {
-      console.log('Loading portfolio data...');
+      console.log('🚀 Starting progressive portfolio data loading...');
       setLoading(true);
+      setSummaryLoading(true);
+      setHoldingsLoading(true);
+      setMarketDataLoading(true);
       setError(null);
 
       // Load real portfolio data from database only
       if (!user) {
         console.log('No authenticated user, cannot load portfolio data');
         setLoading(false);
+        setSummaryLoading(false);
+        setHoldingsLoading(false);
+        setMarketDataLoading(false);
         return;
       }
 
-      console.log('Loading real portfolio data from database...');
-      // Load transactions and calculate holdings from them
-      const transactionsData = await DatabaseService.getTransactions();
-
-      console.log(`Loaded ${transactionsData.length} transactions`);
+      console.log('📊 Phase 1: Loading complete portfolio with optimized query...');
+      // Use optimized single query instead of multiple database calls
+      let transactionsData: Transaction[];
+      let companiesCache = new Map<string, any>();
+      
+      try {
+        const portfolioData = await OptimizedDatabaseService.getCompleteUserPortfolio(user.id);
+        transactionsData = portfolioData.transactions;
+        companiesCache = portfolioData.companies;
+        console.log(`✅ Optimized query loaded ${transactionsData.length} transactions, ${companiesCache.size} companies`);
+      } catch (optimizedError) {
+        console.warn('⚠️ Optimized query failed, falling back to traditional approach:', optimizedError);
+        // Fallback to original approach if optimized query fails
+        transactionsData = await DatabaseService.getTransactions();
+        console.log(`Fallback loaded ${transactionsData.length} transactions`);
+      }
       
       // Calculate holdings from all transactions
       const calculatedHoldings = calculateHoldingsFromTransactions(transactionsData);
       console.log(`Calculated ${calculatedHoldings.length} holdings from transactions`);
       
-      // Enrich with financial data
+      // Set basic data immediately (Phase 1 complete)
+      setTransactions(transactionsData);
+      setHoldings(calculatedHoldings);
+      setSummaryLoading(false);
+      console.log('✅ Phase 1 complete: Basic holdings and transactions loaded');
+      
+      // Phase 2: Enrich with financial data (company info, sectors, etc.)
+      console.log('📈 Phase 2: Enriching with financial data...');
       const enrichedHoldings = await enrichHoldingsWithFinancialData(calculatedHoldings);
       console.log(`Enriched holdings with financial data`);
       
-      // Update current prices for holdings
-      const updatedHoldings = await updateHoldingPrices(enrichedHoldings);
-
-      setHoldings(updatedHoldings);
-      setTransactions(transactionsData);
+      // Update holdings with enriched data
+      setHoldings(enrichedHoldings);
+      setHoldingsLoading(false);
+      console.log('✅ Phase 2 complete: Holdings enriched with company data');
       
-      // Calculate portfolio metrics
+      // Phase 3: Update current market prices
+      console.log('💹 Phase 3: Updating current market prices...');
+      const updatedHoldings = await updateHoldingPrices(enrichedHoldings);
+      
+      // Update holdings with latest prices
+      setHoldings(updatedHoldings);
+      
+      // Calculate portfolio metrics with latest data
       const metrics = PortfolioCalculator.calculatePortfolioMetrics(updatedHoldings);
       setPortfolioMetrics(metrics);
       
@@ -68,8 +104,9 @@ export const usePortfolio = () => {
       const divAnalysis = DividendTracker.analyzeDividends(updatedHoldings, transactionsData);
       setDividendAnalysis(divAnalysis);
       
+      setMarketDataLoading(false);
       setLastUpdated(new Date());
-      console.log('Portfolio data loaded successfully');
+      console.log('✅ Phase 3 complete: All portfolio data loaded successfully');
     } catch (err) {
       console.error('Error loading portfolio data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load portfolio data');
@@ -88,6 +125,9 @@ export const usePortfolio = () => {
       setLastUpdated(new Date());
     } finally {
       setLoading(false);
+      setSummaryLoading(false);
+      setHoldingsLoading(false);
+      setMarketDataLoading(false);
     }
   };
 
@@ -321,6 +361,7 @@ export const usePortfolio = () => {
   const refreshData = async () => {
     try {
       setError(null);
+      setLoading(true); // Show loading state during refresh
       console.log('🔄 Refreshing all portfolio data...');
       
       // Update prices for all holdings
@@ -348,6 +389,8 @@ export const usePortfolio = () => {
     } catch (err) {
       console.error('Error refreshing data:', err);
       setError(err instanceof Error ? err.message : 'Failed to refresh data');
+    } finally {
+      setLoading(false); // Clear loading state
     }
   };
   
@@ -698,6 +741,10 @@ export const usePortfolio = () => {
     loading,
     error,
     lastUpdated,
+    // Progressive loading states
+    summaryLoading,
+    holdingsLoading,
+    marketDataLoading,
     addTransaction,
     updateTransaction,
     deleteTransaction,

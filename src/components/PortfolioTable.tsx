@@ -24,7 +24,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
   const { hasQuickViewAccess, hasAdvancedAccess, isPremium, currentPlan } = useSubscription();
   
   // Debug premium status
-  const isPremiumUser = isPremiumUser;
+  const isPremiumUser = isPremium();
   console.log('🔍 PortfolioTable Premium Status:', {
     isPremiumUser,
     currentPlan: currentPlan?.type,

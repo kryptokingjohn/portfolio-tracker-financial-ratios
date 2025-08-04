@@ -687,7 +687,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     <button className="text-gray-400 hover:text-gray-300 p-2 rounded-lg hover:bg-gray-600/20 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
                       <ExternalLink className="h-4 w-4" />
                     </button>
-                    {/* QuickView and Advanced buttons - show for stocks only */}
+                    {/* QuickView and Advanced buttons for stocks */}
                     {hasQuickViewAccess() && assetType === 'stocks' && (
                       <button
                         onClick={(e) => openQuickView(e, holding)}
@@ -707,15 +707,30 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                       </button>
                     )}
                     
-                    {/* Asset-specific buttons for ETFs and Bonds */}
-                    {assetType === 'etfs' && etfData.get(holding.ticker) && (
-                      <div className="ml-2 text-xs text-green-400 px-2 py-1 bg-green-600/20 rounded-lg border border-green-500/30">
-                        ETF Data Available
-                      </div>
+                    {/* Advanced buttons for ETFs and Bonds */}
+                    {hasAdvancedAccess() && assetType === 'etfs' && (
+                      <button
+                        onClick={(e) => openAdvanced(e, holding)}
+                        className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
+                      >
+                        <BarChart3 className="h-3 w-3" />
+                        <span>Advanced</span>
+                      </button>
                     )}
-                    {assetType === 'bonds' && bondData.get(holding.ticker) && (
-                      <div className="ml-2 text-xs text-orange-400 px-2 py-1 bg-orange-600/20 rounded-lg border border-orange-500/30">
-                        Bond Data Available
+                    {hasAdvancedAccess() && assetType === 'bonds' && (
+                      <button
+                        onClick={(e) => openAdvanced(e, holding)}
+                        className="ml-2 inline-flex items-center space-x-1 px-3 py-2 text-xs bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 backdrop-blur-sm"
+                      >
+                        <BarChart3 className="h-3 w-3" />
+                        <span>Advanced</span>
+                      </button>
+                    )}
+                    
+                    {/* Premium upgrade prompts for basic users */}
+                    {!hasAdvancedAccess() && (assetType === 'etfs' || assetType === 'bonds') && (
+                      <div className="ml-2 text-xs text-gray-400 px-2 py-1 bg-gray-600/20 rounded-lg border border-gray-500/30">
+                        {assetType === 'etfs' ? 'ETF' : 'Bond'} Advanced - Premium Only
                       </div>
                     )}
                   </td>

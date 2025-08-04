@@ -30,31 +30,15 @@ export const useSubscription = () => {
 
       console.log('🔄 Loading subscription from database for user:', user.id);
 
-      // Load subscription from database - try subscriptions table first
-      let subscriptionData;
-      let subscriptionError;
-      
-      // Try subscriptions table first (since our script found it exists)
-      const { data: subsData, error: subsError } = await supabase
+      // Load subscription from database using existing subscriptions table
+      console.log('🔍 Querying subscriptions table for user:', user.id);
+      const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
         .single();
       
-      if (!subsError && subsData) {
-        subscriptionData = subsData;
-        subscriptionError = null;
-      } else {
-        // Fallback to user_subscriptions table
-        const { data: userSubsData, error: userSubsError } = await supabase
-          .from('user_subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        
-        subscriptionData = userSubsData;
-        subscriptionError = userSubsError;
-      }
+      console.log('📊 Subscription query result:', { data: subscriptionData, error: subscriptionError });
 
       if (subscriptionError && subscriptionError.code !== 'PGRST116') {
         // PGRST116 is "not found" - we'll handle that below
@@ -96,31 +80,15 @@ export const useSubscription = () => {
         updated_at: new Date().toISOString()
       };
 
-      // Try to insert into subscriptions table first, then fallback to user_subscriptions
-      let createdSubscription;
-      let createError;
-      
-      // Try subscriptions table first
-      const { data: subsCreate, error: subsCreateError } = await supabase
+      // Insert into subscriptions table
+      console.log('📝 Creating new subscription in database for user:', user.id);
+      const { data: createdSubscription, error: createError } = await supabase
         .from('subscriptions')
         .insert(newSubscription)
         .select()
         .single();
       
-      if (!subsCreateError && subsCreate) {
-        createdSubscription = subsCreate;
-        createError = null;
-      } else {
-        // Fallback to user_subscriptions table
-        const { data: userSubsCreate, error: userSubsCreateError } = await supabase
-          .from('user_subscriptions')
-          .insert(newSubscription)
-          .select()
-          .single();
-        
-        createdSubscription = userSubsCreate;
-        createError = userSubsCreateError;
-      }
+      console.log('📊 Subscription creation result:', { data: createdSubscription, error: createError });
 
       if (createError) {
         console.error('Failed to create subscription:', createError);
@@ -297,11 +265,9 @@ export const useSubscription = () => {
         updated_at: new Date().toISOString()
       };
       
-      // Try subscriptions table first
-      let updatedSubscription;
-      let error;
-      
-      const { data: subsUpdate, error: subsUpdateError } = await supabase
+      // Update subscription in subscriptions table
+      console.log('💳 Saving payment data to subscriptions table:', subscriptionUpdate);
+      const { data: updatedSubscription, error } = await supabase
         .from('subscriptions')
         .upsert(subscriptionUpdate, {
           onConflict: 'user_id'
@@ -309,22 +275,7 @@ export const useSubscription = () => {
         .select()
         .single();
       
-      if (!subsUpdateError && subsUpdate) {
-        updatedSubscription = subsUpdate;
-        error = null;
-      } else {
-        // Fallback to user_subscriptions table
-        const { data: userSubsUpdate, error: userSubsUpdateError } = await supabase
-          .from('user_subscriptions')
-          .upsert(subscriptionUpdate, {
-            onConflict: 'user_id'
-          })
-          .select()
-          .single();
-        
-        updatedSubscription = userSubsUpdate;
-        error = userSubsUpdateError;
-      }
+      console.log('📊 Payment save result:', { data: updatedSubscription, error });
 
       if (error) {
         console.error('❌ Failed to save payment to database:', error);
@@ -365,8 +316,9 @@ export const useSubscription = () => {
         updated_at: new Date().toISOString()
       };
       
-      // Try subscriptions table first
-      const { data: subsUpdate, error: subsUpdateError } = await supabase
+      // Update subscription in subscriptions table
+      console.log('🔧 Activating premium in subscriptions table:', subscriptionUpdate);
+      const { data: updatedSubscription, error } = await supabase
         .from('subscriptions')
         .upsert(subscriptionUpdate, {
           onConflict: 'user_id'
@@ -374,22 +326,7 @@ export const useSubscription = () => {
         .select()
         .single();
       
-      if (!subsUpdateError && subsUpdate) {
-        updatedSubscription = subsUpdate;
-        error = null;
-      } else {
-        // Fallback to user_subscriptions table
-        const { data: userSubsUpdate, error: userSubsUpdateError } = await supabase
-          .from('user_subscriptions')
-          .upsert(subscriptionUpdate, {
-            onConflict: 'user_id'
-          })
-          .select()
-          .single();
-        
-        updatedSubscription = userSubsUpdate;
-        error = userSubsUpdateError;
-      }
+      console.log('📊 Premium activation result:', { data: updatedSubscription, error });
 
       if (error) {
         console.error('❌ Failed to activate premium in database:', error);

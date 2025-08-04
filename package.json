@@ -24,7 +24,8 @@
     "secure:database": "node scripts/re-enable-rls.js",
     "setup:subscriptions": "node scripts/setup-subscriptions-table.js",
     "check:subscriptions": "node scripts/check-subscription-columns.js",
-    "fix:subscription-rls": "node scripts/fix-subscription-rls.js"
+    "fix:subscription-rls": "node scripts/fix-subscription-rls.js",
+    "test:table-structure": "node scripts/test-table-structure.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",

@@ -295,10 +295,19 @@ export const useSubscription = () => {
 
   // Manual premium activation - saves to database
   const activatePremium = async () => {
+    console.log('🚀 activatePremium called');
+    
     if (!user) {
       console.error('❌ No user logged in');
+      console.log('🔍 User object:', user);
       return false;
     }
+
+    console.log('✅ User authenticated:', { 
+      id: user.id, 
+      email: user.email,
+      user_metadata: user.user_metadata 
+    });
 
     try {
       console.log('🔧 Activating premium in database for user:', user.id);
@@ -318,6 +327,8 @@ export const useSubscription = () => {
       
       // Update subscription in subscriptions table
       console.log('🔧 Activating premium in subscriptions table:', subscriptionUpdate);
+      console.log('🔍 Supabase client auth status:', await supabase.auth.getUser());
+      
       const { data: updatedSubscription, error } = await supabase
         .from('subscriptions')
         .upsert(subscriptionUpdate, {
@@ -327,6 +338,15 @@ export const useSubscription = () => {
         .single();
       
       console.log('📊 Premium activation result:', { data: updatedSubscription, error });
+      
+      if (error) {
+        console.log('🔍 Detailed error info:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+      }
 
       if (error) {
         console.error('❌ Failed to activate premium in database:', error);

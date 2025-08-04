@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserSubscription, PlanType, SUBSCRIPTION_PLANS } from '../types/subscription';
 import { useAuth } from './useAuthSimple';
+import { supabase } from '../lib/supabase';
 
 export const useSubscription = () => {
   const { user } = useAuth();
@@ -22,50 +23,102 @@ export const useSubscription = () => {
       setLoading(true);
       setError(null);
 
-      // For authenticated users, check for existing subscription or default to basic
       if (!user) {
         setLoading(false);
         return;
       }
 
-      // TODO: Replace with actual database call
-      // const subscriptionData = await DatabaseService.getUserSubscription(user.id);
-      
-      // Temporary: Check localStorage for subscription state (for testing Premium features)
-      const storedSubscription = localStorage.getItem(`subscription_${user.id}`);
-      if (storedSubscription) {
-        try {
-          const parsedSubscription = JSON.parse(storedSubscription);
-          setSubscription(parsedSubscription);
-          return;
-        } catch (error) {
-          console.warn('Failed to parse stored subscription, using default');
-        }
+      console.log('🔄 Loading subscription from database for user:', user.id);
+
+      // Load subscription from database
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (subscriptionError && subscriptionError.code !== 'PGRST116') {
+        // PGRST116 is "not found" - we'll handle that below
+        console.error('Database subscription error:', subscriptionError);
+        throw subscriptionError;
       }
+
+      if (subscriptionData) {
+        // Convert database format to app format
+        const subscription: UserSubscription = {
+          id: subscriptionData.id,
+          userId: subscriptionData.user_id,
+          planType: subscriptionData.plan_type,
+          status: subscriptionData.status,
+          startDate: subscriptionData.start_date,
+          endDate: subscriptionData.end_date,
+          cancelAtPeriodEnd: subscriptionData.cancel_at_period_end,
+          stripeSubscriptionId: subscriptionData.stripe_subscription_id,
+          stripeCustomerId: subscriptionData.stripe_customer_id,
+          createdAt: subscriptionData.created_at,
+          updatedAt: subscriptionData.updated_at
+        };
+
+        console.log('✅ Subscription loaded from database:', subscription);
+        setSubscription(subscription);
+        return;
+      }
+
+      // No subscription found - create a basic one
+      console.log('🆕 No subscription found, creating basic subscription');
       
-      // Check if this is a returning user with a premium account
-      // Look for any indication of premium status before defaulting to basic
-      const hasStripeData = localStorage.getItem('stripe_payment_success') || 
-                           localStorage.getItem('premium_activated') ||
-                           user.email?.includes('premium'); // Any other premium indicators
+      const newSubscription = {
+        user_id: user.id,
+        plan_type: 'basic' as const,
+        status: 'active' as const,
+        start_date: new Date().toISOString(),
+        cancel_at_period_end: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: createdSubscription, error: createError } = await supabase
+        .from('user_subscriptions')
+        .insert(newSubscription)
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Failed to create subscription:', createError);
+        throw createError;
+      }
+
+      // Convert to app format
+      const subscription: UserSubscription = {
+        id: createdSubscription.id,
+        userId: createdSubscription.user_id,
+        planType: createdSubscription.plan_type,
+        status: createdSubscription.status,
+        startDate: createdSubscription.start_date,
+        cancelAtPeriodEnd: createdSubscription.cancel_at_period_end,
+        createdAt: createdSubscription.created_at,
+        updatedAt: createdSubscription.updated_at
+      };
+
+      console.log('✅ Basic subscription created:', subscription);
+      setSubscription(subscription);
+
+    } catch (err) {
+      console.error('Error loading subscription data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load subscription data');
       
-      const defaultSubscription: UserSubscription = {
-        id: `sub-${user.id}`,
-        userId: user.id,
-        planType: hasStripeData ? 'premium' : 'basic', // Preserve premium if indicators exist
+      // Fallback to basic subscription if database fails
+      const fallbackSubscription: UserSubscription = {
+        id: `fallback-${user?.id}`,
+        userId: user?.id || '',
+        planType: 'basic',
         status: 'active',
         startDate: new Date().toISOString(),
         cancelAtPeriodEnd: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
-      // Save to localStorage for persistence (only if no existing subscription)
-      localStorage.setItem(`subscription_${user.id}`, JSON.stringify(defaultSubscription));
-      setSubscription(defaultSubscription);
-    } catch (err) {
-      console.error('Error loading subscription data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load subscription data');
+      setSubscription(fallbackSubscription);
     } finally {
       setLoading(false);
     }
@@ -212,44 +265,47 @@ export const useSubscription = () => {
     }
   };
 
-  // Manual premium activation (temporary debugging function)
-  const activatePremium = () => {
-    if (user) {
-      console.log('🔧 Activating premium for user:', user.id);
+  // Manual premium activation - saves to database
+  const activatePremium = async () => {
+    if (!user) {
+      console.error('❌ No user logged in');
+      return false;
+    }
+
+    try {
+      console.log('🔧 Activating premium in database for user:', user.id);
       
-      const premiumSubscription: UserSubscription = {
-        id: `sub-${user.id}`,
-        userId: user.id,
-        planType: 'premium',
-        status: 'active',
-        startDate: new Date().toISOString(),
-        cancelAtPeriodEnd: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      // Update subscription in database
+      const { data: updatedSubscription, error } = await supabase
+        .from('user_subscriptions')
+        .upsert({
+          user_id: user.id,
+          plan_type: 'premium',
+          status: 'active',
+          start_date: new Date().toISOString(),
+          cancel_at_period_end: false,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Failed to activate premium in database:', error);
+        return false;
+      }
+
+      console.log('✅ Premium activated in database!', updatedSubscription);
       
-      // Clear any existing subscription first
-      localStorage.removeItem(`subscription_${user.id}`);
-      
-      // Set the new premium subscription
-      localStorage.setItem(`subscription_${user.id}`, JSON.stringify(premiumSubscription));
-      localStorage.setItem('premium_activated', 'true');
-      localStorage.setItem('stripe_payment_success', 'true');
-      
-      // Force update the subscription state
-      setSubscription(premiumSubscription);
-      
-      console.log('✅ Premium activated! Subscription:', premiumSubscription);
-      console.log('📱 LocalStorage updated with premium status');
-      
-      // Force a reload of subscription data to make sure it sticks
-      setTimeout(() => {
-        loadSubscriptionData();
-      }, 100);
+      // Reload subscription data from database
+      await loadSubscriptionData();
       
       return true;
+    } catch (error) {
+      console.error('❌ Error activating premium:', error);
+      return false;
     }
-    return false;
   };
 
   // Open Stripe Customer Portal

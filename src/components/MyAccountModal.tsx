@@ -292,25 +292,33 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                         {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
                       </button>
                       
-                      {/* Temporary: Restore Premium Status */}
+                      {/* Restore Premium Status via Database */}
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           console.log('🔧 Advanced button clicked');
-                          const success = activatePremium();
-                          if (success) {
-                            setMessage({ type: 'success', text: 'Premium status restored! Refreshing...' });
-                            // Force page reload to ensure UI updates
-                            setTimeout(() => {
-                              window.location.reload();
-                            }, 1500);
-                          } else {
-                            setMessage({ type: 'error', text: 'Failed to restore premium status' });
+                          setLoading(true);
+                          try {
+                            const success = await activatePremium();
+                            if (success) {
+                              setMessage({ type: 'success', text: 'Premium status saved to database! Refreshing...' });
+                              // Force page reload to ensure UI updates
+                              setTimeout(() => {
+                                window.location.reload();
+                              }, 1500);
+                            } else {
+                              setMessage({ type: 'error', text: 'Failed to save premium status to database' });
+                            }
+                          } catch (error) {
+                            setMessage({ type: 'error', text: 'Database error - check console' });
+                          } finally {
+                            setLoading(false);
                           }
                           setTimeout(() => setMessage(null), 3000);
                         }}
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        disabled={loading}
+                        className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                       >
-                        Advanced
+                        {loading ? 'Saving...' : 'Advanced'}
                       </button>
                     </div>
                   )}

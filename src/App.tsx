@@ -91,16 +91,9 @@ const AppContent: React.FC = () => {
     logDatabaseStatus();
     logApiStatus();
     
-    // Global debug function for premium activation (now uses database)
-    (window as any).activatePremiumDebug = () => {
-      console.log('🔧 Legacy debug function - use the "Advanced" button in My Account instead');
-      console.log('📝 The app now uses database storage for premium subscriptions');
-      console.log('🎯 Steps: Open My Account → Subscription tab → Click "Advanced" button');
-      return false;
-    };
-    
-    console.log('🔧 Debug function available: activatePremiumDebug() (redirects to proper method)');
-    console.log('💡 Run activatePremiumDebug() in console to restore premium');
+    // Premium subscriptions now use proper database storage via Stripe checkout
+    console.log('💳 Premium subscriptions: Use "Upgrade to Premium" button in My Account');
+    console.log('🗃️ Subscription data: Stored persistently in Supabase database');
     
     // Test Stripe configuration
     console.log('🚀 Starting Stripe configuration test...');

@@ -283,44 +283,13 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                 {/* Plan Actions */}
                 <div className="space-y-4">
                   {currentPlan.type === 'basic' && (
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => handlePlanChange('upgrade')}
-                        disabled={loading}
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
-                      >
-                        {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
-                      </button>
-                      
-                      {/* Restore Premium Status via Database */}
-                      <button
-                        onClick={async () => {
-                          console.log('🔧 Advanced button clicked');
-                          setLoading(true);
-                          try {
-                            const success = await activatePremium();
-                            if (success) {
-                              setMessage({ type: 'success', text: 'Premium status saved to database! Refreshing...' });
-                              // Force page reload to ensure UI updates
-                              setTimeout(() => {
-                                window.location.reload();
-                              }, 1500);
-                            } else {
-                              setMessage({ type: 'error', text: 'Failed to save premium status to database' });
-                            }
-                          } catch (error) {
-                            setMessage({ type: 'error', text: 'Database error - check console' });
-                          } finally {
-                            setLoading(false);
-                          }
-                          setTimeout(() => setMessage(null), 3000);
-                        }}
-                        disabled={loading}
-                        className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                      >
-                        {loading ? 'Saving...' : 'Advanced'}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handlePlanChange('upgrade')}
+                      disabled={loading}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                    >
+                      {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
+                    </button>
                   )}
                   
                   {currentPlan.type === 'premium' && (

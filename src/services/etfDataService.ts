@@ -36,18 +36,66 @@ export interface ETFMetrics {
 }
 
 /**
+ * Fetches ETF sector weightings from Financial Modeling Prep API
+ */
+export async function fetchETFSectorWeightings(symbol: string): Promise<{ [sector: string]: number } | null> {
+  try {
+    const url = `https://financialmodelingprep.com/api/v3/etf-sector-weightings/${symbol}?apikey=${FMP_API_KEY}`;
+    console.log(`🔍 Fetching ETF sector weightings from: ${url}`);
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`ETF sector weightings API response not ok: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+      console.warn(`No ETF sector weightings found for symbol: ${symbol}`);
+      return null;
+    }
+    
+    // The API returns an array of objects with sector names and weightings
+    const sectorWeightings: { [sector: string]: number } = {};
+    
+    // Handle both array and object responses
+    const sectorData = Array.isArray(data) ? data : [data];
+    
+    sectorData.forEach((item: any) => {
+      // The API might return different field names, try common variations
+      const sectorName = item.sector || item.sectorName || item.name;
+      const weight = parseFloat(item.weight || item.weighting || item.percentage || 0);
+      
+      if (sectorName && weight > 0) {
+        sectorWeightings[sectorName] = weight;
+      }
+    });
+    
+    console.log(`✅ Fetched sector weightings for ${symbol}:`, sectorWeightings);
+    return sectorWeightings;
+    
+  } catch (error) {
+    console.error(`Error fetching ETF sector weightings for ${symbol}:`, error);
+    return null;
+  }
+}
+
+/**
  * Fetches ETF information from Financial Modeling Prep API
  */
 export async function fetchETFInfo(symbol: string): Promise<ETFInfo | null> {
   try {
-    const url = `${FMP_BASE_URL}/etf/info?symbol=${symbol}&apikey=${FMP_API_KEY}`;
-    const response = await fetch(url);
+    // Fetch basic ETF info and sector weightings in parallel
+    const [basicInfoResponse, sectorWeightings] = await Promise.all([
+      fetch(`https://financialmodelingprep.com/api/v3/etf-info?symbol=${symbol}&apikey=${FMP_API_KEY}`),
+      fetchETFSectorWeightings(symbol)
+    ]);
     
-    if (!response.ok) {
-      throw new Error(`ETF API response not ok: ${response.status}`);
+    if (!basicInfoResponse.ok) {
+      throw new Error(`ETF API response not ok: ${basicInfoResponse.status}`);
     }
     
-    const data = await response.json();
+    const data = await basicInfoResponse.json();
     
     if (!data || data.length === 0) {
       console.warn(`No ETF data found for symbol: ${symbol}`);
@@ -55,6 +103,11 @@ export async function fetchETFInfo(symbol: string): Promise<ETFInfo | null> {
     }
     
     const etfData = Array.isArray(data) ? data[0] : data;
+    
+    console.log(`✅ Fetched ETF info for ${symbol}:`, {
+      basic: !!etfData,
+      sectorWeightingsCount: sectorWeightings ? Object.keys(sectorWeightings).length : 0
+    });
     
     return {
       symbol: etfData.symbol || symbol,  
@@ -67,7 +120,7 @@ export async function fetchETFInfo(symbol: string): Promise<ETFInfo | null> {
       domicile: etfData.domicile || '',
       etfCompany: etfData.etfCompany || '',
       website: etfData.website || '',
-      sectorWeightings: etfData.sectorWeightings || {},
+      sectorWeightings: sectorWeightings || {}, // Use the dedicated sector endpoint data
       avgVolume: parseFloat(etfData.avgVolume) || 0,
       nav: parseFloat(etfData.nav) || 0,
     };
@@ -94,10 +147,21 @@ export function processETFMetrics(etfInfo: ETFInfo, isPremium: boolean): ETFMetr
   
   // Advanced metrics for Premium users
   const sectorWeightings = etfInfo.sectorWeightings || {};
+  
+  // Debug: Log sector data processing
+  console.log(`🔍 Processing ETF sectors for ${etfInfo.symbol}:`, {
+    rawSectorWeightings: sectorWeightings,
+    sectorCount: Object.keys(sectorWeightings).length,
+    sampleEntries: Object.entries(sectorWeightings).slice(0, 3)
+  });
+  
   const topSectors = Object.entries(sectorWeightings)
     .map(([sector, percentage]) => ({ sector, percentage: Number(percentage) }))
+    .filter(item => !isNaN(item.percentage) && item.percentage > 0)
     .sort((a, b) => b.percentage - a.percentage)
     .slice(0, 5);
+  
+  console.log(`🎯 Top sectors calculated for ${etfInfo.symbol}:`, topSectors);
   
   const advanced = {
     sectorWeightings,

@@ -64,7 +64,14 @@ export async function fetchETFSectorWeightings(symbol: string): Promise<{ [secto
     sectorData.forEach((item: any) => {
       // The API might return different field names, try common variations
       const sectorName = item.sector || item.sectorName || item.name;
-      const weight = parseFloat(item.weight || item.weighting || item.percentage || 0);
+      
+      // Handle percentage strings like "35.06%" by removing % and parsing
+      let weight = 0;
+      if (item.weightPercentage) {
+        weight = parseFloat(item.weightPercentage.replace('%', ''));
+      } else {
+        weight = parseFloat(item.weight || item.weighting || item.percentage || 0);
+      }
       
       if (sectorName && weight > 0) {
         sectorWeightings[sectorName] = weight;

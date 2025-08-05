@@ -286,9 +286,20 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                     <button
                       onClick={() => handlePlanChange('upgrade')}
                       disabled={loading}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center"
                     >
-                      {loading ? 'Processing...' : 'Upgrade to Premium - $9.99/month'}
+                      {loading ? (
+                        'Processing...'
+                      ) : (
+                        <>
+                          <img 
+                            src="/premium_starincircle.png" 
+                            alt="Premium" 
+                            className="h-5 w-5 mr-2"
+                          />
+                          Upgrade to Premium - $9.99/month
+                        </>
+                      )}
                     </button>
                   )}
                   
@@ -402,8 +413,13 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                         </p>
                         <button
                           onClick={() => setActiveTab('subscription')}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center"
                         >
+                          <img 
+                            src="/premium_starincircle.png" 
+                            alt="Premium" 
+                            className="h-4 w-4 mr-2"
+                          />
                           Upgrade to Premium
                         </button>
                       </div>
@@ -572,8 +588,13 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                     ) : currentPlan.type === 'basic' ? (
                       <button
                         onClick={() => setActiveTab('subscription')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center"
                       >
+                        <img 
+                          src="/premium_starincircle.png" 
+                          alt="Premium" 
+                          className="h-4 w-4 mr-2"
+                        />
                         Upgrade to Premium
                       </button>
                     ) : null}

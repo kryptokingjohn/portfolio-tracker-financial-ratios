@@ -73,7 +73,8 @@ export const MobilePullToRefresh: React.FC<MobilePullToRefreshProps> = ({
   const getRefreshIndicatorStyle = () => {
     const opacity = Math.min(pullDistance / threshold, 1);
     const scale = Math.min(pullDistance / threshold, 1);
-    const rotation = (pullDistance / threshold) * 180;
+    // Reduce rotation to prevent sideways appearance - only rotate when fully pulled
+    const rotation = canRefresh ? 360 : (pullDistance / threshold) * 90;
     
     return {
       opacity,

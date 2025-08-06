@@ -11,6 +11,7 @@ import { DividendsTab } from '../DividendsTab';
 import { TaxOptimizationTab } from '../TaxOptimizationTab';
 import { TransactionHistory } from '../TransactionHistory';
 import { AddTransactionModal } from '../AddHoldingModal';
+import { RatiosGuide } from '../RatiosGuide';
 import { Holding, Transaction } from '../../types/portfolio';
 import { hapticFeedback } from '../../utils/deviceUtils';
 
@@ -69,6 +70,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
       case 'accounts': return 'Accounts';
       case 'dividends': return 'Dividends';
       case 'tax': return 'Tax Optimization';
+      case 'ratios': return 'Ratios Guide';
       case 'transactions': return 'Transactions';
       default: return 'Portfolio Tracker';
     }
@@ -77,7 +79,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   const existingTickers = holdings.map(h => h.ticker);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 w-full">
       <MobileHeader 
         title={getTabTitle()}
         onAddTransaction={() => setIsTransactionModalOpen(true)}
@@ -89,10 +91,10 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         <div className="px-4 py-4">
         {activeTab === 'portfolio' && (
           <>
-            <div className="mb-6">
+            <div className="mb-6 w-full">
               <PortfolioSummary holdings={holdings} />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 w-full">
               {holdings.map((holding) => (
                 <MobilePortfolioCard
                   key={holding.id}
@@ -105,19 +107,35 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         )}
 
         {activeTab === 'performance' && (
-          <PerformanceTab holdings={holdings} />
+          <div className="overflow-x-auto -mx-4 px-4">
+            <div className="min-w-[800px]">
+              <PerformanceTab holdings={holdings} />
+            </div>
+          </div>
         )}
 
         {activeTab === 'accounts' && (
-          <AccountsTab holdings={holdings} />
+          <div className="overflow-x-auto -mx-4 px-4">
+            <div className="min-w-[600px]">
+              <AccountsTab holdings={holdings} />
+            </div>
+          </div>
         )}
 
         {activeTab === 'dividends' && (
-          <DividendsTab holdings={holdings} />
+          <div className="overflow-x-auto -mx-4 px-4">
+            <div className="min-w-[800px]">
+              <DividendsTab holdings={holdings} />
+            </div>
+          </div>
         )}
 
         {activeTab === 'tax' && (
           <TaxOptimizationTab holdings={holdings} transactions={transactions} />
+        )}
+
+        {activeTab === 'ratios' && (
+          <RatiosGuide />
         )}
 
         {activeTab === 'transactions' && (

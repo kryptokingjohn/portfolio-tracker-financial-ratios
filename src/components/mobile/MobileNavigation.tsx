@@ -5,6 +5,7 @@ import Building from 'lucide-react/dist/esm/icons/building';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import History from 'lucide-react/dist/esm/icons/history';
 import Calculator from 'lucide-react/dist/esm/icons/calculator';
+import BookOpen from 'lucide-react/dist/esm/icons/book-open';
 
 interface MobileNavigationProps {
   activeTab: string;
@@ -18,6 +19,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ activeTab, o
     { id: 'accounts', label: 'Accounts', icon: Building },
     { id: 'dividends', label: 'Dividends', icon: DollarSign },
     { id: 'tax', label: 'Tax', icon: Calculator },
+    { id: 'ratios', label: 'Ratios', icon: BookOpen },
   ];
 
   return (

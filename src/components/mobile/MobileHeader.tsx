@@ -48,13 +48,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           <button className="p-2 text-gray-600 hover:text-gray-800">
             <Bell className="h-5 w-5" />
           </button>
-          
-          <button 
-            onClick={signOut}
-            className="p-2 text-red-600 hover:text-red-800"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
         </div>
       </div>
     </div>

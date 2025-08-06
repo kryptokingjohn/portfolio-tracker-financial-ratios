@@ -14,6 +14,10 @@ import { AddTransactionModal } from '../AddHoldingModal';
 import { RatiosGuide } from '../RatiosGuide';
 import { Holding, Transaction } from '../../types/portfolio';
 import { hapticFeedback } from '../../utils/deviceUtils';
+import { useAuth } from '../../hooks/useAuthSimple';
+import { useSubscription } from '../../hooks/useSubscription';
+import User from 'lucide-react/dist/esm/icons/user';
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
 
 interface MobileAppProps {
   holdings: Holding[];
@@ -33,6 +37,8 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   const [activeTab, setActiveTab] = useState('portfolio');
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { user, signOut } = useAuth();
+  const { subscription, currentPlan, upgradeToPremium } = useSubscription();
 
   const openQuickView = (ticker: string, company: string, type: string) => {
     const params = new URLSearchParams({ ticker, company, type });
@@ -67,7 +73,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
     switch (activeTab) {
       case 'portfolio': return 'Portfolio';
       case 'performance': return 'Performance';
-      case 'accounts': return 'Accounts';
+      case 'account': return 'My Account';
       case 'dividends': return 'Dividends';
       case 'tax': return 'Tax Optimization';
       case 'ratios': return 'Ratios Guide';
@@ -149,74 +155,95 @@ export const MobileApp: React.FC<MobileAppProps> = ({
           </div>
         )}
 
-        {activeTab === 'accounts' && (
+        {activeTab === 'account' && (
           <div className="space-y-4">
-            {/* Mobile-optimized Accounts Summary */}
+            {/* User Profile Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Overview</h3>
-              <div className="space-y-4">
-                {(() => {
-                  // Group holdings by account
-                  const accountGroups = holdings.reduce((groups: {[key: string]: typeof holdings}, holding) => {
-                    const accountName = holding.account || 'Default Account';
-                    if (!groups[accountName]) {
-                      groups[accountName] = [];
-                    }
-                    groups[accountName].push(holding);
-                    return groups;
-                  }, {});
-                  
-                  return Object.entries(accountGroups).map(([accountName, accountHoldings]) => {
-                    const totalValue = accountHoldings.reduce((sum, holding) => {
-                      return sum + (holding.shares * holding.currentPrice);
-                    }, 0);
-                    
-                    const totalCost = accountHoldings.reduce((sum, holding) => {
-                      return sum + (holding.shares * holding.costBasis);
-                    }, 0);
-                    
-                    const gainLoss = totalValue - totalCost;
-                    const gainLossPercent = totalCost > 0 ? (gainLoss / totalCost) * 100 : 0;
-                    
-                    return (
-                      <div key={accountName} className="border border-gray-100 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <h4 className="font-medium text-gray-900">{accountName}</h4>
-                            <p className="text-sm text-gray-500">{accountHoldings.length} holdings</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-gray-900">
-                              ${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                            </div>
-                            <div className={`text-sm ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {gainLoss >= 0 ? '+' : ''}${gainLoss.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                              ({gainLoss >= 0 ? '+' : ''}{gainLossPercent.toFixed(1)}%)
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Top holdings in this account */}
-                        <div className="space-y-2">
-                          {accountHoldings.slice(0, 3).map((holding) => (
-                            <div key={holding.id} className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600">{holding.ticker}</span>
-                              <span className="font-medium">
-                                ${(holding.shares * holding.currentPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                              </span>
-                            </div>
-                          ))}
-                          {accountHoldings.length > 3 && (
-                            <div className="text-xs text-gray-500 text-center">
-                              +{accountHoldings.length - 3} more holdings
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile</h3>
+              <div className="flex items-center space-x-4">
+                <div className="bg-blue-600 text-white p-3 rounded-full">
+                  <User className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{user?.email || 'User'}</div>
+                  <div className="text-sm text-gray-500">Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Recently'}</div>
+                </div>
               </div>
+            </div>
+
+            {/* Subscription Status */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscription</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-gray-900">{currentPlan.name}</div>
+                    <div className="text-sm text-gray-500">{currentPlan.description}</div>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    currentPlan.type === 'premium' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {currentPlan.type.toUpperCase()}
+                  </div>
+                </div>
+                
+                {currentPlan.type === 'basic' && (
+                  <button
+                    onClick={() => upgradeToPremium()}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center"
+                  >
+                    <img 
+                      src="/premium_starincircle.png" 
+                      alt="Premium" 
+                      className="h-5 w-5 mr-2"
+                    />
+                    Upgrade to Premium - $9.99/month
+                  </button>
+                )}
+                
+                {currentPlan.type === 'premium' && subscription && (
+                  <div className="text-sm text-gray-500">
+                    {subscription.cancelAtPeriodEnd 
+                      ? `Expires: ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+                      : `Next billing: ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+                    }
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                  <span className="font-medium text-gray-900">Payment History</span>
+                  <span className="text-gray-400">→</span>
+                </button>
+                
+                <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                  <span className="font-medium text-gray-900">Export Data</span>
+                  <span className="text-gray-400">→</span>
+                </button>
+                
+                <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                  <span className="font-medium text-gray-900">Settings</span>
+                  <span className="text-gray-400">→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sign Out */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <button 
+                onClick={signOut}
+                className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center"
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Sign Out
+              </button>
             </div>
           </div>
         )}

@@ -49,10 +49,10 @@ const isMobile = () => {
   // Check for actual mobile devices first
   const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
-  // Only use screen width for actual mobile devices or very small screens
-  const isSmallScreen = window.innerWidth <= 480; // Much smaller threshold
+  // Use a more reasonable mobile breakpoint for modern phones and tablets
+  const isSmallScreen = window.innerWidth <= 768; // Standard mobile breakpoint
   
-  // Only consider mobile if it's an actual mobile device OR a very small screen
+  // Consider mobile if it's a mobile device OR small screen (tablets in portrait)
   return isMobileDevice || isSmallScreen;
 };
 

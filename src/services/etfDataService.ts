@@ -94,7 +94,7 @@ export async function fetchETFInfo(symbol: string): Promise<ETFInfo | null> {
   try {
     // Fetch basic ETF info and sector weightings in parallel
     const [basicInfoResponse, sectorWeightings] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/api/v3/etf-info?symbol=${symbol}&apikey=${FMP_API_KEY}`),
+      fetch(`https://financialmodelingprep.com/api/v4/etf-info?symbol=${symbol}&apikey=${FMP_API_KEY}`),
       fetchETFSectorWeightings(symbol)
     ]);
     
@@ -120,7 +120,7 @@ export async function fetchETFInfo(symbol: string): Promise<ETFInfo | null> {
       symbol: etfData.symbol || symbol,  
       name: etfData.name || '',
       expenseRatio: parseFloat(etfData.expenseRatio) || 0,
-      aum: parseFloat(etfData.assetsUnderManagement) || 0,
+      aum: parseFloat(etfData.aum) || 0, // v4 API uses 'aum' directly instead of 'assetsUnderManagement'
       dividendYield: etfData.dividendYield ? parseFloat(etfData.dividendYield) : undefined,
       holdingsCount: parseInt(etfData.holdingsCount) || 0,
       inceptionDate: etfData.inceptionDate || '',

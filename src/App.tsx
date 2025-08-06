@@ -67,6 +67,7 @@ const AppContent: React.FC = () => {
     summaryLoading,
     holdingsLoading,
     marketDataLoading,
+    isRefreshing,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -207,6 +208,7 @@ const AppContent: React.FC = () => {
         onAddTransaction={addTransaction}
         onRefresh={refreshData}
         loading={portfolioLoading}
+        isRefreshing={isRefreshing}
       />
     );
   }
@@ -214,6 +216,18 @@ const AppContent: React.FC = () => {
   // Desktop version
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+      {/* Background Refresh Indicator */}
+      {isRefreshing && (
+        <div className="bg-blue-600/20 border-b border-blue-500/30 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div className="flex items-center space-x-2 text-blue-300 text-sm">
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span>Updating portfolio data in background...</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Error Banner */}
       {portfolioError && (
         <div className="bg-yellow-500/20 border border-yellow-500/50 backdrop-blur-sm p-4">
@@ -249,11 +263,11 @@ const AppContent: React.FC = () => {
               )}
               <button
                 onClick={refreshData}
-                disabled={portfolioLoading}
+                disabled={isRefreshing}
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-200 bg-blue-600/30 rounded-lg hover:bg-blue-600/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all backdrop-blur-sm border border-blue-500/30"
               >
-                <RefreshCw className={`h-4 w-4 ${portfolioLoading ? 'animate-spin' : ''}`} />
-                <span>{portfolioLoading ? 'Refreshing...' : 'Refresh Data'}</span>
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
               </button>
               <button
                 onClick={() => setIsExportModalOpen(true)}

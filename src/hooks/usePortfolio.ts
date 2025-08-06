@@ -18,6 +18,7 @@ export const usePortfolio = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Progressive loading states
   const [summaryLoading, setSummaryLoading] = useState(true);
@@ -361,8 +362,8 @@ export const usePortfolio = () => {
   const refreshData = async () => {
     try {
       setError(null);
-      setLoading(true); // Show loading state during refresh
-      console.log('🔄 Refreshing all portfolio data...');
+      setIsRefreshing(true); // Only show spinner on refresh button, don't block UI
+      console.log('🔄 Refreshing all portfolio data in background...');
       
       // Update prices for all holdings
       const updatedHoldings = await updateHoldingPrices(holdings);
@@ -385,12 +386,12 @@ export const usePortfolio = () => {
       setDividendAnalysis(divAnalysis);
       
       setLastUpdated(new Date());
-      console.log('✅ Portfolio data refresh completed');
+      console.log('✅ Portfolio data refresh completed in background');
     } catch (err) {
       console.error('Error refreshing data:', err);
       setError(err instanceof Error ? err.message : 'Failed to refresh data');
     } finally {
-      setLoading(false); // Clear loading state
+      setIsRefreshing(false); // Only clear refresh spinner, keep UI interactive
     }
   };
   
@@ -741,6 +742,7 @@ export const usePortfolio = () => {
     loading,
     error,
     lastUpdated,
+    isRefreshing,
     // Progressive loading states
     summaryLoading,
     holdingsLoading,

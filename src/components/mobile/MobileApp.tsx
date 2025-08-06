@@ -22,6 +22,7 @@ interface MobileAppProps {
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
   onRefresh?: () => Promise<void>;
   loading?: boolean;
+  isRefreshing?: boolean;
 }
 
 export const MobileApp: React.FC<MobileAppProps> = ({ 
@@ -29,11 +30,11 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   transactions, 
   onAddTransaction, 
   onRefresh,
-  loading = false 
+  loading = false,
+  isRefreshing = false 
 }) => {
   const [activeTab, setActiveTab] = useState('portfolio');
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMyAccountModalOpen, setIsMyAccountModalOpen] = useState(false);
   const [portfolioFilter, setPortfolioFilter] = useState<'stocks' | 'etfs' | 'bonds' | 'all'>('all');
 
@@ -52,13 +53,12 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   const handleRefresh = async () => {
     if (!onRefresh || isRefreshing) return;
     
-    setIsRefreshing(true);
     hapticFeedback('medium');
     
     try {
       await onRefresh();
-    } finally {
-      setIsRefreshing(false);
+    } catch (error) {
+      console.error('Mobile refresh error:', error);
     }
   };
 
@@ -93,6 +93,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
         onAddTransaction={() => setIsTransactionModalOpen(true)}
         showAddButton={activeTab === 'portfolio' || activeTab === 'transactions'}
         loading={loading}
+        isRefreshing={isRefreshing}
         onMenuClick={() => setIsMyAccountModalOpen(true)}
       />
       

@@ -13,6 +13,7 @@ interface MobileHeaderProps {
   onAddTransaction?: () => void;
   showAddButton?: boolean;
   loading?: boolean;
+  isRefreshing?: boolean;
   onMenuClick?: () => void;
 }
 
@@ -21,6 +22,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onAddTransaction, 
   showAddButton = false,
   loading = false,
+  isRefreshing = false,
   onMenuClick
 }) => {
   const { signOut } = useAuth();
@@ -87,7 +89,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             </button>
           )}
           
-          {loading && (
+          {(loading || isRefreshing) && (
             <div className="p-2">
               <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />
             </div>

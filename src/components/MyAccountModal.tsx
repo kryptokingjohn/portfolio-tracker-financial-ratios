@@ -190,9 +190,15 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
               {/* Sign Out Button */}
               <div className="mt-4 pt-4 border-t border-gray-700">
                 <button
-                  onClick={() => {
-                    signOut();
-                    onClose();
+                  onClick={async () => {
+                    try {
+                      await signOut();
+                      onClose();
+                    } catch (error) {
+                      console.error('Sign out error:', error);
+                      // Still close modal even if signOut fails
+                      onClose();
+                    }
                   }}
                   className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors text-red-300 hover:bg-red-600/20 hover:text-red-200"
                 >

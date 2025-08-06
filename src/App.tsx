@@ -322,14 +322,6 @@ const AppContent: React.FC = () => {
                   </span>
                 )}
               </div>
-              
-              <button
-                onClick={signOut}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-200 bg-red-600/30 rounded-lg hover:bg-red-600/40 transition-all backdrop-blur-sm border border-red-500/30"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Log Out</span>
-              </button>
             </div>
           </div>
         </div>

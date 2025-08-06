@@ -293,7 +293,11 @@ const AppContent: React.FC = () => {
                 title={`Current Plan: ${currentPlan.name}`}
               >
                 {currentPlan.type === 'premium' ? (
-                  <Shield className="h-4 w-4 fill-amber-300 text-amber-300" />
+                  <img 
+                    src="/premium_starincircle.png" 
+                    alt="Premium" 
+                    className="h-4 w-4"
+                  />
                 ) : (
                   <Shield className="h-4 w-4 fill-slate-400 text-slate-400" />
                 )}

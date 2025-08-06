@@ -17,7 +17,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ activeTab, o
   const tabs = [
     { id: 'portfolio', label: 'Portfolio', icon: PieChart },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'account', label: 'Account', icon: User },
+    { id: 'accounts', label: 'Accounts', icon: Building },
     { id: 'dividends', label: 'Dividends', icon: DollarSign },
     { id: 'tax', label: 'Tax', icon: Calculator },
     { id: 'ratios', label: 'Ratios', icon: BookOpen },

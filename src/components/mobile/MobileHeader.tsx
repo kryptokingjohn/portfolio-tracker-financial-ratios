@@ -12,13 +12,15 @@ interface MobileHeaderProps {
   onAddTransaction?: () => void;
   showAddButton?: boolean;
   loading?: boolean;
+  onMenuClick?: () => void;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ 
   title, 
   onAddTransaction, 
   showAddButton = false,
-  loading = false
+  loading = false,
+  onMenuClick
 }) => {
   const { signOut } = useAuth();
 
@@ -26,6 +28,14 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     <div className="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
+          {onMenuClick && (
+            <button 
+              onClick={onMenuClick}
+              className="p-2 text-gray-600 hover:text-gray-800 -ml-2"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
           <h1 className="text-xl font-bold text-gray-900">{title}</h1>
         </div>
         

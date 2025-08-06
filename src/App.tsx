@@ -285,7 +285,7 @@ const AppContent: React.FC = () => {
               
               {/* Plan Status Indicator */}
               <div 
-                className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border ${
+                className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border min-w-[120px] ${
                   currentPlan.type === 'premium'
                     ? 'text-amber-200 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border-amber-500/30 shadow-lg'
                     : 'text-slate-300 bg-gradient-to-r from-slate-600/20 to-gray-600/20 border-slate-500/30'

@@ -365,15 +365,15 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                     ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30 shadow-lg'
                     : isAccessible
                     ? 'text-gray-300 hover:text-white hover:bg-gray-700/30 border border-transparent hover:border-gray-600/30'
-                    : 'text-gray-500 cursor-not-allowed bg-gray-700/20 border border-gray-700'
+                    : 'text-gray-400 cursor-not-allowed bg-gray-600/30 border border-gray-600/50 backdrop-blur-md'
                 }`}
                 title={!isAccessible ? 'Upgrade to Premium to access advanced analytics' : ''}
               >
-                <Icon className={`h-4 w-4 ${window.innerWidth <= 768 ? 'mr-1' : 'mr-2'} ${isAccessible ? '' : 'text-gray-500'}`} />
+                <Icon className={`h-4 w-4 ${window.innerWidth <= 768 ? 'mr-1' : 'mr-2'} ${isAccessible ? '' : 'text-gray-400'}`} />
                 <span className="hidden sm:inline">{tab.label}</span>
                 <span className="sm:hidden">{tab.shortLabel}</span>
                 {!isAccessible && (
-                  <span className="ml-1 md:ml-2 text-xs bg-yellow-600 text-yellow-200 px-1 md:px-1.5 py-0.5 rounded">Pro</span>
+                  <span className="ml-1 md:ml-2 text-xs bg-yellow-600/80 text-yellow-100 px-1 md:px-1.5 py-0.5 rounded font-medium border border-yellow-500/30">Pro</span>
                 )}
               </button>
             );

@@ -285,25 +285,29 @@ const AppContent: React.FC = () => {
               
               {/* Plan Status Indicator */}
               <div 
-                className={`flex items-center justify-center space-x-2 px-4 py-2 pr-6 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border min-w-[120px] ${
+                className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg transition-all backdrop-blur-sm border overflow-hidden ${
                   currentPlan.type === 'premium'
                     ? 'text-amber-200 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border-amber-500/30 shadow-lg'
                     : 'text-slate-300 bg-gradient-to-r from-slate-600/20 to-gray-600/20 border-slate-500/30'
                 }`}
                 title={`Current Plan: ${currentPlan.name}`}
               >
-                {currentPlan.type === 'premium' ? (
-                  <img 
-                    src="/premium_starincircle.png" 
-                    alt="Premium" 
-                    className="h-4 w-4"
-                  />
-                ) : (
-                  <Shield className="h-4 w-4 fill-slate-400 text-slate-400" />
-                )}
-                <span className="font-medium">{currentPlan.name}</span>
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                  {currentPlan.type === 'premium' ? (
+                    <img 
+                      src="/premium_starincircle.png" 
+                      alt="Premium" 
+                      className="h-4 w-4 flex-shrink-0"
+                    />
+                  ) : (
+                    <Shield className="h-4 w-4 fill-slate-400 text-slate-400 flex-shrink-0" />
+                  )}
+                  <span className="font-medium whitespace-nowrap">{currentPlan.name}</span>
+                </div>
                 {currentPlan.type === 'premium' && (
-                  <span className="text-xs bg-amber-500/20 px-1.5 py-0.5 rounded-full">PRO</span>
+                  <span className="text-xs bg-amber-500/30 border border-amber-400/20 text-amber-100 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
+                    PRO
+                  </span>
                 )}
               </div>
               

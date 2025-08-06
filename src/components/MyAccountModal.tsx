@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { User, Settings, CreditCard, Receipt, X, Check, AlertTriangle } from 'lucide-react';
+import { User, Settings, CreditCard, Receipt, X, Check, AlertTriangle, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuthSimple';
 import { useSubscription } from '../hooks/useSubscription';
 import { SUBSCRIPTION_PLANS } from '../types/subscription';
@@ -15,7 +15,7 @@ interface MyAccountModalProps {
 type TabType = 'profile' | 'subscription' | 'billing' | 'payment-history';
 
 export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose }) => {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, signOut } = useAuth();
   const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment, openBillingPortal, getSubscriptionDetails, activatePremium } = useSubscription();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [loading, setLoading] = useState(false);
@@ -186,6 +186,20 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                   </button>
                 );
               })}
+              
+              {/* Sign Out Button */}
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <button
+                  onClick={() => {
+                    signOut();
+                    onClose();
+                  }}
+                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors text-red-300 hover:bg-red-600/20 hover:text-red-200"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </nav>
           </div>
 

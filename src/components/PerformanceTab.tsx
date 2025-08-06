@@ -41,6 +41,12 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'ytd' | '1y' | '3y' | '5y' | '10y'>('1y');
   const [selectedAllocationView, setSelectedAllocationView] = useState<'cap' | 'sector' | 'type'>('cap');
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'attribution' | 'risk' | 'charts' | 'benchmarks'>('overview');
+  const [holdingFilter, setHoldingFilter] = useState<'stocks' | 'etfs' | 'bonds' | 'all'>('all');
+
+  // Filter holdings based on type
+  const filteredHoldings = holdingFilter === 'all' 
+    ? holdings 
+    : holdings.filter(holding => holding.type === holdingFilter);
 
   // Mock benchmark data - in a real app, this would come from an API
   const benchmarks: BenchmarkData[] = [
@@ -106,7 +112,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
     let totalValue = 0;
     let totalCost = 0;
 
-    holdings.forEach(holding => {
+    filteredHoldings.forEach(holding => {
       const currentValue = holding.shares * holding.currentPrice;
       const cost = holding.shares * holding.costBasis;
       totalValue += currentValue;
@@ -135,7 +141,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
   // Calculate asset allocation data
   const calculateAssetAllocation = () => {
     let totalValue = 0;
-    holdings.forEach(holding => {
+    filteredHoldings.forEach(holding => {
       totalValue += holding.shares * holding.currentPrice;
     });
 
@@ -158,7 +164,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       'Bonds': 0
     };
 
-    holdings.forEach(holding => {
+    filteredHoldings.forEach(holding => {
       const value = holding.shares * holding.currentPrice;
       const percentage = (value / totalValue) * 100;
 
@@ -207,12 +213,12 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
     let weightedDividendYield = 0;
     let weightedRevenueGrowth = 0;
 
-    holdings.forEach(holding => {
+    filteredHoldings.forEach(holding => {
       const value = holding.shares * holding.currentPrice;
       totalValue += value;
     });
 
-    holdings.forEach(holding => {
+    filteredHoldings.forEach(holding => {
       const value = holding.shares * holding.currentPrice;
       const weight = value / totalValue;
 
@@ -339,13 +345,13 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
     <div className="space-y-6">
       {/* Sub-navigation */}
       <div className="border-b border-gray-700/50">
-        <nav className="flex space-x-2">
+        <nav className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
           {[
-            { id: 'overview', label: 'Performance Overview', icon: TrendingUp, requiresPremium: false },
-            { id: 'attribution', label: 'Attribution Analysis', icon: Target, requiresPremium: true },
-            { id: 'risk', label: 'Risk Analytics', icon: BarChart3, requiresPremium: true },
-            { id: 'charts', label: 'Advanced Charts', icon: Activity, requiresPremium: true },
-            { id: 'benchmarks', label: 'Benchmark Comparison', icon: Award, requiresPremium: true }
+            { id: 'overview', label: 'Performance Overview', shortLabel: 'Overview', icon: TrendingUp, requiresPremium: false },
+            { id: 'attribution', label: 'Attribution Analysis', shortLabel: 'Attribution', icon: Target, requiresPremium: true },
+            { id: 'risk', label: 'Risk Analytics', shortLabel: 'Risk', icon: BarChart3, requiresPremium: true },
+            { id: 'charts', label: 'Advanced Charts', shortLabel: 'Charts', icon: Activity, requiresPremium: true },
+            { id: 'benchmarks', label: 'Benchmark Comparison', shortLabel: 'Benchmarks', icon: Award, requiresPremium: true }
           ].map((tab) => {
             const Icon = tab.icon;
             const isAccessible = !tab.requiresPremium || hasAdvancedChartsAccess();
@@ -354,7 +360,7 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                 key={tab.id}
                 onClick={() => isAccessible && setActiveSubTab(tab.id as any)}
                 disabled={!isAccessible}
-                className={`py-3 px-4 font-medium text-sm flex items-center transition-all rounded-lg backdrop-blur-sm relative ${
+                className={`py-3 px-3 md:px-4 font-medium text-xs md:text-sm flex items-center transition-all rounded-lg backdrop-blur-sm relative whitespace-nowrap ${
                   activeSubTab === tab.id && isAccessible
                     ? 'bg-blue-600/30 text-blue-200 border border-blue-500/30 shadow-lg'
                     : isAccessible
@@ -363,10 +369,11 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
                 }`}
                 title={!isAccessible ? 'Upgrade to Premium to access advanced analytics' : ''}
               >
-                <Icon className={`h-4 w-4 mr-2 ${isAccessible ? '' : 'text-gray-500'}`} />
-                {tab.label}
+                <Icon className={`h-4 w-4 ${window.innerWidth <= 768 ? 'mr-1' : 'mr-2'} ${isAccessible ? '' : 'text-gray-500'}`} />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.shortLabel}</span>
                 {!isAccessible && (
-                  <span className="ml-2 text-xs bg-yellow-600 text-yellow-200 px-1.5 py-0.5 rounded">Premium</span>
+                  <span className="ml-1 md:ml-2 text-xs bg-yellow-600 text-yellow-200 px-1 md:px-1.5 py-0.5 rounded">Pro</span>
                 )}
               </button>
             );

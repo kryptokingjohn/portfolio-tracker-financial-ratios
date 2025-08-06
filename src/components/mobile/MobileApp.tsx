@@ -35,6 +35,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMyAccountModalOpen, setIsMyAccountModalOpen] = useState(false);
+  const [portfolioFilter, setPortfolioFilter] = useState<'stocks' | 'etfs' | 'bonds' | 'all'>('all');
 
   const openQuickView = (ticker: string, company: string, type: string) => {
     const params = new URLSearchParams({ ticker, company, type });
@@ -79,6 +80,11 @@ export const MobileApp: React.FC<MobileAppProps> = ({
   };
 
   const existingTickers = holdings.map(h => h.ticker);
+  
+  // Filter holdings based on selected filter
+  const filteredHoldings = portfolioFilter === 'all' 
+    ? holdings 
+    : holdings.filter(holding => holding.type === portfolioFilter);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 w-full">
@@ -97,8 +103,31 @@ export const MobileApp: React.FC<MobileAppProps> = ({
             <div className="mb-6 w-full">
               <PortfolioSummary holdings={holdings} />
             </div>
+            
+            {/* Portfolio Filter Buttons */}
+            <div className="mb-6">
+              <div className="flex space-x-2 overflow-x-auto pb-2">
+                {(['all', 'stocks', 'etfs', 'bonds'] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => {
+                      hapticFeedback('light');
+                      setPortfolioFilter(filter);
+                    }}
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
+                      portfolioFilter === filter
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {filter === 'all' ? 'All Holdings' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             <div className="space-y-3 w-full">
-              {holdings.map((holding) => (
+              {filteredHoldings.map((holding) => (
                 <MobilePortfolioCard
                   key={holding.id}
                   holding={holding}

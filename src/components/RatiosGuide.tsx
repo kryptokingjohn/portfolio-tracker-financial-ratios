@@ -359,15 +359,15 @@ export const RatiosGuide: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-1">{category.category}</h3>
-                    <p className="text-gray-300 text-sm">{category.description}</p>
+                    <p className="text-gray-100 text-sm font-medium">{category.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-400 font-medium">{category.ratios.length} ratios</span>
+                  <span className="text-sm text-gray-200 font-medium">{category.ratios.length} ratios</span>
                   {isExpanded ? (
-                    <ChevronDown className="h-5 w-5 text-gray-400" />
+                    <ChevronDown className="h-5 w-5 text-gray-200" />
                   ) : (
-                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                    <ChevronRight className="h-5 w-5 text-gray-200" />
                   )}
                 </div>
               </div>
@@ -389,9 +389,9 @@ export const RatiosGuide: React.FC = () => {
                           <div className="flex items-center justify-between mb-4">
                             <h4 className="text-lg font-semibold text-white">{ratio.name}</h4>
                             {isRatioExpanded ? (
-                              <ChevronDown className="h-5 w-5 text-gray-400" />
+                              <ChevronDown className="h-5 w-5 text-gray-200" />
                             ) : (
-                              <ChevronRight className="h-5 w-5 text-gray-400" />
+                              <ChevronRight className="h-5 w-5 text-gray-200" />
                             )}
                           </div>
                           

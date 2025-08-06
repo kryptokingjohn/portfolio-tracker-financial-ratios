@@ -188,12 +188,26 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
           await Promise.all(batch.map(async (holding) => {
             const assetType = holding.type || detectAssetType(holding.ticker, holding.company);
             
+            // Debug: Log asset type detection
+            console.log(`🔍 Asset type detection for ${holding.ticker}:`, {
+              ticker: holding.ticker,
+              company: holding.company,
+              detectedType: assetType,
+              filter: filter,
+              shouldLoadETF: assetType === 'etfs' && (filter === 'etfs' || filter === 'all')
+            });
+            
             // Only load ETF data if we need it
             if (assetType === 'etfs' && (filter === 'etfs' || filter === 'all')) {
               try {
+                console.log(`📡 Loading ETF data for ${holding.ticker}...`);
                 const etfInfo = await getCachedETFInfo(holding.ticker);
                 if (etfInfo) {
-                  newEtfData.set(holding.ticker, processETFMetrics(etfInfo, isPremiumUser));
+                  const metrics = processETFMetrics(etfInfo, isPremiumUser);
+                  console.log(`✅ ETF metrics processed for ${holding.ticker}:`, metrics);
+                  newEtfData.set(holding.ticker, metrics);
+                } else {
+                  console.warn(`⚠️ No ETF info returned for ${holding.ticker}`);
                 }
               } catch (error) {
                 console.warn(`Failed to load ETF data for ${holding.ticker}:`, error);
@@ -216,6 +230,17 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
           // Small delay between batches to keep UI responsive
           await new Promise(resolve => setTimeout(resolve, 50));
         }
+        
+        console.log(`🎯 Final ETF data loaded:`, {
+          totalETFs: newEtfData.size,
+          tickers: Array.from(newEtfData.keys()),
+          filter: filter
+        });
+        console.log(`🎯 Final Bond data loaded:`, {
+          totalBonds: newBondData.size,
+          tickers: Array.from(newBondData.keys()),
+          filter: filter
+        });
         
         setEtfData(newEtfData);
         setBondData(newBondData);
@@ -557,6 +582,12 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                   {/* Asset-specific columns */}
                   {showETFColumns && (() => {
                     const etfMetrics = etfData.get(holding.ticker);
+                    console.log(`📊 Rendering ETF data for ${holding.ticker}:`, {
+                      hasEtfMetrics: !!etfMetrics,
+                      etfMetrics: etfMetrics,
+                      showETFColumns: showETFColumns,
+                      totalETFDataSize: etfData.size
+                    });
                     return (
                       <>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-green-300">

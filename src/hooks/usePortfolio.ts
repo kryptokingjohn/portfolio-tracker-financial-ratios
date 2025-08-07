@@ -8,6 +8,7 @@ import { DividendTracker } from '../utils/dividendTracker';
 import { useAuth } from './useAuthSimple';
 import FinancialDataService from '../services/financialDataService';
 import { detectAssetType } from '../utils/assetTypeDetector';
+import { PortfolioCache } from '../utils/secureStorage';
 
 export const usePortfolio = () => {
   const { user } = useAuth();
@@ -43,19 +44,13 @@ export const usePortfolio = () => {
       setMarketDataLoading(true);
       setError(null);
 
-      // Quick Win: Try to load cached data first for instant display
+      // 🚨 Security: Try to load cached data first for instant display using secure storage
       try {
-        const cachedData = localStorage.getItem('portfolio_cache');
-        if (cachedData) {
-          const { holdings: cachedHoldings, transactions: cachedTransactions, timestamp } = JSON.parse(cachedData);
-          const cacheAge = Date.now() - timestamp;
-          
-          // Show cached data immediately if available (even if older than 30 min)
-          // Fresh data will update in background
-          if (cachedHoldings.length > 0) {
-            console.log(`⚡ Displaying cached portfolio (${Math.floor(cacheAge / 60000)}min old) for instant load`);
-            setHoldings(cachedHoldings);
-            if (cachedTransactions) setTransactions(cachedTransactions);
+        const cachedData = PortfolioCache.retrieve();
+        if (cachedData && cachedData.holdings.length > 0) {
+          console.log(`⚡ Displaying cached portfolio (${Math.floor(cachedData.age / 60000)}min old) for instant load`);
+          setHoldings(cachedData.holdings);
+          if (cachedData.transactions) setTransactions(cachedData.transactions);
             setSummaryLoading(false);
             setLoading(false); // Allow immediate interaction
             
@@ -144,17 +139,20 @@ export const usePortfolio = () => {
         const divAnalysis = DividendTracker.analyzeDividends(enrichedHoldings, transactionsData);
         setDividendAnalysis(divAnalysis);
         
-        // Cache the final enriched data
+        // 🚨 Security: Cache the final enriched data using secure storage
         try {
-          const cacheData = {
+          const success = PortfolioCache.store({
             holdings: enrichedHoldings,
             transactions: transactionsData,
-            timestamp: Date.now()
-          };
-          localStorage.setItem('portfolio_cache', JSON.stringify(cacheData));
-          console.log('💾 Enhanced portfolio data cached for next load');
+            dividendAnalysis: divAnalysis
+          });
+          if (success) {
+            console.log('💾 Enhanced portfolio data securely cached for next load');
+          } else {
+            console.warn('⚠️ Failed to cache enhanced data securely');
+          }
         } catch (cacheError) {
-          console.warn('Failed to cache enhanced data:', cacheError);
+          console.warn('🚨 Failed to cache enhanced data:', cacheError);
         }
       }).catch(error => {
         console.warn('Background enhancement failed:', error);

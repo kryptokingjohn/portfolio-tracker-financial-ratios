@@ -1,7 +1,7 @@
 // Stripe configuration
 export const stripeConfig = {
-  // Use your publishable key here (starts with pk_test_ or pk_live_)
-  publishableKey: 'pk_live_51RqCR0Ps18njWuYee4uw1W8MPygaXoovMOHvjOjeGJhWyECgT5fWrZroJH0zX3bCcB4Jq24LupESvz1ZvPmphYjp00ZGBnSEAr', // Replace with your actual key
+  // Use environment variable for publishable key - NEVER hardcode in source
+  publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '',
   
   // Subscription plans
   plans: {

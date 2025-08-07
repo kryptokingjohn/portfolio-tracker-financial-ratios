@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus, TrendingUp, TrendingDown, DollarSign, Percent, Split, Users, FileText, CreditCard } from 'lucide-react';
 import { Transaction } from '../types/portfolio';
+import { validateTransaction, sanitizeText } from '../utils/security';
 
 interface AddTransactionModalProps {
   onClose: () => void;
@@ -23,6 +24,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
     newTicker: ''
   });
 
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
   const transactionTypes = [
     { value: 'buy', label: 'Buy', icon: Plus, color: 'text-green-600', description: 'Purchase shares' },
     { value: 'sell', label: 'Sell', icon: TrendingDown, color: 'text-red-600', description: 'Sell shares' },
@@ -41,14 +44,18 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear previous validation errors
+    setValidationErrors([]);
+    
+    // Prepare transaction data with sanitized inputs
     const transaction: Omit<Transaction, 'id'> = {
-      ticker: formData.ticker.toUpperCase(),
+      ticker: formData.ticker.trim().toUpperCase(),
       type: formData.type,
       accountType: formData.accountType,
       date: formData.date,
       amount: formData.amount,
       fees: formData.fees || 0,
-      notes: formData.notes || undefined
+      notes: formData.notes ? sanitizeText(formData.notes, 500) : undefined
     };
 
     // Add conditional fields based on transaction type
@@ -58,12 +65,22 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
     }
 
     if (formData.type === 'split') {
-      transaction.splitRatio = formData.splitRatio;
+      transaction.splitRatio = sanitizeText(formData.splitRatio, 20);
     }
 
     if (['spinoff', 'merger'].includes(formData.type)) {
-      transaction.newTicker = formData.newTicker;
+      transaction.newTicker = formData.newTicker.trim().toUpperCase();
     }
+
+    // Validate transaction data
+    const validationResult = validateTransaction(transaction);
+    if (!validationResult.valid) {
+      setValidationErrors(validationResult.errors);
+      return; // Don't submit if validation fails
+    }
+
+    // 🚨 Security: Log transaction creation for audit trail
+    console.log(`🔒 Creating transaction: ${transaction.type} ${transaction.ticker} for $${transaction.amount}`);
 
     onAdd(transaction);
     onClose();
@@ -106,6 +123,18 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
             <X className="h-6 w-6" />
           </button>
         </div>
+
+        {/* Validation Errors Display */}
+        {validationErrors.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <h4 className="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h4>
+            <ul className="text-sm text-red-700 space-y-1">
+              {validationErrors.map((error, index) => (
+                <li key={index}>• {error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Transaction Type Selection */}

@@ -1,7 +1,12 @@
 // ETF Data Service - Fetches ETF-specific data from Financial Modeling Prep API
 
-const FMP_API_KEY = 'dlzQb3cU7yOPGnNy8agxl9e7PI7pkAtH';
+const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY || process.env.REACT_APP_FMP_API_KEY || '';
 const FMP_BASE_URL = 'https://financialmodelingprep.com/stable';
+
+// Validate API key on module load
+if (!FMP_API_KEY) {
+  console.error('🚨 SECURITY: FMP_API_KEY not found in environment variables');
+}
 
 export interface ETFInfo {
   symbol: string;

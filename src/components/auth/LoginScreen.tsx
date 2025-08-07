@@ -8,6 +8,7 @@ import Shield from 'lucide-react/dist/esm/icons/shield';
 import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import { useAuth } from '../../hooks/useAuthSimple';
+import { validateEmail, validatePassword, authRateLimiter, sanitizeText } from '../../utils/security';
 
 export const LoginScreen: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,37 +17,64 @@ export const LoginScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
-  const [passwordError, setPasswordError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const { signIn, signUp } = useAuth();
-
-
-  const validatePassword = (password: string): boolean => {
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters long');
-      return false;
-    }
-    setPasswordError('');
-    return true;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     setLoading(true);
     setMessage(null);
-    setPasswordError('');
+    setValidationErrors([]);
 
-    // Validate password for sign up
-    if (!isLogin && !validatePassword(password)) {
+    // 🚨 Security: Rate limiting for authentication attempts
+    const clientId = `auth_${email}_${navigator.userAgent.slice(0, 50)}`;
+    if (!authRateLimiter.isAllowed(clientId)) {
+      setMessage({
+        type: 'error',
+        text: `Too many attempts. Please wait before trying again. (${authRateLimiter.getRemainingAttempts(clientId)} attempts remaining)`
+      });
+      setLoading(false);
+      return;
+    }
+
+    // 🚨 Security: Sanitize inputs
+    const sanitizedEmail = sanitizeText(email.trim().toLowerCase(), 254);
+    
+    // 🚨 Security: Validate inputs
+    const errors: string[] = [];
+    
+    const emailValidation = validateEmail(sanitizedEmail);
+    if (!emailValidation.valid) {
+      errors.push(emailValidation.error!);
+    }
+    
+    if (!isLogin) {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.valid) {
+        errors.push(passwordValidation.error!);
+      }
+    } else {
+      // For login, just check basic password requirements
+      if (!password || password.length < 1) {
+        errors.push('Password is required');
+      }
+    }
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
       setLoading(false);
       return;
     }
 
     try {
+      // 🚨 Security: Log authentication attempt for audit trail
+      console.log(`🔒 Authentication attempt: ${isLogin ? 'Sign In' : 'Sign Up'} for ${sanitizedEmail}`);
+      
       const { error } = isLogin 
-        ? await signIn(email, password)
-        : await signUp(email, password);
+        ? await signIn(sanitizedEmail, password)
+        : await signUp(sanitizedEmail, password);
 
       if (error) {
         // Comprehensive error handling with specific user-friendly messages
@@ -217,9 +245,14 @@ export const LoginScreen: React.FC = () => {
               </div>
             </div>
 
-            {passwordError && (
-              <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3">
-                <p className="text-yellow-200 text-sm">{passwordError}</p>
+            {validationErrors.length > 0 && (
+              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
+                <p className="text-red-200 text-sm font-medium mb-2">Please fix the following errors:</p>
+                <ul className="text-red-200 text-sm space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>• {error}</li>
+                  ))}
+                </ul>
               </div>
             )}
 

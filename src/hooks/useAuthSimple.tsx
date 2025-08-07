@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: { email?: string; password?: string }) => Promise<{ error: any }>;
+  handleUserActivity: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,17 +28,26 @@ export const useAuthState = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true); // Start with loading to check for existing session
   const [sessionTimeoutId, setSessionTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [inactivityTimeoutId, setInactivityTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
-  // Function to handle session timeout (5 minutes)
+  // Get session timeout from environment variables (default 30 minutes)
+  const getSessionTimeoutMinutes = () => {
+    const envTimeout = import.meta.env.VITE_SESSION_TIMEOUT_MINUTES;
+    return envTimeout ? parseInt(envTimeout) : 30;
+  };
+
+  // Function to handle session timeout with configurable duration
   const startSessionTimeout = () => {
     if (sessionTimeoutId) {
       clearTimeout(sessionTimeoutId);
     }
     
+    const timeoutMinutes = getSessionTimeoutMinutes();
     const timeoutId = setTimeout(() => {
-      console.log('Session timeout after 5 minutes - signing out');
+      console.log(`🔐 Session timeout after ${timeoutMinutes} minutes - signing out for security`);
       signOut();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, timeoutMinutes * 60 * 1000);
     
     setSessionTimeoutId(timeoutId);
   };
@@ -47,6 +57,44 @@ export const useAuthState = () => {
     if (sessionTimeoutId) {
       clearTimeout(sessionTimeoutId);
       setSessionTimeoutId(null);
+    }
+    if (inactivityTimeoutId) {
+      clearTimeout(inactivityTimeoutId);
+      setInactivityTimeoutId(null);
+    }
+  };
+
+  // Function to handle user activity and reset inactivity timer
+  const handleUserActivity = () => {
+    setLastActivity(Date.now());
+    
+    // Clear existing inactivity timeout
+    if (inactivityTimeoutId) {
+      clearTimeout(inactivityTimeoutId);
+    }
+    
+    // Set new inactivity timeout (15 minutes of inactivity)
+    const inactivityTimeout = setTimeout(() => {
+      console.log('🔐 User inactive for 15 minutes - signing out for security');
+      signOut();
+    }, 15 * 60 * 1000); // 15 minutes
+    
+    setInactivityTimeoutId(inactivityTimeout);
+  };
+
+  // Function to refresh session token periodically
+  const refreshSession = async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.warn('🔐 Session refresh failed:', error.message);
+        signOut();
+      } else {
+        console.log('🔐 Session refreshed successfully');
+      }
+    } catch (error) {
+      console.warn('🔐 Session refresh error:', error);
+      signOut();
     }
   };
 
@@ -84,6 +132,16 @@ export const useAuthState = () => {
 
         if (session) {
           startSessionTimeout();
+          handleUserActivity(); // Start inactivity tracking
+          
+          // Set up periodic session refresh (every 45 minutes)
+          const refreshInterval = setInterval(refreshSession, 45 * 60 * 1000);
+          
+          // Clean up on unmount
+          return () => {
+            clearInterval(refreshInterval);
+            clearSessionTimeout();
+          };
         } else {
           clearSessionTimeout();
         }
@@ -107,10 +165,11 @@ export const useAuthState = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('User authenticated - starting 5-minute session timeout');
+          const timeoutMinutes = getSessionTimeoutMinutes();
+          console.log(`🔐 User authenticated - starting ${timeoutMinutes}-minute session timeout`);
           startSessionTimeout();
         } else {
-          console.log('User signed out - clearing session timeout');
+          console.log('🔐 User signed out - clearing session timeout');
           clearSessionTimeout();
         }
       }
@@ -210,6 +269,7 @@ export const useAuthState = () => {
     signUp,
     signOut,
     updateUserProfile,
+    handleUserActivity,
   };
 };
 

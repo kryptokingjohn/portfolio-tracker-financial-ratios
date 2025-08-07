@@ -58,7 +58,7 @@ const isMobile = () => {
 
 const AppContent: React.FC = () => {
   // ALL HOOKS MUST BE CALLED CONSISTENTLY - NO EARLY RETURNS BEFORE THIS POINT
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, handleUserActivity } = useAuth();
   const { 
     holdings, 
     transactions, 
@@ -121,6 +121,38 @@ const AppContent: React.FC = () => {
         console.log('ℹ️ This might mean Netlify Functions are not deployed yet');
       });
   }, []);
+
+  // Set up user activity tracking for session security
+  useEffect(() => {
+    if (!user || !handleUserActivity) return; // Only track activity when user is authenticated
+    
+    // Activity events to track
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    // Throttle activity updates to avoid excessive calls
+    let lastActivityUpdate = 0;
+    const throttleDelay = 30000; // 30 seconds
+    
+    const throttledActivityHandler = () => {
+      const now = Date.now();
+      if (now - lastActivityUpdate > throttleDelay) {
+        handleUserActivity();
+        lastActivityUpdate = now;
+      }
+    };
+    
+    // Add activity listeners
+    activityEvents.forEach(event => {
+      document.addEventListener(event, throttledActivityHandler, true);
+    });
+    
+    // Cleanup listeners
+    return () => {
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, throttledActivityHandler, true);
+      });
+    };
+  }, [user, handleUserActivity]);
 
   // Memoized handler functions for transaction editing - STABLE DEPENDENCIES
   const handleEditTransaction = useCallback((transaction: Transaction) => {

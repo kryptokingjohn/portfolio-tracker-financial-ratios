@@ -47,19 +47,30 @@ export const usePortfolio = () => {
       try {
         const cachedData = localStorage.getItem('portfolio_cache');
         if (cachedData) {
-          const { holdings: cachedHoldings, timestamp } = JSON.parse(cachedData);
+          const { holdings: cachedHoldings, transactions: cachedTransactions, timestamp } = JSON.parse(cachedData);
           const cacheAge = Date.now() - timestamp;
           
-          // If cache is less than 30 minutes old, show it immediately
-          if (cacheAge < 30 * 60 * 1000 && cachedHoldings.length > 0) {
-            console.log('⚡ Displaying cached portfolio for instant load');
+          // Show cached data immediately if available (even if older than 30 min)
+          // Fresh data will update in background
+          if (cachedHoldings.length > 0) {
+            console.log(`⚡ Displaying cached portfolio (${Math.floor(cacheAge / 60000)}min old) for instant load`);
             setHoldings(cachedHoldings);
+            if (cachedTransactions) setTransactions(cachedTransactions);
             setSummaryLoading(false);
             setLoading(false); // Allow immediate interaction
             
             // Calculate basic metrics from cached data
             const metrics = PortfolioCalculator.calculatePortfolioMetrics(cachedHoldings);
             setPortfolioMetrics(metrics);
+            
+            // If cache is fresh enough (< 10 minutes), skip some expensive operations
+            if (cacheAge < 10 * 60 * 1000) {
+              console.log('📊 Cache is fresh, skipping expensive API calls');
+              setHoldingsLoading(false);
+              setMarketDataLoading(false);
+              setLastUpdated(new Date(timestamp));
+              return; // Early return with fresh cached data
+            }
           }
         }
       } catch (cacheError) {
@@ -103,52 +114,57 @@ export const usePortfolio = () => {
       setSummaryLoading(false);
       console.log('✅ Phase 1 complete: Basic holdings and transactions loaded');
       
-      // Phase 2: Enrich with financial data (company info, sectors, etc.)
-      console.log('📈 Phase 2: Enriching with financial data...');
+      // Phase 2: Start with price updates first (faster)
+      console.log('💹 Phase 2: Updating market prices (fast operation)...');
+      const updatedHoldings = await updateHoldingPrices(calculatedHoldings);
       
-      // Start Phase 3 in parallel while Phase 2 is running
-      console.log('💹 Phase 3: Starting market price updates in parallel...');
-      const [enrichedHoldings, updatedHoldings] = await Promise.all([
-        enrichHoldingsWithFinancialData(calculatedHoldings),
-        updateHoldingPrices(calculatedHoldings) // Use original holdings for price updates
-      ]);
-      
-      // Merge the results: financial data + updated prices
-      const finalHoldings = enrichedHoldings.map(holding => {
-        const priceUpdate = updatedHoldings.find(h => h.ticker === holding.ticker);
-        return priceUpdate ? { ...holding, currentPrice: priceUpdate.currentPrice } : holding;
-      });
-      
-      console.log(`✅ Phase 2 & 3 complete: Financial data and prices loaded in parallel`);
-      
-      // Update holdings with all enriched data
-      setHoldings(finalHoldings);
+      // Show portfolio with updated prices immediately
+      setHoldings(updatedHoldings);
       setHoldingsLoading(false);
       
-      // Calculate portfolio metrics with latest data
-      const metrics = PortfolioCalculator.calculatePortfolioMetrics(finalHoldings);
+      // Calculate basic metrics with price-updated data
+      const metrics = PortfolioCalculator.calculatePortfolioMetrics(updatedHoldings);
       setPortfolioMetrics(metrics);
       
-      // Calculate dividend analysis
-      const divAnalysis = DividendTracker.analyzeDividends(finalHoldings, transactionsData);
-      setDividendAnalysis(divAnalysis);
+      console.log('✅ Phase 2 complete: Portfolio with current prices displayed');
+      
+      // Phase 3: Enhance with financial data in background (slower operation)
+      console.log('📈 Phase 3: Enhancing with financial data in background...');
+      
+      // Don't await this - let it run in background
+      enrichHoldingsWithFinancialData(updatedHoldings).then(enrichedHoldings => {
+        console.log('✅ Background enhancement complete: Financial data loaded');
+        setHoldings(enrichedHoldings);
+        
+        // Recalculate metrics with enriched data
+        const enhancedMetrics = PortfolioCalculator.calculatePortfolioMetrics(enrichedHoldings);
+        setPortfolioMetrics(enhancedMetrics);
+        
+        // Calculate dividend analysis with enriched data
+        const divAnalysis = DividendTracker.analyzeDividends(enrichedHoldings, transactionsData);
+        setDividendAnalysis(divAnalysis);
+        
+        // Cache the final enriched data
+        try {
+          const cacheData = {
+            holdings: enrichedHoldings,
+            transactions: transactionsData,
+            timestamp: Date.now()
+          };
+          localStorage.setItem('portfolio_cache', JSON.stringify(cacheData));
+          console.log('💾 Enhanced portfolio data cached for next load');
+        } catch (cacheError) {
+          console.warn('Failed to cache enhanced data:', cacheError);
+        }
+      }).catch(error => {
+        console.warn('Background enhancement failed:', error);
+        // Continue with price-updated data
+      });
       
       setMarketDataLoading(false);
       setLastUpdated(new Date());
       
-      // Cache the final data for next load
-      try {
-        const cacheData = {
-          holdings: finalHoldings,
-          timestamp: Date.now()
-        };
-        localStorage.setItem('portfolio_cache', JSON.stringify(cacheData));
-        console.log('💾 Portfolio data cached for next load');
-      } catch (cacheError) {
-        console.warn('Failed to cache portfolio data:', cacheError);
-      }
-      
-      console.log('✅ Phase 3 complete: All portfolio data loaded successfully');
+      console.log('✅ Portfolio ready: User can interact while background enhancement continues');
     } catch (err) {
       console.error('Error loading portfolio data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load portfolio data');
@@ -517,7 +533,7 @@ export const usePortfolio = () => {
   const enrichHoldingsWithFinancialData = async (holdings: Holding[]): Promise<Holding[]> => {
     if (holdings.length === 0) return holdings;
     
-    const BATCH_SIZE = 8; // Optimize batch size to respect API rate limits
+    const BATCH_SIZE = 12; // Increased batch size for faster processing
     const batches: Holding[][] = [];
     
     // Split holdings into batches
@@ -533,9 +549,9 @@ export const usePortfolio = () => {
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex];
       
-      // Add small delay between batches (except first)
+      // Reduced delay between batches for faster processing
       if (batchIndex > 0) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
       
       const batchResults = await Promise.allSettled(

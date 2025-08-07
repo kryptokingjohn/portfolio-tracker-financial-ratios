@@ -401,8 +401,8 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
       {activeSubTab === 'overview' && (
         <>
       {/* Performance Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/60 backdrop-blur-sm rounded-xl border border-blue-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/60 backdrop-blur-sm rounded-xl border border-blue-500/30 p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="bg-blue-600 p-3 rounded-full">
@@ -410,15 +410,15 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
               </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-blue-200">Total Return</div>
-              <div className={`text-2xl font-bold ${portfolioMetrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <div className="text-sm font-semibold text-blue-100 md:text-blue-200">Total Return</div>
+              <div className={`text-2xl font-bold ${portfolioMetrics.totalReturn >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                 {formatPercent(portfolioMetrics.totalReturn)}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-900/60 to-purple-800/60 backdrop-blur-sm rounded-xl border border-purple-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
+        <div className="bg-gradient-to-br from-purple-900/60 to-purple-800/60 backdrop-blur-sm rounded-xl border border-purple-500/30 p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="bg-purple-600 p-3 rounded-full">
@@ -426,14 +426,14 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
               </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-purple-200">Sharpe Ratio</div>
+              <div className="text-sm font-semibold text-purple-100 md:text-purple-200">Sharpe Ratio</div>
               <div className="text-2xl font-bold text-white">{formatNumber(portfolioMetrics.sharpeRatio)}</div>
-              <div className="text-xs text-purple-300">Risk-adjusted return</div>
+              <div className="text-xs text-purple-200 md:text-purple-300">Risk-adjusted return</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-900/60 to-orange-800/60 backdrop-blur-sm rounded-xl border border-orange-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
+        <div className="bg-gradient-to-br from-orange-900/60 to-orange-800/60 backdrop-blur-sm rounded-xl border border-orange-500/30 p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="bg-orange-600 p-3 rounded-full">
@@ -441,14 +441,14 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
               </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-orange-200">Volatility</div>
+              <div className="text-sm font-semibold text-orange-100 md:text-orange-200">Volatility</div>
               <div className="text-2xl font-bold text-white">{formatPercent(portfolioMetrics.volatility)}</div>
-              <div className="text-xs text-orange-300">Annual standard deviation</div>
+              <div className="text-xs text-orange-200 md:text-orange-300">Annual standard deviation</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-900/60 to-red-800/60 backdrop-blur-sm rounded-xl border border-red-500/30 p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
+        <div className="bg-gradient-to-br from-red-900/60 to-red-800/60 backdrop-blur-sm rounded-xl border border-red-500/30 p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="bg-red-600 p-3 rounded-full">
@@ -456,9 +456,9 @@ export const PerformanceTab: React.FC<PerformanceTabProps> = ({ holdings }) => {
               </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-red-200">Max Drawdown</div>
+              <div className="text-sm font-semibold text-red-100 md:text-red-200">Max Drawdown</div>
               <div className="text-2xl font-bold text-white">{formatPercent(portfolioMetrics.maxDrawdown)}</div>
-              <div className="text-xs text-red-300">Largest peak-to-trough decline</div>
+              <div className="text-xs text-red-200 md:text-red-300">Largest peak-to-trough decline</div>
             </div>
           </div>
         </div>

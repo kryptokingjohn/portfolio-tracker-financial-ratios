@@ -296,7 +296,7 @@ const AppContent: React.FC = () => {
       {/* Header */}
       <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="bg-white/10 p-2 rounded-full backdrop-blur-sm border border-white/20">
                 <img 
@@ -307,12 +307,18 @@ const AppContent: React.FC = () => {
               </div>
               <h1 className="text-2xl font-bold text-white">Portfolio Tracker with Financial Ratios</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            
+            {/* Last updated text - centered */}
+            <div className="flex-1 flex justify-center">
               {lastUpdated && (
                 <div className="text-sm text-gray-300">
                   Last updated: {lastUpdated.toLocaleTimeString()}
                 </div>
               )}
+            </div>
+            
+            {/* All buttons aligned to the right */}
+            <div className="flex items-center space-x-4">
               <button
                 onClick={refreshData}
                 disabled={isRefreshing}

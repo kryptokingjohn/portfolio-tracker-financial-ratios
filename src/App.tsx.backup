@@ -4,7 +4,7 @@ import { LoginScreen } from './components/auth/LoginScreen';
 import { LoadingScreen } from './components/LoadingScreen';
 import { QuickViewPage } from './components/QuickViewPage';
 import { MobileApp } from './components/mobile/MobileApp';
-import { PortfolioTable } from './components/PortfolioTable';
+import { AccessiblePortfolioTable } from './components/AccessiblePortfolioTable';
 import { PortfolioSummary } from './components/PortfolioSummary';
 import { MyAccountModal } from './components/MyAccountModal';
 import { PortfolioSummarySkeleton, PortfolioTableSkeleton, TransactionHistorySkeleton } from './components/skeletons';
@@ -488,7 +488,12 @@ const AppContent: React.FC = () => {
               />
             ) : (
               <>
-                <PortfolioTable holdings={filteredHoldings} filter={portfolioFilter} />
+                <AccessiblePortfolioTable 
+                  holdings={filteredHoldings} 
+                  filter={portfolioFilter}
+                  onQuickView={openQuickView}
+                  onAdvancedView={openAdvancedView}
+                />
                 
                 {/* Market data loading indicator */}
                 {marketDataLoading && (
@@ -682,7 +687,6 @@ const AppContent: React.FC = () => {
           onClose={() => setIsMyAccountModalOpen(false)}
         />
       )}
-    </div>
     </div>
   );
 };

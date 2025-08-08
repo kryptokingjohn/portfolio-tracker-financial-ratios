@@ -51,21 +51,20 @@ export const usePortfolio = () => {
           console.log(`⚡ Displaying cached portfolio (${Math.floor(cachedData.age / 60000)}min old) for instant load`);
           setHoldings(cachedData.holdings);
           if (cachedData.transactions) setTransactions(cachedData.transactions);
-            setSummaryLoading(false);
-            setLoading(false); // Allow immediate interaction
-            
-            // Calculate basic metrics from cached data
-            const metrics = PortfolioCalculator.calculatePortfolioMetrics(cachedHoldings);
-            setPortfolioMetrics(metrics);
-            
-            // If cache is fresh enough (< 10 minutes), skip some expensive operations
-            if (cacheAge < 10 * 60 * 1000) {
-              console.log('📊 Cache is fresh, skipping expensive API calls');
-              setHoldingsLoading(false);
-              setMarketDataLoading(false);
-              setLastUpdated(new Date(timestamp));
-              return; // Early return with fresh cached data
-            }
+          setSummaryLoading(false);
+          setLoading(false); // Allow immediate interaction
+          
+          // Calculate basic metrics from cached data
+          const metrics = PortfolioCalculator.calculatePortfolioMetrics(cachedData.holdings);
+          setPortfolioMetrics(metrics);
+          
+          // If cache is fresh enough (< 10 minutes), skip some expensive operations
+          if (cachedData.age < 10 * 60 * 1000) {
+            console.log('📊 Cache is fresh, skipping expensive API calls');
+            setHoldingsLoading(false);
+            setMarketDataLoading(false);
+            setLastUpdated(new Date(cachedData.timestamp));
+            return; // Early return with fresh cached data
           }
         }
       } catch (cacheError) {

@@ -22,8 +22,8 @@ export const stripeConfig = {
       name: 'Premium',
       monthlyPrice: 9.99,
       annualPrice: 95.90, // 20% off annual
-      monthlyPriceId: 'price_premium_monthly', // Replace with your actual price ID
-      annualPriceId: 'price_premium_annual', // Replace with your actual price ID
+      monthlyPriceId: import.meta.env.VITE_STRIPE_PREMIUM_MONTHLY_PRICE_ID || 'price_1Ru08xPs18njWuYelVj6VWvE',
+      annualPriceId: import.meta.env.VITE_STRIPE_PREMIUM_ANNUAL_PRICE_ID || 'price_1Ru08yPs18njWuYe95lHARp6',
       features: [
         'Unlimited transactions',
         'Advanced financial ratios',

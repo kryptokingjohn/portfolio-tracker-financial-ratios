@@ -345,8 +345,32 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                 52W Low
               </th>
               
-              {/* Asset-specific columns based on filter */}
-              {showETFColumns && (
+              {/* Intrinsic Value and Upside % for All Holdings view only */}
+              {filter === 'all' && (
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-purple-400 uppercase tracking-wider cursor-pointer hover:bg-purple-600/20 transition-colors"
+                      onClick={() => handleSort('intrinsicValue')}>
+                    Intrinsic Value
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-purple-400 uppercase tracking-wider">
+                    Upside %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-blue-400 uppercase tracking-wider cursor-pointer hover:bg-blue-600/20 transition-colors"
+                      onClick={() => handleSort('peRatio')}>
+                    P/E
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-yellow-400 uppercase tracking-wider cursor-pointer hover:bg-yellow-600/20 transition-colors"
+                      onClick={() => handleSort('dividendYield')}>
+                    Dividend Yield %
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Description
+                  </th>
+                </>
+              )}
+
+              {/* Asset-specific columns based on filter (but not for 'all' view) */}
+              {showETFColumns && filter !== 'all' && (
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-green-400 uppercase tracking-wider">
                     Expense Ratio
@@ -375,7 +399,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                 </>
               )}
               
-              {showBondColumns && (
+              {showBondColumns && filter !== 'all' && (
                 <>
                   <th className="px-4 py-3 text-left text-xs font-medium text-orange-400 uppercase tracking-wider">
                     Duration
@@ -554,8 +578,33 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     {formatCurrency(holding.yearLow)}
                   </td>
                   
-                  {/* Asset-specific columns */}
-                  {showETFColumns && (() => {
+                  {/* All Holdings view specific columns */}
+                  {filter === 'all' && (
+                    <>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-purple-300">
+                        {formatCurrency(holding.intrinsicValue)}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-medium ${upsidePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {formatPercent(upsidePercent)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-300">
+                        {holding.peRatio ? formatNumber(holding.peRatio, 1) : 'N/A'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-yellow-300">
+                        {holding.dividendYield ? `${formatNumber(holding.dividendYield, 2)}%` : '0.00%'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
+                        <div className="truncate" title={holding.description || holding.narrative}>
+                          {holding.description || holding.narrative}
+                        </div>
+                      </td>
+                    </>
+                  )}
+
+                  {/* Asset-specific columns (only when not in 'all' view) */}
+                  {showETFColumns && filter !== 'all' && (() => {
                     const etfMetrics = etfData.get(holding.ticker);
                     return (
                       <>
@@ -584,7 +633,7 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     );
                   })()}
                   
-                  {showBondColumns && (() => {
+                  {showBondColumns && filter !== 'all' && (() => {
                     const bondMetrics = bondData.get(holding.ticker);
                     return (
                       <>
@@ -614,8 +663,8 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                     );
                   })()}
                   
-                  {/* Stock columns - only show when appropriate */}
-                  {showStockColumns && assetType === 'stocks' && (
+                  {/* Stock columns - only show when filter is specifically 'stocks' */}
+                  {showStockColumns && filter !== 'all' && assetType === 'stocks' && (
                     <>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                         {formatNumber(holding.fcf10yr, 1)}
@@ -675,11 +724,15 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                       </td>
                     </>
                   )}
-                  <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
-                    <div className="truncate" title={holding.description || holding.narrative}>
-                      {holding.description || holding.narrative}
-                    </div>
-                  </td>
+
+                  {/* Description column - only show when not in 'all' view (since 'all' view includes it in its specific columns) */}
+                  {filter !== 'all' && (
+                    <td className="px-4 py-4 text-sm text-gray-400 max-w-xs">
+                      <div className="truncate" title={holding.description || holding.narrative}>
+                        {holding.description || holding.narrative}
+                      </div>
+                    </td>
+                  )}
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                     <button className="text-blue-400 hover:text-blue-300 mr-3 p-2 rounded-lg hover:bg-blue-600/20 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
                       <Edit3 className="h-4 w-4" />

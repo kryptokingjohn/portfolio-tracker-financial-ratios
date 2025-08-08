@@ -1,11 +1,34 @@
 // Script to set up Stripe products and coupons for the subscription system
 // Run this script with: node scripts/setup-stripe-products.js
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import Stripe from 'stripe';
 
 async function createStripeProducts() {
   try {
     console.log('🚀 Setting up Stripe products and coupons...');
+    
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.log('⚠️  STRIPE_SECRET_KEY not found in environment variables');
+      console.log('📋 This script would create the following products in Stripe:');
+      console.log('');
+      console.log('🎯 Products:');
+      console.log('   - Premium Monthly: $9.99/month');
+      console.log('   - Premium Annual: $95.90/year (20% off)');
+      console.log('');
+      console.log('🎟️  Discount Coupons:');
+      console.log('   - SAVE50: 50% off first 3 months (20 uses)');
+      console.log('   - SAVE25: 25% off first 3 months (20 uses)');  
+      console.log('   - FREEYEAR: 100% off for 12 months (20 uses)');
+      console.log('   - FREEMONTH: 100% off for 1 month (20 uses)');
+      console.log('');
+      console.log('🔧 To run this script with actual Stripe integration:');
+      console.log('   1. Set STRIPE_SECRET_KEY in your environment');
+      console.log('   2. Run: node scripts/setup-stripe-products.js');
+      console.log('   3. Update .env with the returned price IDs');
+      return;
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     // Create Premium product
     const premiumProduct = await stripe.products.create({

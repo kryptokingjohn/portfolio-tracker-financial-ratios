@@ -432,8 +432,8 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                 </>
               )}
               
-              {/* Stock columns - show only when stocks filter is active */}
-              {showStockColumns && (
+              {/* Stock columns - show only when filter is specifically 'stocks' */}
+              {showStockColumns && filter !== 'all' && (
                 <>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700/30"
                   onClick={() => handleSort('fcf10yr')}>
@@ -509,9 +509,13 @@ export const PortfolioTable = React.memo<PortfolioTableProps>(({ holdings, filte
                 </>
               )}
               
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Description
-              </th>
+              {/* Description column - only show when not in 'all' view (since 'all' view includes it in its specific columns) */}
+              {filter !== 'all' && (
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Description
+                </th>
+              )}
+              
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Actions
               </th>

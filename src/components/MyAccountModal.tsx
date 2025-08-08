@@ -412,18 +412,20 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                       </div>
                     ) : currentPlan.type === 'premium' ? (
                       <div>
-                        <p className="text-blue-300 text-sm mb-3">
-                          ✅ Premium activated via database (Advanced button)
-                        </p>
-                        <p className="text-gray-400 text-xs mb-3">
-                          No Stripe payment method required for database-activated premium accounts.
-                          To set up recurring billing, use the Stripe upgrade option.
+                        <div className="flex items-center space-x-2 mb-3">
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <p className="text-green-300 text-sm font-medium">
+                            Premium Active - No Payment Required
+                          </p>
+                        </div>
+                        <p className="text-gray-400 text-sm mb-3">
+                          Your premium features are permanently activated. You can optionally set up automatic billing for convenience.
                         </p>
                         <button
                           onClick={() => setActiveTab('subscription')}
                           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
-                          Set Up Stripe Billing
+                          Set Up Auto-Renewal (Optional)
                         </button>
                       </div>
                     ) : (
@@ -447,30 +449,33 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                   </div>
 
                   <div className="bg-gray-700/30 rounded-lg p-4">
-                    <h4 className="text-white font-medium mb-2">Billing Status</h4>
-                    <p className="text-gray-300 text-sm">
-                      {currentPlan.type === 'basic' 
-                        ? 'No billing for Basic plan'
-                        : subscription?.stripeCustomerId
-                          ? subscription?.cancelAtPeriodEnd 
-                            ? 'Subscription will end at current period'
-                            : subscriptionDetails?.subscription?.currentPeriodEnd 
-                              ? `Next billing date: ${new Date(subscriptionDetails.subscription.currentPeriodEnd * 1000).toLocaleDateString()}`
-                              : 'Next billing date: Loading...'
-                          : currentPlan.type === 'premium'
-                            ? 'Premium activated via database - No recurring billing set up'
-                            : 'No billing information available'
-                      }
-                    </p>
+                    <h4 className="text-white font-medium mb-2">Account Status</h4>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className={`w-3 h-3 rounded-full ${
+                        currentPlan.type === 'premium' ? 'bg-green-500' : 'bg-blue-500'
+                      }`}></div>
+                      <p className="text-gray-300 text-sm">
+                        {currentPlan.type === 'basic' 
+                          ? 'Basic Plan - Free Forever'
+                          : subscription?.stripeCustomerId
+                            ? subscription?.cancelAtPeriodEnd 
+                              ? 'Premium - Cancels at period end'
+                              : subscriptionDetails?.subscription?.currentPeriodEnd 
+                                ? `Premium - Renews ${new Date(subscriptionDetails.subscription.currentPeriodEnd * 1000).toLocaleDateString()}`
+                                : 'Premium - Active subscription'
+                            : 'Premium - Lifetime Access'
+                        }
+                      </p>
+                    </div>
                     {currentPlan.type === 'premium' && !subscription?.stripeCustomerId && (
-                      <p className="text-blue-300 text-xs mt-2">
-                        💡 Your premium features are active permanently. Set up Stripe billing for automatic renewal.
+                      <p className="text-green-300 text-sm">
+                        ✨ Enjoy unlimited premium features with no expiration!
                       </p>
                     )}
                   </div>
 
                   <div className="bg-gray-700/30 rounded-lg p-4">
-                    <h4 className="text-white font-medium mb-2">Billing Portal</h4>
+                    <h4 className="text-white font-medium mb-2">Billing Management</h4>
                     {currentPlan.type === 'premium' && subscription?.stripeCustomerId ? (
                       <div>
                         <p className="text-gray-300 text-sm mb-3">
@@ -485,23 +490,25 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                       </div>
                     ) : currentPlan.type === 'premium' ? (
                       <div>
-                        <p className="text-blue-300 text-sm mb-3">
-                          ✅ Premium features active via database activation
-                        </p>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <p className="text-green-300 text-sm font-medium">
+                            Premium Access - No Bills Required
+                          </p>
+                        </div>
                         <p className="text-gray-400 text-sm mb-3">
-                          No Stripe billing portal available for database-activated accounts.
-                          To access billing portal, set up Stripe subscription.
+                          Your premium access doesn't require billing. If you'd like to set up automatic renewal for convenience, you can add a billing method.
                         </p>
                         <button
                           onClick={() => setActiveTab('subscription')}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
-                          Set Up Stripe Subscription
+                          Add Billing (Optional)
                         </button>
                       </div>
                     ) : (
                       <p className="text-gray-400 text-sm">
-                        Billing portal will be available after you upgrade to Premium and complete your first payment.
+                        Billing management will be available after you upgrade to Premium.
                       </p>
                     )}
                   </div>
@@ -572,37 +579,37 @@ export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose 
                     </div>
                     <h4 className="text-white font-medium mb-2">
                       {currentPlan.type === 'premium' && !subscription?.stripeCustomerId 
-                        ? 'Premium Active (Database)' 
+                        ? 'Premium Access Active' 
                         : 'No Payment History'}
                     </h4>
                     <p className="text-gray-400 text-sm mb-4">
                       {currentPlan.type === 'basic' 
                         ? 'You are currently on the free Basic plan. No payments required.'
                         : currentPlan.type === 'premium' && !subscription?.stripeCustomerId
-                          ? 'Premium activated via database (Advanced button). No payment transactions on file.'
+                          ? 'Your premium features are active with lifetime access. No payment transactions required.'
                           : 'No payment records found. Payment history will appear here after your first transaction.'
                       }
                     </p>
                     {currentPlan.type === 'premium' && !subscription?.stripeCustomerId ? (
                       <div className="space-y-3">
-                        <div className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-3">
+                        <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-3">
                           <div className="flex items-center space-x-2 mb-2">
                             <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                            <span className="text-blue-300 font-medium">Premium Features Active</span>
-                            <span className="text-xs bg-green-600/20 text-green-300 px-2 py-1 rounded">Database</span>
+                            <span className="text-green-300 font-medium">Premium Features Active</span>
+                            <span className="text-xs bg-green-600/20 text-green-300 px-2 py-1 rounded">Lifetime</span>
                           </div>
                           <p className="text-gray-300 text-sm">
                             Activated: {subscription?.startDate ? new Date(subscription.startDate).toLocaleDateString() : 'Recently'}
                           </p>
                           <p className="text-gray-400 text-xs mt-1">
-                            Status: Active • No expiration • No recurring charges
+                            Status: Active • Lifetime Access • No Expiration
                           </p>
                         </div>
                         <button
                           onClick={() => setActiveTab('subscription')}
                           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
-                          Set Up Recurring Billing
+                          Add Auto-Renewal (Optional)
                         </button>
                       </div>
                     ) : currentPlan.type === 'basic' ? (

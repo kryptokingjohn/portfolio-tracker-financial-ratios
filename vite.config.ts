@@ -9,7 +9,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,mjs}'], // Include .mjs files
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4MB limit for mobile
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -38,9 +39,34 @@ export default defineConfig({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'supabase-cache',
+              networkTimeoutSeconds: 3, // Fast timeout for mobile
+              expiration: {
+                maxEntries: 100, // More entries for mobile
+                maxAgeSeconds: 60 * 5 // 5 minutes for portfolio data
+              }
+            }
+          },
+          // Cache API responses for portfolio data
+          {
+            urlPattern: /\/api\/portfolio\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'portfolio-api-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 300
+                maxAgeSeconds: 60 * 10 // 10 minutes
+              }
+            }
+          },
+          // Cache static images
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               }
             }
           }
@@ -159,69 +185,74 @@ export default defineConfig({
   build: {
     target: 'es2015',
     sourcemap: false,
-    minify: 'terser', // Re-enable minification for production
+    minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'], // Remove specific console calls
-        passes: 2 // Multiple passes for better compression
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2
       },
       mangle: {
-        safari10: true // Better Safari compatibility
+        safari10: true
       }
     },
-    assetsInlineLimit: 0, // Prevent inlining to avoid MIME issues
+    assetsInlineLimit: 4096, // Inline small assets for mobile to reduce requests
     rollupOptions: {
       output: {
-        format: 'es', // Ensure ES modules format
-        // Optimized chunking strategy for performance
+        format: 'es',
+        // Mobile-optimized chunking strategy
         manualChunks: (id) => {
-          // Critical vendor libraries - load first
+          // Critical vendor libraries - load first and keep small
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react'; // ~157KB - Critical, loads first
+              return 'vendor-react'; // ~157KB - Critical for mobile first load
             }
             if (id.includes('@supabase')) {
-              return 'vendor-supabase'; // ~281KB - Database operations
+              return 'vendor-supabase'; // ~117KB - Database operations
             }
             if (id.includes('@stripe')) {
-              return 'vendor-stripe'; // ~45KB - Payment processing (lazy loaded)
+              return 'vendor-stripe'; // ~1.5KB - Payment processing (lazy loaded)
             }
             if (id.includes('lucide-react')) {
-              return 'vendor-icons'; // ~10KB - Icons
+              return 'vendor-icons'; // Icons - keep separate for caching
             }
-            return 'vendor-misc'; // Everything else
+            return 'vendor-misc'; // ~6KB - Small misc vendors
+          }
+          
+          // Mobile app code splitting
+          if (id.includes('/components/mobile/')) {
+            return 'chunk-mobile'; // Mobile-specific components together
           }
           
           // App code splitting by feature
           if (id.includes('/components/')) {
-            // Heavy modal components - lazy loaded
+            // Heavy modal components - lazy loaded for mobile
             if (id.includes('Modal') || id.includes('Checkout')) {
-              return 'chunk-modals';
+              return 'chunk-modals'; // ~65KB - Lazy loaded
             }
-            // Tab components - lazy loaded  
+            // Tab components - lazy loaded on mobile
             if (id.includes('Tab') || id.includes('Performance') || id.includes('Accounts')) {
-              return 'chunk-tabs';
+              return 'chunk-tabs'; // ~140KB - Lazy loaded on mobile
             }
             // Charts and visualization - lazy loaded
             if (id.includes('Chart') || id.includes('Guide')) {
-              return 'chunk-charts';
+              return 'chunk-charts'; // ~76KB - Lazy loaded
             }
-            // Core UI components - load early
-            if (id.includes('Portfolio') || id.includes('Loading')) {
-              return 'chunk-core-ui';
+            // Core UI components - load with main app
+            if (id.includes('Portfolio') || id.includes('Loading') || id.includes('Summary')) {
+              return 'chunk-core-ui'; // ~11KB - Critical UI
             }
           }
           
           // Utilities and services
           if (id.includes('/services/') || id.includes('/utils/')) {
-            return 'chunk-utils';
+            return 'chunk-utils'; // ~60KB - Utilities and services
           }
           
           return undefined; // Default chunk
         },
-        chunkFileNames: 'assets/[name]-[hash].mjs', // Use .mjs extension to force module recognition
+        chunkFileNames: 'assets/[name]-[hash].mjs',
         entryFileNames: 'assets/entry-[hash].mjs',
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || '';
@@ -235,6 +266,6 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 500 // Lower limit for mobile optimization
   }
 });

@@ -58,6 +58,11 @@ export const useSubscription = () => {
           cancelAtPeriodEnd: subscriptionData.cancel_at_period_end,
           stripeSubscriptionId: subscriptionData.stripe_subscription_id,
           stripeCustomerId: subscriptionData.stripe_customer_id,
+          trialEndsAt: subscriptionData.trial_ends_at,
+          isTrialing: subscriptionData.is_trialing || false,
+          isGrandfathered: subscriptionData.is_grandfathered || false,
+          transactionCount: subscriptionData.transaction_count || 0,
+          gracePeriodEndsAt: subscriptionData.grace_period_ends_at,
           createdAt: subscriptionData.created_at,
           updatedAt: subscriptionData.updated_at
         };
@@ -76,6 +81,9 @@ export const useSubscription = () => {
         status: 'active' as const,
         start_date: new Date().toISOString(),
         cancel_at_period_end: false,
+        is_trialing: false,
+        is_grandfathered: false,
+        transaction_count: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -103,6 +111,9 @@ export const useSubscription = () => {
         status: createdSubscription.status,
         startDate: createdSubscription.start_date,
         cancelAtPeriodEnd: createdSubscription.cancel_at_period_end,
+        isTrialing: createdSubscription.is_trialing || false,
+        isGrandfathered: createdSubscription.is_grandfathered || false,
+        transactionCount: createdSubscription.transaction_count || 0,
         createdAt: createdSubscription.created_at,
         updatedAt: createdSubscription.updated_at
       };
@@ -122,6 +133,9 @@ export const useSubscription = () => {
         status: 'active',
         startDate: new Date().toISOString(),
         cancelAtPeriodEnd: false,
+        isTrialing: false,
+        isGrandfathered: false,
+        transactionCount: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -137,11 +151,40 @@ export const useSubscription = () => {
     return SUBSCRIPTION_PLANS[subscription.planType];
   };
 
-  // Check if user can add more holdings
+  // Check if user can add more holdings - now unlimited for all
   const canAddHolding = (currentHoldingsCount: number) => {
-    const plan = getCurrentPlan();
-    if (plan.holdingsLimit === null) return true; // Unlimited
-    return currentHoldingsCount < plan.holdingsLimit;
+    return true; // No holdings limit, only transaction limit
+  };
+
+  // Check if user can add more transactions (soft paywall)
+  const canAddTransaction = () => {
+    if (!subscription) return true; // No subscription yet, allow
+    
+    // Grandfathered users have unlimited access
+    if (subscription.isGrandfathered) return true;
+    
+    // Premium users (active or trialing) have unlimited access  
+    if (subscription.planType === 'premium' && subscription.status === 'active') return true;
+    if (subscription.planType === 'premium' && subscription.isTrialing && isTrialActive()) return true;
+    
+    // Basic users limited to 50 transactions
+    return subscription.transactionCount < 50;
+  };
+
+  // Check if trial is still active
+  const isTrialActive = () => {
+    if (!subscription?.isTrialing || !subscription?.trialEndsAt) return false;
+    return new Date(subscription.trialEndsAt) > new Date();
+  };
+
+  // Get days remaining in trial
+  const getTrialDaysRemaining = () => {
+    if (!subscription?.isTrialing || !subscription?.trialEndsAt) return 0;
+    const now = new Date();
+    const trialEnd = new Date(subscription.trialEndsAt);
+    const diffTime = trialEnd.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
   };
 
   // Check if user has access to QuickView
@@ -174,19 +217,47 @@ export const useSubscription = () => {
     return getCurrentPlan().exportFormats.includes(format);
   };
 
-  // Get holdings limit message
-  const getHoldingsLimitMessage = (currentCount: number) => {
-    const plan = getCurrentPlan();
-    if (plan.holdingsLimit === null) return null;
+  // Get transaction limit message
+  const getTransactionLimitMessage = () => {
+    if (!subscription) return null;
+    if (subscription.isGrandfathered || subscription.planType === 'premium') return null;
     
-    const remaining = plan.holdingsLimit - currentCount;
+    const remaining = 50 - subscription.transactionCount;
     if (remaining <= 0) {
-      return `You've reached your ${plan.holdingsLimit} holding limit. Upgrade to Premium for unlimited holdings.`;
+      return `You've reached your 50 transaction limit. Upgrade to Premium for unlimited transactions.`;
     }
-    if (remaining <= 2) {
-      return `You have ${remaining} holding${remaining === 1 ? '' : 's'} remaining. Upgrade to Premium for unlimited holdings.`;
+    if (remaining <= 5) {
+      return `You have ${remaining} transaction${remaining === 1 ? '' : 's'} remaining. Upgrade to Premium for unlimited transactions.`;
     }
     return null;
+  };
+
+  // Start premium trial
+  const startPremiumTrial = async (): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      
+      setError(null);
+      
+      // Call database function to start trial
+      const { data, error } = await supabase.rpc('start_premium_trial', {
+        user_uuid: user.id
+      });
+      
+      if (error) {
+        console.error('Failed to start premium trial:', error);
+        setError('Failed to start trial');
+        return false;
+      }
+      
+      // Reload subscription data
+      await loadSubscriptionData();
+      return true;
+    } catch (err) {
+      console.error('Error starting premium trial:', err);
+      setError(err instanceof Error ? err.message : 'Failed to start trial');
+      return false;
+    }
   };
 
   // Upgrade to premium - returns true if should open Stripe checkout
@@ -403,13 +474,17 @@ export const useSubscription = () => {
     loading,
     error,
     canAddHolding,
+    canAddTransaction,
     hasQuickViewAccess,
     hasAdvancedAccess,
     hasRealTimeAccess,
     hasAdvancedChartsAccess,
     isPremium,
     canExportFormat,
-    getHoldingsLimitMessage,
+    getTransactionLimitMessage,
+    isTrialActive,
+    getTrialDaysRemaining,
+    startPremiumTrial,
     upgradeToPremium,
     cancelSubscription,
     reactivateSubscription,

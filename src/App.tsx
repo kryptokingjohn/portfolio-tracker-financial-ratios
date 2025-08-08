@@ -7,6 +7,7 @@ import { MobileApp } from './components/mobile/MobileApp';
 import { PortfolioTable } from './components/PortfolioTable';
 import { PortfolioSummary } from './components/PortfolioSummary';
 import { MyAccountModal } from './components/MyAccountModal';
+import { TransactionCounter } from './components/TransactionCounter';
 import { PortfolioSummarySkeleton, PortfolioTableSkeleton, TransactionHistorySkeleton } from './components/skeletons';
 
 // Lazy load heavy components that aren't immediately needed
@@ -76,7 +77,17 @@ const AppContent: React.FC = () => {
     savePortfolioSnapshot,
     dividendAnalysis
   } = usePortfolio();
-  const { canAddHolding, getHoldingsLimitMessage, currentPlan, handleSuccessfulPayment } = useSubscription();
+  const { 
+    canAddHolding, 
+    canAddTransaction,
+    getTransactionLimitMessage, 
+    currentPlan, 
+    handleSuccessfulPayment, 
+    subscription,
+    isTrialActive,
+    getTrialDaysRemaining,
+    startPremiumTrial 
+  } = useSubscription();
   
   // State hooks
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -336,10 +347,14 @@ const AppContent: React.FC = () => {
               </button>
               <button
                 onClick={() => {
-                  if (canAddHolding(holdings.length)) {
+                  if (canAddTransaction()) {
                     setIsTransactionModalOpen(true);
                   } else {
-                    alert(getHoldingsLimitMessage(holdings.length));
+                    const limitMessage = getTransactionLimitMessage();
+                    if (limitMessage) {
+                      alert(limitMessage);
+                      setIsPricingModalOpen(true); // Open pricing modal for upgrade
+                    }
                   }
                 }}
                 className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -456,6 +471,11 @@ const AppContent: React.FC = () => {
             ) : (
               <PortfolioSummary holdings={holdings} />
             )}
+            
+            {/* Transaction Counter - Show transaction usage for basic users */}
+            <div className="mb-6">
+              <TransactionCounter onUpgradeClick={() => setIsPricingModalOpen(true)} />
+            </div>
 
             {/* Portfolio Filter - Always show immediately */}
             <div className="mb-6">

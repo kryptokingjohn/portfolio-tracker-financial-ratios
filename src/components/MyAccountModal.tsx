@@ -16,7 +16,21 @@ type TabType = 'profile' | 'subscription' | 'billing' | 'payment-history';
 
 export const MyAccountModal: React.FC<MyAccountModalProps> = ({ isOpen, onClose }) => {
   const { user, updateUserProfile, signOut } = useAuth();
-  const { subscription, currentPlan, upgradeToPremium, cancelSubscription, reactivateSubscription, handleSuccessfulPayment, openBillingPortal, getSubscriptionDetails, activatePremium } = useSubscription();
+  const { 
+    subscription, 
+    currentPlan, 
+    upgradeToPremium, 
+    cancelSubscription, 
+    reactivateSubscription, 
+    handleSuccessfulPayment, 
+    openBillingPortal, 
+    getSubscriptionDetails, 
+    activatePremium,
+    isTrialActive,
+    getTrialDaysRemaining,
+    startPremiumTrial,
+    getTransactionLimitMessage
+  } = useSubscription();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

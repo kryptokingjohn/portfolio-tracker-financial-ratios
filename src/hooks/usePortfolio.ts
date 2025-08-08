@@ -9,6 +9,7 @@ import { useAuth } from './useAuthSimple';
 import FinancialDataService from '../services/financialDataService';
 import { detectAssetType } from '../utils/assetTypeDetector';
 import { PortfolioCache } from '../utils/secureStorage';
+import { incrementTransactionCount, canAddTransaction as checkTransactionLimit } from '../utils/transactionCounter';
 
 export const usePortfolio = () => {
   const { user } = useAuth();
@@ -277,7 +278,26 @@ export const usePortfolio = () => {
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
     try {
       setError(null);
+
+      // Check transaction limit before creating (soft paywall)
+      if (user) {
+        const canAdd = await checkTransactionLimit(user.id);
+        if (!canAdd) {
+          throw new Error('You have reached your transaction limit. Upgrade to Premium for unlimited transactions.');
+        }
+      }
+      
       const newTransaction = await DatabaseService.createTransaction(transaction);
+      
+      // Increment transaction count after successful creation
+      if (user) {
+        try {
+          await incrementTransactionCount(user.id);
+        } catch (countErr) {
+          console.warn('Failed to increment transaction count:', countErr);
+          // Don't fail the transaction for counter issues
+        }
+      }
       
       // Update transactions first
       const updatedTransactions = [newTransaction, ...transactions];

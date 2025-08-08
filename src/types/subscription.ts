@@ -18,7 +18,7 @@ export interface UserSubscription {
   id: string;
   userId: string;
   planType: PlanType;
-  status: 'active' | 'cancelled' | 'past_due' | 'trialing';
+  status: 'active' | 'cancelled' | 'past_due' | 'trialing' | 'incomplete';
   startDate: string;
   endDate?: string;
   cancelAtPeriodEnd: boolean;
@@ -26,6 +26,11 @@ export interface UserSubscription {
   stripeCustomerId?: string;
   lastPaymentDate?: string;
   nextPaymentDate?: string;
+  trialEndsAt?: string;
+  isTrialing: boolean;
+  isGrandfathered: boolean; // For existing database-activated users
+  transactionCount: number; // Track transaction usage
+  gracePeriodEndsAt?: string; // For failed payments
   createdAt: string;
   updatedAt: string;
 }
@@ -49,13 +54,12 @@ export const SUBSCRIPTION_PLANS: Record<PlanType, SubscriptionPlan> = {
     name: 'Basic',
     price: 0,
     features: [
-      'Up to 5 holdings',
-      'Basic financial ratios',
-      'Portfolio performance tracking',
+      'Up to 50 transactions',
+      'Basic portfolio tracking',
       'Export to CSV',
       'Email support'
     ],
-    holdingsLimit: 5,
+    holdingsLimit: null, // No holdings limit, just transaction limit
     hasQuickView: false,
     hasAdvanced: false,
     hasRealTimeData: false,
@@ -68,14 +72,15 @@ export const SUBSCRIPTION_PLANS: Record<PlanType, SubscriptionPlan> = {
     name: 'Premium',
     price: 9.99,
     features: [
-      'Unlimited holdings',
-      'Advanced financial analysis',
+      'Unlimited transactions',
+      'Advanced financial ratios',
       'QuickView & Advanced buttons',
       'Real-time market data',
       'Export to CSV, PDF, Excel, JSON',
       'Advanced charts & analytics',
       'All Performance tab features',
-      'Priority support'
+      'Priority support',
+      '30-day free trial'
     ],
     holdingsLimit: null,
     hasQuickView: true,

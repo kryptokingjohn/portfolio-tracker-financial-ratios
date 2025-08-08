@@ -308,10 +308,10 @@ const AppContent: React.FC = () => {
               <h1 className="text-2xl font-bold text-white">Portfolio Tracker with Financial Ratios</h1>
             </div>
             
-            {/* Last updated text - centered */}
-            <div className="flex-1 flex justify-center">
+            {/* Last updated text - centered and properly contained */}
+            <div className="flex-1 flex justify-center items-center px-4">
               {lastUpdated && (
-                <div className="text-sm text-gray-300">
+                <div className="text-sm text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis max-w-xs">
                   Last updated: {lastUpdated.toLocaleTimeString()}
                 </div>
               )}

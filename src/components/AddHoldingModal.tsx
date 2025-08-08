@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, TrendingUp, TrendingDown, DollarSign, Percent, Split, Users, FileText, CreditCard } from 'lucide-react';
 import { Transaction } from '../types/portfolio';
 import { validateTransaction, sanitizeText } from '../utils/security';
+import { ARIA, FocusManager, FormAccessibility, generateId } from '../utils/accessibility';
 
 interface AddTransactionModalProps {
   onClose: () => void;
@@ -25,6 +26,35 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
   });
 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // Generate unique IDs for form accessibility
+  const modalId = generateId('add-transaction-modal');
+  const titleId = generateId('modal-title');
+  const tickerInputId = generateId('ticker-input');
+  const typeGroupId = generateId('transaction-type-group');
+  const accountInputId = generateId('account-input');
+  const dateInputId = generateId('date-input');
+  const sharesInputId = generateId('shares-input');
+  const priceInputId = generateId('price-input');
+  const amountInputId = generateId('amount-input');
+  const feesInputId = generateId('fees-input');
+  const notesInputId = generateId('notes-input');
+
+  // Focus management
+  useEffect(() => {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      const cleanup = FocusManager.trapFocus(modalElement);
+      return cleanup;
+    }
+  }, [modalId]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = FocusManager.handleEscapeKey(onClose);
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   const transactionTypes = [
     { value: 'buy', label: 'Buy', icon: Plus, color: 'text-green-600', description: 'Purchase shares' },
@@ -112,15 +142,25 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
   const requiresNewTicker = ['spinoff', 'merger'].includes(formData.type);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-900">Add Transaction</h3>
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div 
+        id={modalId}
+        className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
+        {...ARIA.modal('Add Transaction', 'Add a new transaction to your portfolio')}
+      >
+        <div className="flex items-center justify-between p-6 border-b border-neutral-200">
+          <h2 id={titleId} className="text-xl font-semibold text-neutral-900">
+            Add Transaction
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors touch-target"
+            {...ARIA.button('Close transaction form')}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -170,19 +210,32 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClos
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ticker Symbol *
+              <label 
+                htmlFor={tickerInputId}
+                className="block text-sm font-medium text-neutral-700 mb-1"
+              >
+                Ticker Symbol
+                <span className="text-error ml-1" aria-label="required">*</span>
               </label>
               <input
+                id={tickerInputId}
                 type="text"
                 name="ticker"
                 value={formData.ticker}
                 onChange={handleChange}
                 required
                 placeholder="e.g., AAPL"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 uppercase touch-target transition-colors hover:border-neutral-400"
                 list="existing-tickers"
+                {...ARIA.input('Enter the stock ticker symbol', {
+                  required: true,
+                  describedBy: `${tickerInputId}-help`,
+                  placeholder: 'Enter ticker symbol like AAPL or MSFT'
+                })}
               />
+              <div id={`${tickerInputId}-help`} className="text-xs text-neutral-600 mt-1">
+                Enter the stock ticker symbol (e.g., AAPL for Apple Inc.)
+              </div>
               <datalist id="existing-tickers">
                 {existingTickers.map(ticker => (
                   <option key={ticker} value={ticker} />

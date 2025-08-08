@@ -4,7 +4,7 @@ import { LoginScreen } from './components/auth/LoginScreen';
 import { LoadingScreen } from './components/LoadingScreen';
 import { QuickViewPage } from './components/QuickViewPage';
 import { MobileApp } from './components/mobile/MobileApp';
-import { PortfolioTable } from './components/PortfolioTable';
+import { AccessiblePortfolioTable } from './components/AccessiblePortfolioTable';
 import { PortfolioSummary } from './components/PortfolioSummary';
 import { MyAccountModal } from './components/MyAccountModal';
 import { PortfolioSummarySkeleton, PortfolioTableSkeleton, TransactionHistorySkeleton } from './components/skeletons';
@@ -189,6 +189,19 @@ const AppContent: React.FC = () => {
     setDeleteConfirmId(null);
   }, []); // No dependencies needed
 
+  // Quick view and advanced view handlers
+  const openQuickView = useCallback((holding: any) => {
+    // For now, just log - can be enhanced to show a modal
+    console.log('Opening quick view for:', holding.ticker);
+    // Could set a state to show quick view modal
+  }, []);
+
+  const openAdvancedView = useCallback((holding: any) => {
+    // For now, just log - can be enhanced to show advanced analysis
+    console.log('Opening advanced view for:', holding.ticker);
+    // Could set a state to show advanced analysis modal
+  }, []);
+
   // Memoized computations
   const portfolioMetrics = useMemo(() => {
     const totalValue = holdings.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
@@ -248,6 +261,13 @@ const AppContent: React.FC = () => {
   // Desktop version
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-primary-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg transition-all"
+      >
+        Skip to main content
+      </a>
       {/* Background Refresh Indicator */}
       {isRefreshing && (
         <div className="bg-blue-600/20 border-b border-blue-500/30 backdrop-blur-sm">
@@ -421,6 +441,7 @@ const AppContent: React.FC = () => {
         </div>
 
         {/* Tab Content */}
+        <main id="main-content">
         {activeTab === 'portfolio' && (
           <>
             {/* Portfolio Summary - Progressive Loading */}
@@ -467,7 +488,12 @@ const AppContent: React.FC = () => {
               />
             ) : (
               <>
-                <PortfolioTable holdings={filteredHoldings} filter={portfolioFilter} />
+                <AccessiblePortfolioTable 
+                  holdings={filteredHoldings} 
+                  filter={portfolioFilter}
+                  onQuickView={openQuickView}
+                  onAdvancedView={openAdvancedView}
+                />
                 
                 {/* Market data loading indicator */}
                 {marketDataLoading && (
@@ -653,6 +679,7 @@ const AppContent: React.FC = () => {
           </div>
         </div>
       )}
+        </main>
 
       {/* My Account Modal */}
       {isMyAccountModalOpen && (

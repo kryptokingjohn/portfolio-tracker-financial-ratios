@@ -14,12 +14,56 @@ export const LoginScreen: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: '' });
 
   const { signIn, signUp } = useAuth();
+
+  // Password strength checker
+  const checkPasswordStrength = (password: string) => {
+    if (!password) return { score: 0, feedback: '' };
+    
+    let score = 0;
+    let feedback = [];
+    
+    // Length check
+    if (password.length >= 8) score += 1;
+    else feedback.push('Use at least 8 characters');
+    
+    // Character variety checks
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback.push('Add lowercase letters');
+    
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback.push('Add uppercase letters');
+    
+    if (/[0-9]/.test(password)) score += 1;
+    else feedback.push('Add numbers');
+    
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    else feedback.push('Add special characters');
+    
+    const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+    const strengthLabel = strengthLabels[Math.min(score, 4)];
+    
+    return {
+      score,
+      feedback: feedback.length > 0 ? `${strengthLabel}: ${feedback.join(', ')}` : `${strengthLabel} password!`
+    };
+  };
+
+  // Update password strength when password changes
+  const handlePasswordChange = (newPassword: string) => {
+    setPassword(newPassword);
+    if (!isLogin) {
+      setPasswordStrength(checkPasswordStrength(newPassword));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,9 +95,21 @@ export const LoginScreen: React.FC = () => {
     }
     
     if (!isLogin) {
+      // Signup validation
       const passwordValidation = validatePassword(password);
       if (!passwordValidation.valid) {
         errors.push(passwordValidation.error!);
+      }
+      
+      // Password confirmation check
+      if (password !== confirmPassword) {
+        errors.push('Passwords do not match');
+      }
+      
+      // Password strength requirement
+      const strength = checkPasswordStrength(password);
+      if (strength.score < 3) {
+        errors.push('Password is too weak. Please use a stronger password.');
       }
     } else {
       // For login, just check basic password requirements
@@ -140,12 +196,14 @@ export const LoginScreen: React.FC = () => {
         } else {
           setMessage({ 
             type: 'success', 
-            text: '🎉 Account created successfully! Please check your email for a confirmation link to complete registration.' 
+            text: '🎉 Account created successfully!\n\n📧 IMPORTANT: Please check your email inbox (and spam folder) for a confirmation link. You must click this link to activate your account before signing in.' 
           });
           
           // Clear form on successful signup
           setEmail('');
           setPassword('');
+          setConfirmPassword('');
+          setPasswordStrength({ score: 0, feedback: '' });
         }
       }
     } catch (err) {
@@ -200,6 +258,21 @@ export const LoginScreen: React.FC = () => {
 
         {/* Auth Form */}
         <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 shadow-xl">
+          {/* Form Header with Visual Distinction */}
+          <div className="text-center mb-6">
+            <h3 className={`text-xl font-semibold mb-2 ${
+              isLogin ? 'text-blue-300' : 'text-green-300'
+            }`}>
+              {isLogin ? '🔑 Sign In to Your Account' : '🚀 Create New Account'}
+            </h3>
+            <p className="text-gray-400 text-sm">
+              {isLogin 
+                ? 'Welcome back! Access your portfolio dashboard.' 
+                : 'Join thousands of investors tracking their portfolios.'
+              }
+            </p>
+          </div>
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
@@ -229,11 +302,11 @@ export const LoginScreen: React.FC = () => {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
                   required
                   minLength={6}
                   className="w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  placeholder={isLogin ? "Enter your password" : "Create a strong password"}
                 />
                 <button
                   type="button"
@@ -243,7 +316,72 @@ export const LoginScreen: React.FC = () => {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              
+              {/* Password Strength Indicator for Signup */}
+              {!isLogin && password && (
+                <div className="mt-2">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <div className="flex-1 bg-gray-600 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          passwordStrength.score <= 1 ? 'bg-red-500' :
+                          passwordStrength.score <= 2 ? 'bg-orange-500' :
+                          passwordStrength.score <= 3 ? 'bg-yellow-500' :
+                          passwordStrength.score <= 4 ? 'bg-blue-500' : 'bg-green-500'
+                        }`}
+                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <p className={`text-xs ${
+                    passwordStrength.score <= 1 ? 'text-red-300' :
+                    passwordStrength.score <= 2 ? 'text-orange-300' :
+                    passwordStrength.score <= 3 ? 'text-yellow-300' :
+                    passwordStrength.score <= 4 ? 'text-blue-300' : 'text-green-300'
+                  }`}>
+                    {passwordStrength.feedback}
+                  </p>
+                </div>
+              )}
             </div>
+
+            {/* Confirm Password Field for Signup */}
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-200 mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {/* Password Match Indicator */}
+                {confirmPassword && (
+                  <div className="mt-2">
+                    <p className={`text-xs flex items-center ${
+                      password === confirmPassword ? 'text-green-300' : 'text-red-300'
+                    }`}>
+                      {password === confirmPassword ? '✅ Passwords match' : '❌ Passwords do not match'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {validationErrors.length > 0 && (
               <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
@@ -264,7 +402,14 @@ export const LoginScreen: React.FC = () => {
                   ? 'bg-green-500/20 border-green-500/50 text-green-200'
                   : 'bg-blue-500/20 border-blue-500/50 text-blue-200'
               }`}>
-                <p className="text-sm font-medium">{message.text}</p>
+                <div className="text-sm font-medium whitespace-pre-line">{message.text}</div>
+                {message.type === 'success' && !isLogin && (
+                  <div className="mt-3 pt-3 border-t border-green-500/30">
+                    <p className="text-xs text-green-300">
+                      💡 Tip: If you don't receive the email within 5 minutes, check your spam folder or try again.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -286,9 +431,11 @@ export const LoginScreen: React.FC = () => {
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setMessage(null);
-                  setPasswordError('');
+                  setValidationErrors([]);
                   setEmail('');
                   setPassword('');
+                  setConfirmPassword('');
+                  setPasswordStrength({ score: 0, feedback: '' });
                 }}
                 className="text-blue-400 hover:text-blue-300 text-sm"
               >
